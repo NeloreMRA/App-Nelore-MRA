@@ -1,0 +1,2459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custos Safra · App Nelore MRA</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<style>
+  :root{
+    --bg:#faf8f3; --panel:#ffffff; --ink:#2b2b23; --ink-soft:#6b6b5c; --line:#e4e0d4;
+    --green:#4c6b3f; --green-dark:#38502e; --wheat:#c99a3d; --alert:#b3543f; --focus:#eef3e8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--ink); display:flex; min-height:100vh;}
+  aside{width:230px; background:var(--green-dark); color:#f2efe4; flex-shrink:0; padding:22px 16px; display:flex; flex-direction:column; gap:4px;}
+  aside h1{font-size:16px; margin:0 0 2px; font-weight:600;}
+  aside p.sub{font-size:11px; color:#cdd8c4; margin:0 0 14px;}
+  .safra-select{width:100%; margin-bottom:16px; padding:7px; border-radius:6px; border:1px solid #56714a; background:#3f5934; color:#fff; font-size:12px;}
+  .navbtn{background:none; border:none; color:#e9e5d6; text-align:left; padding:9px 12px; border-radius:8px; cursor:pointer; font-size:13.5px; display:flex; gap:8px; align-items:center;}
+  .navbtn:hover{background:rgba(255,255,255,.08);}
+  .navbtn.active{background:var(--green); color:#fff; font-weight:600;}
+  main{flex:1; padding:28px 36px; overflow-y:auto; max-width:100%;}
+  h2{margin:0 0 4px; font-size:21px;}
+  .caption{color:var(--ink-soft); font-size:13px; margin-bottom:18px;}
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:18px;}
+  .grid{display:grid; gap:14px;}
+  .grid.cols-2{grid-template-columns:1fr 1fr;}
+  .grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+  label{font-size:11.5px; color:var(--ink-soft); display:block; margin-bottom:3px;}
+  input, select{width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font-size:13.5px; background:#fdfcf9;}
+  button.primary{background:var(--green); color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:13px; cursor:pointer;}
+  button.primary:hover{background:var(--green-dark);}
+  button.secondary{background:#fff; color:var(--green-dark); border:1px solid var(--green); padding:7px 14px; border-radius:6px; font-size:12.5px; cursor:pointer;}
+  button.secondary:hover{background:var(--focus);}
+  button.ghost{background:none; border:1px solid var(--line); padding:4px 9px; border-radius:6px; cursor:pointer; font-size:11.5px; color:var(--alert);}
+  .toolbar{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
+  .table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:8px;}
+  table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:1300px;}
+  th, td{text-align:left; padding:0; border-bottom:1px solid var(--line); border-right:1px solid #f0eee4;}
+  thead th{background:#f5f3ea; color:var(--ink); font-weight:600; font-size:11.5px; padding:0; white-space:nowrap; position:relative;}
+  .th-flex{display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 6px 8px 10px;}
+  .th-filter-btn{background:none; border:none; cursor:pointer; font-size:11px; color:var(--ink-soft); padding:2px 5px; border-radius:4px;}
+  .th-filter-btn:hover{background:#e9e5d6;}
+  .th-filter-btn.active{color:var(--green-dark); font-weight:700;}
+  tbody td input, tbody td select{border:none; background:transparent; padding:7px 9px; font-size:12.5px; border-radius:0; width:100%; min-width:95px;}
+  tbody td select{min-width:120px;}
+  tbody td input:focus, tbody td select:focus{background:var(--focus); outline:1px solid var(--green);}
+  tbody td.readonly{padding:7px 9px; color:var(--ink-soft); background:#fbfaf6; white-space:nowrap;}
+  .cell-unit{display:flex; align-items:center;}
+  .cell-unit input{flex:1;}
+  .cell-unit span{padding-right:8px; color:var(--ink-soft); font-size:11.5px;}
+  tbody tr:hover{background:#fbfaf6;}
+  .metrics{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:18px;}
+  .metrics.cols-4{grid-template-columns:repeat(4,1fr);}
+  @media (max-width:900px){ .metrics.cols-4{grid-template-columns:repeat(2,1fr);} }
+  .text-red{color:var(--alert) !important; font-weight:700;}
+  .metric{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:12px 14px;}
+  .metric .val{font-size:19px; font-weight:700; color:var(--green-dark);}
+  .metric .lbl{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+  .empty{color:var(--ink-soft); font-size:13px; font-style:italic; padding:10px 0;}
+  .section-title{font-size:14.5px; font-weight:600; margin:0 0 10px;}
+  .badge{display:inline-block; background:var(--wheat); color:#fff; font-size:10.5px; padding:2px 8px; border-radius:20px; margin-left:6px;}
+  .safra-card{border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;}
+  .safra-card.active{border-color:var(--green); background:var(--focus);}
+  .safra-card h3{margin:0 0 3px; font-size:15px;}
+  .safra-card p{margin:0; font-size:12px; color:var(--ink-soft);}
+  .sync-status{font-size:11px; padding:6px 8px; border-radius:6px; margin-bottom:14px; display:flex; align-items:center; gap:6px;}
+  .sync-status.ok{background:rgba(76,107,63,.25); color:#d7e8cd;}
+  .sync-status.local{background:rgba(201,154,61,.25); color:#f0d9a8;}
+  .sync-status.err{background:rgba(179,84,63,.3); color:#f3c9c1;}
+  /* Filtro estilo Excel */
+  .filter-panel{position:fixed; z-index:2000; background:#fff; border:1px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.14); width:230px; max-width:calc(100vw - 16px); padding:10px; font-weight:normal;}
+  .fp-sort-row{display:flex; gap:6px; margin-bottom:8px;}
+  .fp-btn{flex:1; background:#f5f3ea; border:1px solid var(--line); border-radius:6px; padding:5px; font-size:11px; cursor:pointer;}
+  .fp-btn:hover{background:#ebe8dc;}
+  .fp-search{width:100%; margin-bottom:6px; font-size:12px; padding:5px 7px;}
+  .fp-list{max-height:160px; overflow-y:auto; border:1px solid var(--line); border-radius:6px; padding:4px 6px; margin-bottom:8px;}
+  .fp-item{display:block; font-size:12px; padding:3px 0; cursor:pointer;}
+  .fp-item input{width:auto; margin-right:6px;}
+  .fp-actions{display:flex; gap:6px; justify-content:flex-end;}
+  @page{ size: A4 landscape; margin: 10mm; }
+  @media print{
+    aside, .no-print, .filter-panel{display:none !important;}
+    main{padding:0;}
+    .panel{border:none; padding:0; margin-bottom:12px;}
+    .table-wrap{border:none; overflow:visible !important;}
+    table{font-size:9px; min-width:0; width:100%; table-layout:auto;}
+    tbody td input, tbody td select{border:none !important; background:transparent !important; padding:2px 3px !important; -webkit-appearance:none;}
+    tr{page-break-inside:avoid;}
+    body{background:#fff;}
+    table.tbl-excel{table-layout:auto; width:100% !important;}
+    .resumo-grid{grid-template-columns:repeat(3,1fr); gap:10px;}
+    .resumo-card h3, table.resumo .barra i, tfoot tr.linha-total td, .saldo-grande, tr.mov-entrada td, tr.mov-acerto td, tr.mov-uso td, .tag-mov, .card-entrada, .card-saida, .card-acerto{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    table.resumo{font-size:10px;}
+  }
+
+  /* LOGIN FIREBASE */
+  body.auth-pending aside, body.auth-pending main,
+  body.auth-logged-out aside, body.auth-logged-out main{display:none!important;}
+  #loginScreen{display:none; min-height:100vh; width:100%; place-items:center; padding:20px; background:var(--bg);}
+  body.auth-pending #loginScreen, body.auth-logged-out #loginScreen{display:grid;}
+  body.authenticated #loginScreen{display:none;}
+  .login-card{width:min(390px,100%); background:#fff; border:1px solid var(--line); border-radius:12px; padding:26px; box-shadow:0 10px 30px rgba(0,0,0,.08);}
+  .login-card h2{margin:0 0 5px; font-size:22px;}
+  .login-card>p{margin:0 0 20px; color:var(--ink-soft); font-size:13px;}
+  .login-field{margin-bottom:12px;}
+  .login-field label{font-size:12px; font-weight:600;}
+  .login-field input{padding:10px 11px; background:#fff;}
+  .login-submit{width:100%; border:0; border-radius:6px; padding:10px 14px; background:var(--green); color:#fff; cursor:pointer; font-weight:700;}
+  .login-submit:disabled{opacity:.65; cursor:wait;}
+  .login-error{min-height:18px; margin-top:10px; text-align:center; color:var(--alert); font-size:12px;}
+  .side-tool{width:100%; margin-bottom:7px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.18); color:#f2efe4; padding:7px 10px; border-radius:6px; cursor:pointer; text-align:left; font-size:12px;}
+  .side-tool:hover{background:rgba(255,255,255,.12);}
+  .side-tool:disabled{opacity:.45; cursor:not-allowed;}
+  .logout-btn{margin-top:auto;}
+  body.perfil-diesel .admin-only{display:none !important;}
+  body.pagina-diesel #undoBtn{display:none !important;}
+  .user-badge{font-size:11px; color:#cfc9b5; margin:-4px 0 12px; word-break:break-all;}
+  .nav-sep{height:1px; background:rgba(255,255,255,.15); margin:8px 4px;}
+  .lista-cad{border:1px solid var(--line); border-radius:8px; max-height:220px; overflow-y:auto;}
+  .item-cad{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:6px 10px; border-bottom:1px solid var(--line); font-size:13px;}
+  .item-cad:last-child{border-bottom:none;}
+  .form-inline{display:flex; gap:6px; margin-top:8px;}
+  .filtros{display:grid; grid-template-columns:repeat(3,minmax(0,220px)); gap:12px; align-items:end;}
+  table.simples th{padding:8px 10px;}
+  table.simples td.num{text-align:right;}
+  .aviso{background:#fff6e0; border:1px solid #f0d9a8; color:#7a5a17; border-radius:8px; padding:10px 12px; font-size:13px; margin-bottom:14px;}
+
+  /* TABELA ESTILO EXCEL */
+  table.tbl-excel{table-layout:fixed; min-width:0 !important;}
+  table.tbl-excel td{overflow:hidden;}
+  table.tbl-excel tbody td input, table.tbl-excel tbody td select{min-width:0;}
+  table.tbl-excel th{overflow:hidden;}
+  table.tbl-excel .th-flex span{overflow:hidden; text-overflow:ellipsis;}
+  .col-resizer{position:absolute; top:0; right:0; width:7px; height:100%; cursor:col-resize; z-index:2;}
+  .col-resizer:hover, body.redimensionando .col-resizer:active{background:rgba(76,107,63,.35);}
+  body.redimensionando, body.redimensionando *{cursor:col-resize !important; user-select:none;}
+  td.td-acoes{white-space:nowrap; text-align:center; padding:0 4px;}
+  table.tbl-excel th, table.tbl-excel td{border:1px solid #e1ddd0;}
+  table.tbl-excel td.td-num, table.tbl-excel td.readonly.td-num{text-align:right;}
+  .cell-unit-junto{justify-content:flex-end; padding-right:8px;}
+  .cell-unit-junto input{text-align:right; padding:7px 3px 7px 6px !important; flex:0 1 auto !important; max-width:100%;}
+  .cell-unit-junto span{padding-right:0 !important; color:var(--ink) !important; font-size:12.5px !important;}
+  td.cel-sel, td.cel-sel input, td.cel-sel select{background:#dbe8d2 !important;}
+  td.cel-sel{outline:2px solid var(--green); outline-offset:-2px;}
+  .barra-excel{display:none; position:fixed; right:16px; bottom:14px; z-index:1500; gap:18px; align-items:center; background:var(--green-dark); color:#fff; padding:9px 16px; border-radius:8px; font-size:13px; box-shadow:0 6px 18px rgba(0,0,0,.2);}
+  .barra-excel.ativa{display:flex;}
+  .barra-excel strong{font-variant-numeric:tabular-nums;}
+  tfoot tr.linha-total td{background:#f5f3ea; font-weight:700; padding:8px 10px; border-top:2px solid var(--green-dark); white-space:nowrap;}
+  tfoot td.num{text-align:right;}
+  tfoot td.total-rotulo small{font-weight:400; color:var(--ink-soft); margin-left:4px;}
+  .panel-excel{width:fit-content; max-width:100%;}
+
+  /* ESTOQUE DIESEL */
+  .extrato-layout{display:flex; gap:14px; align-items:flex-start;}
+  .extrato-layout > .panel{margin-bottom:0;}
+  .extrato-resumo{flex:0 0 170px; display:flex; flex-direction:column; gap:8px;}
+  .extrato-resumo .metric{padding:9px 10px; text-align:center;}
+  .extrato-resumo .val{font-size:17px;}
+  .extrato-resumo .lbl{font-size:10.5px;}
+  .saldo-grande{background:var(--green-dark); border-color:var(--green-dark);}
+  .saldo-grande .val{color:#fff; font-size:21px !important;}
+  .saldo-grande .val.text-red{color:#ffd2c8 !important;}
+  .saldo-grande .lbl{color:#d7e8cd;}
+  .cor-entrada{color:#3f7a2b !important;}
+  .cor-acerto{color:#c26a12 !important;}
+  .cor-saida{color:#a3372a !important;}
+  .card-entrada{background:#eef6e8; border-color:#cfe3c2;}
+  .card-saida{background:#fdf0ee; border-color:#f3d3cd;}
+  .card-acerto{background:#fff1df; border-color:#f4d3a6;}
+  .form-entrada{border-top:4px solid #5a9a42;}
+  .form-acerto{border-top:4px solid #e08a1e;}
+  .btn-acerto{margin-top:12px; background:#e08a1e; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:13px; cursor:pointer;}
+  .btn-acerto:hover{background:#c26a12;}
+  .previa-acerto{margin-top:10px; font-size:12.5px; color:var(--ink-soft); background:#fbfaf6; border:1px dashed var(--line); border-radius:6px; padding:8px 10px;}
+  .previa-acerto.ativa{color:#7a4a10; background:#fff3e2; border-color:#f0c48a;}
+  table.extrato td{padding:7px 10px; white-space:nowrap; text-overflow:ellipsis;}
+  table.extrato td.td-acoes{padding:0 4px; text-overflow:clip;}
+  table.tbl-excel tfoot td.total-rotulo{overflow:visible;}
+  tr.mov-entrada td{background:#eef6e8;}
+  table.extrato td.col-saldo{font-weight:700;}
+  tr.mov-uso td{background:#fdf0ee;}
+  table.extrato tfoot td.total-rotulo{font-size:13px;}
+  table.extrato tfoot td.num{font-size:14px;}
+  tr.mov-acerto td{background:#fff1df;}
+  .tag-mov{display:inline-block; font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px;}
+  .tag-entrada{background:#5a9a42; color:#fff;}
+  .tag-acerto{background:#e08a1e; color:#fff;}
+  .tag-uso{background:#f7d4cf; color:#a3372a;}
+
+  .aviso-filtro{display:inline-flex; gap:8px; align-items:center; background:#fff6e0; border:1px solid #f0d9a8; color:#7a5a17; border-radius:8px; padding:6px 10px; font-size:12.5px; margin-bottom:10px;}
+
+  /* RESUMO DIESEL */
+  .resumo-kpis{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px;}
+  .resumo-kpis .metric{text-align:center;}
+  .resumo-kpis .val{font-size:24px;}
+  .resumo-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; align-items:start;}
+  .resumo-card{background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  .resumo-card h3{margin:0; padding:11px 12px; text-align:center; font-size:14.5px; background:var(--green-dark); color:#fff; letter-spacing:.2px;}
+  table.resumo{width:100%; min-width:0; table-layout:fixed; font-size:13px;}
+  table.resumo th{text-align:left; font-size:11.5px;}
+  table.resumo th, table.resumo td{border:1px solid #e1ddd0;}
+  table.resumo td{padding:8px 12px; vertical-align:middle;}
+  table.resumo th{padding:0;}
+  table.resumo th .th-flex{padding:8px 6px 8px 12px;}
+  table.resumo td.num{text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;}
+  table.resumo .sub{display:block; font-size:11px; color:var(--ink-soft);}
+  table.resumo .barra{height:6px; background:#ece8dc; border-radius:3px; margin-top:4px; overflow:hidden;}
+  table.resumo .barra i{display:block; height:100%; background:var(--wheat); border-radius:3px;}
+  table.resumo tfoot td{font-weight:700; background:#f5f3ea; border-top:2px solid var(--green-dark);}
+  .filtros-resumo{display:flex; flex-wrap:wrap; gap:12px; align-items:end;}
+  .filtros-resumo > div{flex:1 1 170px; max-width:240px;}
+
+  /* CELULAR */
+  @media (max-width:760px){
+    body{flex-direction:column;}
+    aside{width:100%; padding:10px 12px; flex-direction:row; flex-wrap:wrap; align-items:center; gap:6px;}
+    aside h1{margin:0; flex:1 1 auto;}
+    aside p.sub, .nav-sep{display:none;}
+    .user-badge{margin:0; flex:0 0 auto;}
+    .sync-status{margin:0; flex:1 1 100%;}
+    .safra-select{margin:0; flex:1 1 100%;}
+    .navbtn{padding:7px 10px; font-size:13px; white-space:nowrap; background:rgba(255,255,255,.06);}
+    .side-tool{width:auto; margin:0;}
+    .logout-btn{margin:0 0 0 auto;}
+    main{padding:14px 12px;}
+    .grid.cols-2, .grid.cols-3, .filtros{grid-template-columns:1fr;}
+    input, select{font-size:16px;}
+    .panel{padding:14px;}
+    h2{font-size:19px;}
+    .panel > button.primary{width:100%; padding:13px; font-size:15px;}
+    .toolbar button{flex:1 1 auto;}
+    .panel-excel{width:auto;}
+    .barra-excel{display:none !important;}
+    .cell-unit-junto{justify-content:flex-start;}
+    .cell-unit-junto input{text-align:left;}
+    /* tabelas do diesel no celular: tabela de verdade, compacta (arrasta pro lado se não couber) */
+    table.tbl-excel{table-layout:auto; width:auto !important; min-width:100% !important; font-size:12px;}
+    table.tbl-excel col{width:auto !important;}
+    table.tbl-excel th .th-flex{padding:5px 3px 5px 6px; gap:2px;}
+    table.tbl-excel th{font-size:11px;}
+    table.tbl-excel td{padding:3px 6px; white-space:nowrap;}
+    table.tbl-excel tbody td input, table.tbl-excel tbody td select{font-size:13px; padding:3px 4px !important;}
+    table.tbl-excel tbody td input[type=date]{min-width:112px;}
+    table.tbl-excel tbody td select{min-width:96px;}
+    table.tbl-excel tbody td input[type=text]:not([data-br-dec]){min-width:150px;}
+    table.tbl-excel .col-resizer{display:none;}
+    table.tbl-excel tfoot tr.linha-total td{padding:6px;}
+    table.extrato td{padding:4px 5px;}
+    table.extrato .tag-mov{font-size:10px; padding:1px 6px;}
+    table.tbl-excel td.td-acoes button{padding:2px 7px;}
+    .resumo-kpis{grid-template-columns:1fr 1fr 1fr; gap:8px;}
+    .extrato-layout{flex-direction:column; gap:8px;}
+    .extrato-layout > .panel{width:100%;}
+    .extrato-resumo{order:-1; flex:none; width:100%; display:grid; grid-template-columns:repeat(4,1fr); gap:5px;}
+    .extrato-resumo .metric{padding:6px 3px;}
+    .extrato-resumo .val{font-size:12.5px;}
+    .saldo-grande .val{font-size:14px !important;}
+    .extrato-resumo .lbl{font-size:9.5px;}
+    .btn-acerto{width:100%; padding:13px; font-size:15px;}
+    table.extrato td{white-space:normal;}
+    .resumo-kpis .val{font-size:17px;}
+    .resumo-kpis .metric{padding:10px 6px;}
+    .filtros-resumo > div{max-width:none;}
+  }
+</style>
+</head>
+<body class="auth-pending">
+<div id="loginScreen">
+  <form id="loginForm" class="login-card" autocomplete="on">
+    <h2>🌱 Custos Safra</h2>
+    <p>Fazenda Paraíso · Entre com seu e-mail ou login.</p>
+    <div class="login-field"><label for="loginEmail">E-mail ou login</label><input id="loginEmail" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
+    <div class="login-field"><label for="loginPassword">Senha</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
+    <button id="loginButton" class="login-submit" type="submit">Entrar</button>
+    <div id="loginError" class="login-error" aria-live="polite"></div>
+  </form>
+</div>
+<aside class="no-print">
+  <h1>🌱 Custos Safra</h1>
+  <p class="sub">Fazenda Paraíso</p>
+  <div id="user-badge" class="user-badge"></div>
+  <div id="sync-status" class="sync-status local">⚪ Modo local</div>
+  <select class="safra-select admin-only" id="safra-selector"></select>
+  <button id="undoBtn" class="side-tool admin-only" type="button" onclick="undoLastChange()" disabled>↶ Desfazer (Ctrl+Z)</button>
+  <button class="navbtn active admin-only" data-page="dashboard">📊 Dashboard</button>
+  <button class="navbtn admin-only" data-page="colheita">🚜 Colheita</button>
+  <button class="navbtn admin-only" data-page="adiantamentos">💰 Adiantamentos</button>
+  <button class="navbtn admin-only" data-page="vendas">📦 Silos e Vendas</button>
+  <button class="navbtn admin-only" data-page="cadastros">⚙️ Cadastros</button>
+  <button class="navbtn admin-only" data-page="safras">🌾 Cadastro de Safra</button>
+  <div class="nav-sep admin-only"></div>
+  <button class="navbtn" data-page="diesel-controle">⛽ Controle Diesel</button>
+  <button class="navbtn" data-page="diesel-estoque">🛢️ Estoque Diesel</button>
+  <button class="navbtn" data-page="diesel-resumo">📈 Resumo Diesel</button>
+  <div class="nav-sep admin-only"></div>
+  <button class="side-tool admin-only" type="button" onclick="exportBackupCompleto()">💾 Backup completo (Excel)</button>
+  <button class="side-tool" type="button" onclick="location.href='../index.html'">← App Nelore MRA</button>
+  <button id="logoutBtn" class="side-tool logout-btn" type="button">Sair</button>
+</aside>
+<main id="main"></main>
+
+<script>
+const PRODUTOR_FIXO = "MARCIO DE REZENDE ANDRADE";
+
+// =================== DADOS INICIAIS (importados da planilha CUSTOS_MILHO_PARAISO 25-26) ===================
+const COLHEITA_MILHO = [
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":17400,"umidade":0.159,"impureza":0.027,"saldoLiquido":16401.24,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23640,"umidade":0.158,"impureza":0.025,"saldoLiquido":22368,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":21780,"umidade":0.163,"impureza":0.021,"saldoLiquido":20521,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":22360,"umidade":0.165,"impureza":0.018,"saldoLiquido":21063,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":21180,"umidade":0.162,"impureza":0.018,"saldoLiquido":20053,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23560,"umidade":0.163,"impureza":0.017,"saldoLiquido":22292,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":22640,"umidade":0.161,"impureza":0.018,"saldoLiquido":21472,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24060,"umidade":0.164,"impureza":0.011,"saldoLiquido":22727,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23900,"umidade":0.156,"impureza":0.016,"saldoLiquido":22906,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":22340,"umidade":0.162,"impureza":0.017,"saldoLiquido":21174,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":22040,"umidade":0.156,"impureza":0.018,"saldoLiquido":21079,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24000,"umidade":0.157,"impureza":0.016,"saldoLiquido":22963,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":22600,"umidade":0.158,"impureza":0.017,"saldoLiquido":21565,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23060,"umidade":0.157,"impureza":0.016,"saldoLiquido":22064,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":22860,"umidade":0.146,"impureza":0.017,"saldoLiquido":22128,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":26300,"umidade":0.138,"impureza":0.017,"saldoLiquido":25853,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24340,"umidade":0.134,"impureza":0.014,"saldoLiquido":23999,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24240,"umidade":0.139,"impureza":0.017,"saldoLiquido":23828,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23620,"umidade":0.134,"impureza":0.016,"saldoLiquido":23242,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23200,"umidade":0.129,"impureza":0.017,"saldoLiquido":22806,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23000,"umidade":0.128,"impureza":0.014,"saldoLiquido":22678,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23660,"umidade":0.131,"impureza":0.014,"saldoLiquido":23329,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23980,"umidade":0.134,"impureza":0.015,"saldoLiquido":23620,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23460,"umidade":0.137,"impureza":0.015,"saldoLiquido":23108,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":22940,"umidade":0.145,"impureza":0.016,"saldoLiquido":22275,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23300,"umidade":0.145,"impureza":0.014,"saldoLiquido":22671,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23400,"umidade":0.135,"impureza":0.015,"saldoLiquido":23049,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23760,"umidade":0.138,"impureza":0.017,"saldoLiquido":23356,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24560,"umidade":0.141,"impureza":0.016,"saldoLiquido":24093,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":21430,"umidade":0.144,"impureza":0.015,"saldoLiquido":20877,"vlSaca":1.3},
+{"data":"2026-07-23","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23640,"umidade":0.142,"impureza":0.017,"saldoLiquido":23101,"vlSaca":1.3},
+{"data":"2026-08-03","talhao":"PALHADA","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":12080,"umidade":0.134,"impureza":0.014,"saldoLiquido":11887,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23240,"umidade":0.134,"impureza":0.017,"saldoLiquido":22845,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24760,"umidade":0.159,"impureza":0.018,"saldoLiquido":22529,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":22680,"umidade":0.149,"impureza":0.017,"saldoLiquido":21845,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23380,"umidade":0.148,"impureza":0.018,"saldoLiquido":23562,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":26820,"umidade":0.147,"impureza":0.016,"saldoLiquido":25940,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24880,"umidade":0.151,"impureza":0.017,"saldoLiquido":23937,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":21460,"umidade":0.152,"impureza":0.015,"saldoLiquido":20675,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":22860,"umidade":0.154,"impureza":0.017,"saldoLiquido":21959,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":25820,"umidade":0.152,"impureza":0.016,"saldoLiquido":24849,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":23160,"umidade":0.155,"impureza":0.019,"saldoLiquido":22164,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":20920,"umidade":0.16,"impureza":0.015,"saldoLiquido":19937,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24740,"umidade":0.164,"impureza":0.018,"saldoLiquido":23345,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24940,"umidade":0.177,"impureza":0.019,"saldoLiquido":22805,"vlSaca":1.3},
+{"data":"2026-08-04","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24120,"umidade":0.177,"impureza":0.018,"saldoLiquido":22079,"vlSaca":1.3},
+{"data":"2026-08-12","talhao":"BASE III","local":"SILO VIZINHO","motorista":"AGENOR","pesoBruto":24200,"umidade":0.18,"impureza":0.019,"saldoLiquido":21998,"vlSaca":1.3}
+];
+const ADIANTAMENTO_MILHO = [
+{"data":"2026-07-23","motorista":"AGENOR","servico":"Borracharia","valor":230},
+{"data":"2026-07-23","motorista":"AGENOR","servico":"Diesel","valor":2744},
+{"data":"2026-07-23","motorista":"AGENOR","servico":"Adiantamento","valor":5000},
+{"data":"2026-07-23","motorista":"AGENOR","servico":"Solda","valor":400}
+];
+const TALHOES_MILHO = [
+  {talhao:"TALHÃO 16", area:72, variedade:"", variedade2:"", plantado:false},
+  {talhao:"TALHÃO 18", area:18, variedade:"", variedade2:"", plantado:false},
+  {talhao:"TALHÃO 19", area:21.31, variedade:"", variedade2:"", plantado:false},
+  {talhao:"LIXÃO", area:28.26, variedade:"", variedade2:"", plantado:false},
+  {talhao:"TALHÃO 21", area:33.89, variedade:"", variedade2:"", plantado:false},
+  {talhao:"ARUANA", area:82.58, variedade:"", variedade2:"", plantado:false},
+  {talhao:"PALHADA", area:104.78, variedade:"BREVANT 2702", variedade2:"", plantado:true},
+  {talhao:"BASE III", area:51, variedade:"NK 165", variedade2:"", plantado:true},
+  {talhao:"CACHOEIRA", area:30.7, variedade:"", variedade2:"", plantado:false},
+  {talhao:"PISTA", area:0, variedade:"", variedade2:"", plantado:false},
+];
+const LOCAIS_MILHO = ["ADM DO BRASIL - CGR","COAMO - SIDROLANDIA","CARGIL - CGR","SILO VIZINHO","LAR"];
+const MOTORISTAS_MILHO = ["ALEXSANDRO","AGENOR"];
+
+// =================== DADOS INICIAIS SOJA 2025/2026 ===================
+// Importados das abas COLHEITA, SILOS E VENDAS e RESUMOS da planilha enviada.
+const COLHEITA_SOJA = [{"data":"2026-02-26","talhao":"PALHADA","variedade":"","local":"ADM DO BRASIL - CGR","motorista":"WELLINGSON","pesoBruto":38840.0,"umidade":0.17,"impureza":0.003,"saldoLiquido":36820.0,"vlSaca":3.0},{"data":"2026-02-27","talhao":"PALHADA","variedade":"","local":"ADM DO BRASIL - CGR","motorista":"AGENOR","pesoBruto":47640.0,"umidade":0.148,"impureza":0.002,"saldoLiquido":46792.0,"vlSaca":3.0},{"data":"2026-02-27","talhao":"PALHADA","variedade":"","local":"ADM DO BRASIL - CGR","motorista":"WELLINGSON","pesoBruto":39700.0,"umidade":0.131,"impureza":0.004,"saldoLiquido":39700.0,"vlSaca":3.0},{"data":"2026-02-28","talhao":"PALHADA","variedade":"","local":"ADM DO BRASIL - CGR","motorista":"AGENOR","pesoBruto":47080.0,"umidade":0.133,"impureza":0.008,"saldoLiquido":47080.0,"vlSaca":3.0},{"data":"2026-02-28","talhao":"PALHADA","variedade":"","local":"ADM DO BRASIL - CGR","motorista":"AGENOR","pesoBruto":29660.0,"umidade":0.113,"impureza":0.002,"saldoLiquido":29660.0,"vlSaca":3.0},{"data":"2026-03-01","talhao":"PALHADA","variedade":"","local":"ADM DO BRASIL - CGR","motorista":"ALEXSANDRO","pesoBruto":39340.0,"umidade":0.104,"impureza":0.009,"saldoLiquido":39340.0,"vlSaca":3.0},{"data":"2026-03-01","talhao":"PALHADA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":56810.0,"umidade":0.106,"impureza":0.005,"saldoLiquido":56526.0,"vlSaca":3.6},{"data":"2026-03-01","talhao":"PALHADA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":38930.0,"umidade":0.111,"impureza":0.01,"saldoLiquido":38541.0,"vlSaca":3.6},{"data":"2026-03-04","talhao":"PALHADA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":38900.0,"umidade":0.08,"impureza":0.005,"saldoLiquido":38705.0,"vlSaca":3.6},{"data":"2026-03-04","talhao":"PALHADA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":39900.0,"umidade":0.085,"impureza":0.01,"saldoLiquido":39501.0,"vlSaca":3.6},{"data":"2026-03-04","talhao":"CACHOEIRA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":38910.0,"umidade":0.099,"impureza":0.01,"saldoLiquido":38521.0,"vlSaca":3.6},{"data":"2026-03-04","talhao":"CACHOEIRA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"AGENOR","pesoBruto":30330.0,"umidade":0.083,"impureza":0.01,"saldoLiquido":30027.0,"vlSaca":3.6},{"data":"2026-03-05","talhao":"CACHOEIRA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"AGENOR","pesoBruto":30740.0,"umidade":0.082,"impureza":0.04,"saldoLiquido":29510.0,"vlSaca":3.6},{"data":"2026-03-05","talhao":"CACHOEIRA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":18295.0,"umidade":0.117,"impureza":0.066,"saldoLiquido":17087.5,"vlSaca":3.6},{"data":"2026-03-05","talhao":"BASE III","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":18295.0,"umidade":0.117,"impureza":0.066,"saldoLiquido":17087.5,"vlSaca":3.6},{"data":"2026-03-06","talhao":"BASE III","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"AGENOR","pesoBruto":31570.0,"umidade":0.097,"impureza":0.037,"saldoLiquido":30402.0,"vlSaca":3.6},{"data":"2026-03-06","talhao":"BASE III","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":53960.0,"umidade":0.105,"impureza":0.012,"saldoLiquido":53312.0,"vlSaca":3.6},{"data":"2026-03-06","talhao":"BASE III","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":38860.0,"umidade":0.114,"impureza":0.026,"saldoLiquido":37850.0,"vlSaca":3.6},{"data":"2026-03-07","talhao":"BASE III","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":37130.0,"umidade":0.14,"impureza":0.015,"saldoLiquido":36573.0,"vlSaca":3.6},{"data":"2026-03-07","talhao":"BASE III","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":38960.0,"umidade":0.15,"impureza":0.007,"saldoLiquido":37817.0,"vlSaca":3.6},{"data":"2026-03-07","talhao":"BASE III","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":54710.0,"umidade":0.136,"impureza":0.016,"saldoLiquido":53835.0,"vlSaca":3.6},{"data":"2026-03-10","talhao":"ARUANA","variedade":"","local":"ADM DO BRASIL - CGR","motorista":"AGENOR","pesoBruto":16560.0,"umidade":0.15,"impureza":0.005,"saldoLiquido":16195.0,"vlSaca":3.0},{"data":"2026-03-13","talhao":"ARUANA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":40040.0,"umidade":0.162,"impureza":0.011,"saldoLiquido":37996.0,"vlSaca":3.6},{"data":"2026-03-13","talhao":"ARUANA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":55310.0,"umidade":0.155,"impureza":0.008,"saldoLiquido":53222.0,"vlSaca":3.6},{"data":"2026-03-14","talhao":"ARUANA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":38940.0,"umidade":0.164,"impureza":0.018,"saldoLiquido":36576.0,"vlSaca":3.6},{"data":"2026-03-14","talhao":"ARUANA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"AGENOR","pesoBruto":32150.0,"umidade":0.141,"impureza":0.01,"saldoLiquido":31303.0,"vlSaca":3.6},{"data":"2026-03-14","talhao":"ARUANA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":56180.0,"umidade":0.137,"impureza":0.009,"saldoLiquido":55674.0,"vlSaca":3.6},{"data":"2026-03-15","talhao":"ARUANA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":38520.0,"umidade":0.133,"impureza":0.009,"saldoLiquido":38173.0,"vlSaca":3.6},{"data":"2026-03-15","talhao":"ARUANA","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"AGENOR","pesoBruto":30860.0,"umidade":0.128,"impureza":0.011,"saldoLiquido":30521.0,"vlSaca":3.6},{"data":"2026-03-15","talhao":"TALHÃO 16","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":38710.0,"umidade":0.145,"impureza":0.012,"saldoLiquido":37671.0,"vlSaca":3.6},{"data":"2026-03-15","talhao":"TALHÃO 16","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":56570.0,"umidade":0.129,"impureza":0.014,"saldoLiquido":55778.0,"vlSaca":3.6},{"data":"2026-03-15","talhao":"TALHÃO 16","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":38950.0,"umidade":0.12,"impureza":0.01,"saldoLiquido":38560.0,"vlSaca":3.6},{"data":"2026-03-16","talhao":"TALHÃO 16","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":39950.0,"umidade":0.119,"impureza":0.019,"saldoLiquido":38838.0,"vlSaca":3.6},{"data":"2026-03-17","talhao":"TALHÃO 16","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":55170.0,"umidade":0.143,"impureza":0.007,"saldoLiquido":54291.0,"vlSaca":3.6},{"data":"2026-03-17","talhao":"TALHÃO 16","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":38250.0,"umidade":0.16,"impureza":0.007,"saldoLiquido":36558.0,"vlSaca":3.6},{"data":"2026-03-17","talhao":"TALHÃO 16","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":39630.0,"umidade":0.157,"impureza":0.01,"saldoLiquido":37939.0,"vlSaca":3.6},{"data":"2026-03-17","talhao":"TALHÃO 16","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"AGENOR","pesoBruto":31090.0,"umidade":0.157,"impureza":0.007,"saldoLiquido":29853.0,"vlSaca":3.6},{"data":"2026-03-17","talhao":"TALHÃO 16","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":12000.0,"umidade":0.159,"impureza":0.009,"saldoLiquido":12000.0,"vlSaca":3.6},{"data":"2026-03-18","talhao":"TALHÃO 21","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":44350.0,"umidade":0.159,"impureza":0.009,"saldoLiquido":41833.0,"vlSaca":3.6},{"data":"2026-03-18","talhao":"TALHÃO 21","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":39210.0,"umidade":0.149,"impureza":0.01,"saldoLiquido":38003.0,"vlSaca":3.6},{"data":"2026-03-19","talhao":"TALHÃO 21","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"AGENOR","pesoBruto":31580.0,"umidade":0.159,"impureza":0.012,"saldoLiquido":30078.0,"vlSaca":3.6},{"data":"2026-03-19","talhao":"TALHÃO 21","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":27060.0,"umidade":0.176,"impureza":0.016,"saldoLiquido":24071.0,"vlSaca":3.6},{"data":"2026-03-19","talhao":"TALHÃO 18","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":12000.0,"umidade":0.176,"impureza":0.016,"saldoLiquido":12000.0,"vlSaca":3.6},{"data":"2026-03-19","talhao":"TALHÃO 18","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":55870.0,"umidade":0.153,"impureza":0.019,"saldoLiquido":53328.0,"vlSaca":3.6},{"data":"2026-03-20","talhao":"TALHÃO 18","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":4800.0,"umidade":0.199,"impureza":0.026,"saldoLiquido":4800.0,"vlSaca":3.6},{"data":"2026-03-20","talhao":"TALHÃO 16","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":4800.0,"umidade":0.199,"impureza":0.026,"saldoLiquido":4800.0,"vlSaca":3.6},{"data":"2026-03-20","talhao":"TALHÃO 19","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"WELLINGSON","pesoBruto":27150.0,"umidade":0.199,"impureza":0.026,"saldoLiquido":22758.0,"vlSaca":3.6},{"data":"2026-03-20","talhao":"LIXÃO","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALEXSANDRO","pesoBruto":38540.0,"umidade":0.173,"impureza":0.012,"saldoLiquido":35908.0,"vlSaca":3.6},{"data":"2026-03-20","talhao":"LIXÃO","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":54260.0,"umidade":0.168,"impureza":0.01,"saldoLiquido":51058.0,"vlSaca":3.6},{"data":"2026-03-20","talhao":"LIXÃO","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"AGENOR","pesoBruto":31760.0,"umidade":0.144,"impureza":0.008,"saldoLiquido":31128.0,"vlSaca":3.6},{"data":"2026-03-21","talhao":"TALHÃO 19","variedade":"","local":"COAMO - SIDROLANDIA","motorista":"ALESSANDRO","pesoBruto":51740.0,"umidade":0.189,"impureza":0.018,"saldoLiquido":46693.0,"vlSaca":3.6}];
+const TALHOES_SOJA = [{"talhao":"TALHÃO 16","area":72.0,"variedade":"","variedade2":"","plantado":true},{"talhao":"TALHÃO 18","area":18.0,"variedade":"","variedade2":"","plantado":true},{"talhao":"TALHÃO 19","area":21.31,"variedade":"","variedade2":"","plantado":true},{"talhao":"LIXÃO","area":28.26,"variedade":"","variedade2":"","plantado":true},{"talhao":"TALHÃO 21","area":33.89,"variedade":"","variedade2":"","plantado":true},{"talhao":"ARUANA","area":82.58,"variedade":"","variedade2":"","plantado":true},{"talhao":"PALHADA","area":104.78,"variedade":"","variedade2":"","plantado":true},{"talhao":"BASE III","area":63.32,"variedade":"","variedade2":"","plantado":true},{"talhao":"CACHOEIRA","area":30.7,"variedade":"","variedade2":"","plantado":true},{"talhao":"FAZENDA","area":0.0,"variedade":"","variedade2":"","plantado":false}];
+const LOCAIS_SOJA = ["ADM DO BRASIL - CGR","COAMO - SIDROLANDIA","CARGIL - CGR","SILO VIZINHO","LAR"];
+const MOTORISTAS_SOJA = ["WELLINGSON","AGENOR","ALEXSANDRO","ALESSANDRO"];
+const VENDAS_SOJA = [];
+
+function criarSafraSoja2526Importada(){
+  return {
+    nome: "Soja 2025/2026", cultura: "Soja",
+    produtor: PRODUTOR_FIXO, propriedade: "FAZENDA PARAÍSO",
+    talhoes: JSON.parse(JSON.stringify(TALHOES_SOJA)),
+    locais: [...LOCAIS_SOJA],
+    motoristas: [...MOTORISTAS_SOJA],
+    colheita: JSON.parse(JSON.stringify(COLHEITA_SOJA)),
+    adiantamentos: [],
+    vendas: JSON.parse(JSON.stringify(VENDAS_SOJA)),
+  };
+}
+
+
+// =================== VARIEDADES POR TALHÃO ===================
+function variedadesDoTalhao(safra, talhao){
+  const t = (safra.talhoes || []).find(x=>x.talhao===talhao);
+  if(!t) return [];
+  return [t.variedade, t.variedade2].map(v=>String(v||'').trim()).filter((v,i,a)=>v && a.indexOf(v)===i);
+}
+
+function normalizarEstruturaSafras(safras){
+  Object.entries(safras || {}).forEach(([chave,s])=>{
+    s.talhoes = Array.isArray(s.talhoes) ? s.talhoes : [];
+    s.colheita = Array.isArray(s.colheita) ? s.colheita : [];
+    s.talhoes.forEach(t=>{
+      if(t.variedade===undefined || t.variedade===null) t.variedade='';
+      if(t.variedade2===undefined || t.variedade2===null) t.variedade2='';
+    });
+    // Preenche automaticamente a variedade faltante em QUALQUER cultura
+    // usando a primeira variedade cadastrada no respectivo talhão.
+    s.colheita.forEach(c=>{
+      const vars = variedadesDoTalhao(s, c.talhao);
+      const atual = String(c.variedade||'').trim();
+      if(!atual && vars.length) c.variedade = vars[0];
+      // Se o valor antigo não pertence mais ao talhão, mantém enquanto não houver opções;
+      // havendo opções válidas, corrige para a primeira.
+      else if(atual && vars.length && !vars.includes(atual)) c.variedade = vars[0];
+    });
+  });
+  return safras;
+}
+
+// =================== ESTADO GLOBAL ===================
+let state = {
+  safraAtual: localStorage.getItem('app-nelore-mra-custos-safraAtual') || "milho2526",
+  safras: {
+    milho2526: {
+      nome: "Milho 2025/2026", cultura: "Milho",
+      produtor: PRODUTOR_FIXO, propriedade: "FAZENDA PARAÍSO",
+      talhoes: JSON.parse(JSON.stringify(TALHOES_MILHO)),
+      locais: [...LOCAIS_MILHO],
+      motoristas: [...MOTORISTAS_MILHO],
+      colheita: JSON.parse(JSON.stringify(COLHEITA_MILHO)),
+      adiantamentos: JSON.parse(JSON.stringify(ADIANTAMENTO_MILHO)),
+      vendas: [],
+    },
+    soja2526: criarSafraSoja2526Importada()
+  }
+};
+let currentPage = "dashboard";
+normalizarEstruturaSafras(state.safras);
+function S(){ return state.safras[state.safraAtual]; }
+
+// =================== SINCRONIZAÇÃO EM NUVEM (Firebase Firestore) ===================
+// Preencha com os dados do SEU projeto Firebase (veja o passo a passo que te enviei).
+// Enquanto estiver com o valor de exemplo, o app roda só localmente (sem compartilhar dados).
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94",
+  authDomain: "app-nelore-mra.firebaseapp.com",
+  projectId: "app-nelore-mra",
+  storageBucket: "app-nelore-mra.firebasestorage.app",
+  messagingSenderId: "1043343802346",
+  appId: "1:1043343802346:web:219f5d73748271a85dfc93",
+};
+const ADMIN_EMAIL = "mandrade.gado@terra.com.br";
+// Telas liberadas pra este usuário (null = todas). Vem de users/{uid}.paginas.custos no App Nelore MRA.
+let ALLOWED_PAGES = null;
+function paginaPermitida(p){ return !ALLOWED_PAGES || ALLOWED_PAGES.includes(p); }
+function primeiraPaginaPermitida(){ const ps=[...document.querySelectorAll('.navbtn')].map(b=>b.dataset.page); return ps.find(paginaPermitida) || 'diesel-controle'; }
+const FIREBASE_CONFIGURADO = FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "COLOQUE_AQUI";
+
+let db = null, docRef = null, firebaseReady = false, suppressSave = false, saveTimer = null;
+let unsubscribeSnapshot = null;
+
+// =================== DESFAZER GERAL ===================
+const UNDO_LIMIT = 50;
+let undoStack = [];
+function cloneStateForUndo(){ return JSON.parse(JSON.stringify(state)); }
+function updateUndoButton(){
+  const b = document.getElementById('undoBtn');
+  if(b) b.disabled = undoStack.length===0;
+}
+function recordUndo(){
+  undoStack.push(cloneStateForUndo());
+  if(undoStack.length>UNDO_LIMIT) undoStack.shift();
+  updateUndoButton();
+}
+function clearUndoHistory(){ undoStack = []; updateUndoButton(); }
+function undoLastChange(){
+  if(!undoStack.length) return;
+  clearTimeout(saveTimer);
+  const previous = undoStack.pop();
+  state = previous;
+  normalizarEstruturaSafras(state.safras);
+  render();
+  updateUndoButton();
+  scheduleSave(true);
+}
+
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase()==='z' && document.body.classList.contains('authenticated') && !paginaDiesel(currentPage)){
+    e.preventDefault();
+    undoLastChange();
+  }
+});
+
+function setSyncStatus(text, cls){
+  const el = document.getElementById('sync-status');
+  if(el){ el.textContent = text; el.className = 'sync-status no-print ' + cls; }
+}
+
+function initFirebase(){
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+    docRef = db.collection('apps').doc('custos').collection('dados').doc('estado-atual');
+    setSyncStatus('🟡 Conectando...', 'local');
+
+    docRef.get().then(snap=>{
+      if(snap.exists && snap.data().safras){
+        suppressSave = true;
+        state.safras = normalizarEstruturaSafras(snap.data().safras);
+        clearUndoHistory();
+        let adicionouSojaImportada = false;
+        if(!state.safras.soja2526){
+          state.safras.soja2526 = criarSafraSoja2526Importada();
+          adicionouSojaImportada = true;
+        }
+        if(!state.safras[state.safraAtual]) state.safraAtual = Object.keys(state.safras)[0];
+        render();
+        suppressSave = false;
+        if(adicionouSojaImportada){
+          docRef.set({safras: JSON.parse(JSON.stringify(state.safras))});
+        }
+      } else {
+        // primeira vez: manda os dados iniciais (milho) pro banco
+        docRef.set({safras: JSON.parse(JSON.stringify(state.safras))});
+      }
+      firebaseReady = true;
+      setSyncStatus('🟢 Sincronizado', 'ok');
+
+      if(unsubscribeSnapshot) unsubscribeSnapshot();
+      unsubscribeSnapshot = docRef.onSnapshot(snap=>{
+        if(!snap.exists) return;
+        const remote = snap.data().safras;
+        if(!remote) return;
+        if(JSON.stringify(remote) === JSON.stringify(state.safras)) return; // eco da própria escrita
+        suppressSave = true;
+        state.safras = normalizarEstruturaSafras(remote);
+        clearUndoHistory();
+        if(!state.safras[state.safraAtual]) state.safraAtual = Object.keys(state.safras)[0];
+        render();
+        suppressSave = false;
+        setSyncStatus('🟢 Sincronizado', 'ok');
+      }, err=>{ console.error(err); setSyncStatus('🔴 Sem conexão', 'err'); });
+    }).catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao conectar', 'err'); });
+  }catch(err){
+    console.error(err);
+    setSyncStatus('🔴 Erro na configuração', 'err');
+  }
+}
+function scheduleSave(immediate=false){
+  if(!firebaseReady || suppressSave || !docRef) return;
+  setSyncStatus('🟡 Salvando...', 'local');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    docRef.set({safras: JSON.parse(JSON.stringify(state.safras))})
+      .then(()=> setSyncStatus('🟢 Sincronizado', 'ok'))
+      .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao salvar', 'err'); });
+  }, immediate ? 0 : 600);
+}
+
+function fmt(n, dec=2){ return Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:dec, maximumFractionDigits:dec}); }
+function fmtR(n){ return "R$ " + fmt(n,2); }
+function fmtPct(n){ return fmt((n||0)*100,1) + "%"; }
+function esc(v){ return (v===undefined||v===null) ? "" : String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+function pctToFraction(percentVal){ const p = Number(percentVal)||0; return Math.round(p*100)/10000; }
+function fractionToPercentDisplay(frac){ return Math.round((frac||0)*10000)/100; }
+
+// tabela: filtros (estilo excel) + ordenação
+let tableState = JSON.parse(localStorage.getItem('app-nelore-mra-custos-tableState') || '{}', (k,v)=>v&&v.__set?new Set(v.__set):v);
+window.addEventListener('pagehide',()=>localStorage.setItem('app-nelore-mra-custos-tableState',JSON.stringify(tableState,(k,v)=>v instanceof Set?{__set:[...v]}:v)));
+let tableRegistry = {};
+let openFilterPanel = null;
+
+// =================== NAVEGAÇÃO ===================
+function setPage(p){ if(!paginaPermitida(p)) p = primeiraPaginaPermitida(); currentPage = p; document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.page===p)); render(); }
+document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click', ()=>setPage(b.dataset.page)));
+
+function refreshSafraSelector(){
+  const sel = document.getElementById('safra-selector');
+  sel.innerHTML = Object.keys(state.safras).map(k=>`<option value="${k}" ${k===state.safraAtual?'selected':''}>${esc(state.safras[k].nome)}</option>`).join('');
+}
+document.getElementById('safra-selector').addEventListener('change', e=>{ state.safraAtual = e.target.value; localStorage.setItem('app-nelore-mra-custos-safraAtual',state.safraAtual); render(); });
+
+function render(){
+  closeFilterMenu();
+  limparSelecaoExcel();
+  const main = document.getElementById('main');
+  if(perfilDiesel && !paginaDiesel(currentPage)) currentPage = 'diesel-controle';
+  if(!paginaPermitida(currentPage)) currentPage = primeiraPaginaPermitida();
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.page===currentPage));
+  document.body.classList.toggle('pagina-diesel', paginaDiesel(currentPage));
+  if(paginaDiesel(currentPage)){
+    main.innerHTML = pageDiesel();
+    bindStaticEvents();
+    if(!perfilDiesel){ refreshSafraSelector(); scheduleSave(); }
+    return;
+  }
+  refreshSafraSelector();
+  if(currentPage==="dashboard") main.innerHTML = pageDashboard();
+  else if(currentPage==="colheita") main.innerHTML = pageColheita();
+  else if(currentPage==="adiantamentos") main.innerHTML = pageAdiantamentos();
+  else if(currentPage==="vendas") main.innerHTML = pageVendas();
+  else if(currentPage==="cadastros") main.innerHTML = pageCadastros();
+  else if(currentPage==="safras") main.innerHTML = pageSafras();
+  bindStaticEvents();
+  scheduleSave();
+}
+
+// =================== DERIVED ===================
+function colheitaDerived(r){
+  const sacasBrutas = (r.pesoBruto||0)/60;
+  const totalFrete = sacasBrutas*(r.vlSaca||0);
+  const sacasLiquidas = (r.saldoLiquido||0)/60;
+  const pctDesconto = r.pesoBruto ? (r.pesoBruto-r.saldoLiquido)/r.pesoBruto : 0;
+  return {sacasBrutas, totalFrete, sacasLiquidas, pctDesconto};
+}
+function vendaDerived(r){
+  const sacasVendidas = (r.pesoVendido||0)/60;
+  const totalVenda = sacasVendidas*(r.vlSaca||0);
+  return {sacasVendidas, totalVenda};
+}
+
+
+function dashboardRows(tableKey, rows, columns){
+  tableState[tableKey] = tableState[tableKey] || {colFilters:{}, sortKey:null, sortDir:1};
+  const cfg = {tableKey, rows, columns, computeDerived:r=>r};
+  tableRegistry[tableKey] = cfg;
+  return computeVisibleRows(cfg);
+}
+function dashboardTh(tableKey, key, label, extraStyle=''){
+  const ts = tableState[tableKey] || {colFilters:{}, sortKey:null, sortDir:1};
+  const active = ts.colFilters[key] || ts.sortKey===key;
+  const arrow = ts.sortKey===key ? (ts.sortDir>0?' ▲':' ▼') : '';
+  return `<th style="padding:0;${extraStyle}"><div class="th-flex"><span>${label}${arrow}</span><button class="th-filter-btn ${active?'active':''}" onclick="toggleFilterMenu('${tableKey}','${key}', this)">▾</button></div></th>`;
+}
+
+// =================== DASHBOARD ===================
+function pageDashboard(){
+  const s = S();
+  const areaTotal = s.talhoes.filter(t=>t.plantado).reduce((sum,t)=>sum+Number(t.area||0),0);
+  const pesoBruto = s.colheita.reduce((sum,c)=>sum+Number(c.pesoBruto||0),0);
+  const pesoLiquido = s.colheita.reduce((sum,c)=>sum+Number(c.saldoLiquido||0),0);
+  const sacasLiq = s.colheita.reduce((sum,c)=>sum+colheitaDerived(c).sacasLiquidas,0);
+  const scHa = areaTotal ? sacasLiq/areaTotal : 0;
+  const pctDescontoMedio = pesoBruto ? (pesoBruto-pesoLiquido)/pesoBruto : 0;
+  const umidadeMedia = s.colheita.length ? s.colheita.reduce((sum,c)=>sum+Number(c.umidade||0),0)/s.colheita.length : 0;
+  const sacasPerdidas = (pesoBruto-pesoLiquido)/60;
+  const vendidoTotal = s.vendas.reduce((sum,v)=>sum+vendaDerived(v).sacasVendidas,0);
+  const saldoVender = sacasLiq - vendidoTotal;
+  const pctJaVendido = sacasLiq ? vendidoTotal/sacasLiq : 0;
+  const faturamento = s.vendas.reduce((sum,v)=>sum+vendaDerived(v).totalVenda,0);
+  const precoMedio = vendidoTotal ? faturamento/vendidoTotal : 0;
+
+  const porTalhao = {};
+  s.colheita.forEach(c=>{
+    if(!porTalhao[c.talhao]) porTalhao[c.talhao]={sacas:0, cargas:0, pesoBruto:0, pesoLiquido:0, umidadeSum:0};
+    const d = colheitaDerived(c);
+    porTalhao[c.talhao].sacas += d.sacasLiquidas;
+    porTalhao[c.talhao].cargas += 1;
+    porTalhao[c.talhao].pesoBruto += Number(c.pesoBruto||0);
+    porTalhao[c.talhao].pesoLiquido += Number(c.saldoLiquido||0);
+    porTalhao[c.talhao].umidadeSum += Number(c.umidade||0);
+  });
+  const talhaoRows = Object.keys(porTalhao).map(t=>{
+    const areaT = (s.talhoes.find(x=>x.talhao===t)||{}).area || 0;
+    const p = porTalhao[t];
+    return {
+      talhao:t, area:areaT, cargas:p.cargas, sacas:p.sacas, scha: areaT? p.sacas/areaT : 0,
+      sacasPerdidas: (p.pesoBruto-p.pesoLiquido)/60, umidadeMed: p.cargas? p.umidadeSum/p.cargas : 0,
+    };
+  });
+  const talhaoVisibleRows = dashboardRows('dash-talhao', talhaoRows, [
+    {key:'talhao',label:'Talhão',type:'text'},{key:'area',label:'Área (ha)',type:'number'},{key:'cargas',label:'Cargas',type:'number'},
+    {key:'sacas',label:'Sacas líq.',type:'number'},{key:'scha',label:'Sc/ha',type:'number'},{key:'sacasPerdidas',label:'Sacas perdidas',type:'number'},{key:'umidadeMed',label:'Umidade méd.',type:'pct'}
+  ]);
+  const talhaoTotais = talhaoVisibleRows.reduce((acc,r)=>({
+    area:acc.area+Number(r.area||0), cargas:acc.cargas+Number(r.cargas||0), sacas:acc.sacas+Number(r.sacas||0),
+    sacasPerdidas:acc.sacasPerdidas+Number(r.sacasPerdidas||0), umidadePeso:acc.umidadePeso+Number(r.umidadeMed||0)*Number(r.cargas||0)
+  }),{area:0,cargas:0,sacas:0,sacasPerdidas:0,umidadePeso:0});
+  const talhaoScHa = talhaoTotais.area ? talhaoTotais.sacas/talhaoTotais.area : 0;
+  const talhaoUmidadeMedia = talhaoTotais.cargas ? talhaoTotais.umidadePeso/talhaoTotais.cargas : 0;
+  const maxTalhaoScHa = Math.max(1, ...talhaoVisibleRows.map(r=>Number(r.scha||0)));
+
+  const porVariedade = {};
+  s.colheita.forEach(c=>{
+    const variedade = String(c.variedade||'').trim();
+    if(!variedade) return;
+    if(!porVariedade[variedade]) porVariedade[variedade]={sacas:0,pesoBruto:0,pesoLiquido:0,umidadeSum:0,cargas:0,talhoes:new Set()};
+    const d = colheitaDerived(c);
+    const p = porVariedade[variedade];
+    p.sacas += d.sacasLiquidas;
+    p.pesoBruto += Number(c.pesoBruto||0);
+    p.pesoLiquido += Number(c.saldoLiquido||0);
+    p.umidadeSum += Number(c.umidade||0);
+    p.cargas += 1;
+    if(c.talhao) p.talhoes.add(c.talhao);
+  });
+  const variedadeRows = Object.entries(porVariedade).map(([variedade,p])=>{
+    const area = s.talhoes
+      .filter(t=>p.talhoes.has(t.talhao) && [t.variedade,t.variedade2].map(x=>String(x||'').trim()).includes(variedade))
+      .reduce((sum,t)=>sum+Number(t.area||0),0);
+    return {
+      variedade, area, sacas:p.sacas, scha:area?p.sacas/area:0,
+      sacasPerdidas:(p.pesoBruto-p.pesoLiquido)/60,
+      umidadeMed:p.cargas?p.umidadeSum/p.cargas:0, cargas:p.cargas
+    };
+  }).sort((a,b)=>a.variedade.localeCompare(b.variedade,'pt-BR'));
+  const variedadeVisibleRows = dashboardRows('dash-variedade', variedadeRows, [
+    {key:'variedade',label:'Variedade',type:'text'},{key:'area',label:'Área (ha)',type:'number'},{key:'sacas',label:'Sacas líq.',type:'number'},
+    {key:'scha',label:'Sc / ha',type:'number'},{key:'sacasPerdidas',label:'Sacas perdidas',type:'number'},{key:'umidadeMed',label:'Umidade méd.',type:'pct'}
+  ]);
+  const variedadeTotais = variedadeVisibleRows.reduce((acc,r)=>({
+    area:acc.area+Number(r.area||0),sacas:acc.sacas+Number(r.sacas||0),sacasPerdidas:acc.sacasPerdidas+Number(r.sacasPerdidas||0),
+    cargas:acc.cargas+Number(r.cargas||0),umidadePeso:acc.umidadePeso+Number(r.umidadeMed||0)*Number(r.cargas||0)
+  }),{area:0,sacas:0,sacasPerdidas:0,cargas:0,umidadePeso:0});
+  const variedadeScHa = variedadeTotais.area ? variedadeTotais.sacas/variedadeTotais.area : 0;
+  const variedadeUmidadeMedia = variedadeTotais.cargas ? variedadeTotais.umidadePeso/variedadeTotais.cargas : 0;
+
+  const freteMotorista = s.motoristas.map(mot=>{
+    const cargas = s.colheita.filter(c=>c.motorista===mot);
+    const totalFrete = cargas.reduce((sum,c)=>sum+colheitaDerived(c).totalFrete,0);
+    const adiantado = s.adiantamentos.filter(a=>a.motorista===mot).reduce((sum,a)=>sum+Number(a.valor||0),0);
+    return {mot, cargas: cargas.length, totalFrete, adiantado, aPagar: totalFrete-adiantado};
+  }).filter(r=>r.cargas>0 || r.adiantado>0);
+  const freteVisibleRows = dashboardRows('dash-frete', freteMotorista, [
+    {key:'mot',label:'Motorista',type:'text'},{key:'cargas',label:'Cargas',type:'number'},{key:'totalFrete',label:'Total Frete',type:'money'},
+    {key:'adiantado',label:'Adiantado',type:'money'},{key:'aPagar',label:'A Pagar',type:'money'}
+  ]);
+  const freteTotais = freteVisibleRows.reduce((acc,r)=>({
+    cargas:acc.cargas+Number(r.cargas||0), totalFrete:acc.totalFrete+Number(r.totalFrete||0),
+    adiantado:acc.adiantado+Number(r.adiantado||0), aPagar:acc.aPagar+Number(r.aPagar||0)
+  }),{cargas:0,totalFrete:0,adiantado:0,aPagar:0});
+
+  const entregasLocal = s.locais.map(local=>{
+    const cargasLocal = s.colheita.filter(c=>c.local===local);
+    const pesoLiq = cargasLocal.reduce((sum,c)=>sum+Number(c.saldoLiquido||0),0);
+    const sacasLiqLocal = cargasLocal.reduce((sum,c)=>sum+colheitaDerived(c).sacasLiquidas,0);
+    const vendidasLocal = s.vendas.filter(v=>v.local===local).reduce((sum,v)=>sum+vendaDerived(v).sacasVendidas,0);
+    const fatLocal = s.vendas.filter(v=>v.local===local).reduce((sum,v)=>sum+vendaDerived(v).totalVenda,0);
+    return {
+      local, cargas: cargasLocal.length, pesoLiq, sacasLiqLocal, vendidasLocal,
+      saldo: sacasLiqLocal-vendidasLocal, pctVendida: sacasLiqLocal? vendidasLocal/sacasLiqLocal : 0,
+      precoMedioLocal: vendidasLocal? fatLocal/vendidasLocal : 0,
+    };
+  }).filter(r=>r.cargas>0 || r.vendidasLocal>0);
+  const entregasVisibleRows = dashboardRows('dash-entregas', entregasLocal, [
+    {key:'local',label:'Local - Silo',type:'text'},{key:'cargas',label:'Cargas',type:'number'},{key:'pesoLiq',label:'Peso Líq. (kg)',type:'number'},
+    {key:'sacasLiqLocal',label:'Sacas (60kg)',type:'number'},{key:'vendidasLocal',label:'Sacas Vendidas',type:'number'},{key:'saldo',label:'Saldo a Vender',type:'number'},
+    {key:'pctVendida',label:'% Vendida',type:'pct'},{key:'precoMedioLocal',label:'Preço Médio',type:'money'}
+  ]);
+  const entregasTotais = entregasVisibleRows.reduce((acc,r)=>({
+    cargas:acc.cargas+Number(r.cargas||0), pesoLiq:acc.pesoLiq+Number(r.pesoLiq||0),
+    sacasLiqLocal:acc.sacasLiqLocal+Number(r.sacasLiqLocal||0), vendidasLocal:acc.vendidasLocal+Number(r.vendidasLocal||0),
+    saldo:acc.saldo+Number(r.saldo||0), faturamento:acc.faturamento+Number(r.precoMedioLocal||0)*Number(r.vendidasLocal||0)
+  }),{cargas:0,pesoLiq:0,sacasLiqLocal:0,vendidasLocal:0,saldo:0,faturamento:0});
+  const entregasPctVendida = entregasTotais.sacasLiqLocal ? entregasTotais.vendidasLocal/entregasTotais.sacasLiqLocal : 0;
+  const entregasPrecoMedio = entregasTotais.vendidasLocal ? entregasTotais.faturamento/entregasTotais.vendidasLocal : 0;
+
+  return `
+    <div class="toolbar no-print" style="justify-content:flex-end;">
+      <button class="secondary" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="secondary" onclick="exportSafraCompleta()">⬇️ Exportar safra (Excel)</button>
+    </div>
+    <h2>📊 Dashboard</h2>
+    <div class="caption">${esc(s.propriedade)} · Safra ${esc(s.nome)} <span class="badge">${esc(s.cultura)}</span></div>
+
+    <p class="section-title">Indicadores da safra</p>
+    <div class="metrics cols-4">
+      <div class="metric"><div class="val">${fmt(areaTotal)}</div><div class="lbl">Área plantada (ha)</div></div>
+      <div class="metric"><div class="val">${fmt(pesoBruto,0)}</div><div class="lbl">Peso bruto (kg)</div></div>
+      <div class="metric"><div class="val">${fmt(pesoLiquido,0)}</div><div class="lbl">Peso líquido (kg)</div></div>
+      <div class="metric"><div class="val">${fmt(sacasLiq)}</div><div class="lbl">Sacas líquidas (60kg)</div></div>
+      <div class="metric"><div class="val">${fmt(scHa)}</div><div class="lbl">Sc / ha</div></div>
+      <div class="metric"><div class="val">${fmtPct(pctDescontoMedio)}</div><div class="lbl">% desconto médio</div></div>
+      <div class="metric"><div class="val">${fmtPct(umidadeMedia)}</div><div class="lbl">Umidade média</div></div>
+      <div class="metric"><div class="val text-red">${fmt(sacasPerdidas)}</div><div class="lbl">Sacas perdidas</div></div>
+      <div class="metric"><div class="val">${fmt(saldoVender)}</div><div class="lbl">Saldo a vender (sc)</div></div>
+      <div class="metric"><div class="val">${fmtPct(pctJaVendido)}</div><div class="lbl">% já vendido</div></div>
+      <div class="metric"><div class="val">${fmtR(precoMedio)}</div><div class="lbl">Preço médio (R$/sc)</div></div>
+      <div class="metric"><div class="val">${fmtR(faturamento)}</div><div class="lbl">Faturamento (R$)</div></div>
+    </div>
+
+    <div class="panel">
+      <p class="section-title">Produção por talhão</p>
+      ${talhaoRows.length ? `
+        <div class="table-wrap"><table style="min-width:900px;">
+          <tr>${dashboardTh('dash-talhao','talhao','Talhão')}${dashboardTh('dash-talhao','area','Área (ha)')}${dashboardTh('dash-talhao','cargas','Cargas')}${dashboardTh('dash-talhao','sacas','Sacas líq.')}${dashboardTh('dash-talhao','scha','Sc/ha')}${dashboardTh('dash-talhao','sacasPerdidas','Sacas perdidas','color:var(--alert);')}${dashboardTh('dash-talhao','umidadeMed','Umidade méd.')}<th style="padding:8px 10px; white-space:nowrap;">Produtividade (Sc/ha)</th></tr>
+          ${talhaoVisibleRows.map(r=>`<tr>
+            <td class="readonly">${esc(r.talhao)}</td><td class="readonly">${fmt(r.area)}</td><td class="readonly">${r.cargas}</td>
+            <td class="readonly">${fmt(r.sacas)}</td><td class="readonly">${fmt(r.scha)}</td><td class="readonly text-red">${fmt(r.sacasPerdidas)}</td><td class="readonly">${fmtPct(r.umidadeMed)}</td>
+            <td class="readonly" style="width:190px;"><div title="${fmt(r.scha,1)} Sc/ha" style="background:var(--wheat); height:10px; border-radius:4px; width:${Math.max(0,Math.min(100,(Number(r.scha||0)/maxTalhaoScHa)*100)).toFixed(1)}%;"></div></td>
+          </tr>`).join('')}
+          <tr style="font-weight:700; border-top:2px solid var(--green-dark);"><td class="readonly"><strong>TOTAL</strong></td><td class="readonly"><strong>${fmt(talhaoTotais.area)}</strong></td><td class="readonly"><strong>${talhaoTotais.cargas}</strong></td><td class="readonly"><strong>${fmt(talhaoTotais.sacas)}</strong></td><td class="readonly"><strong>${fmt(talhaoScHa,1)}</strong></td><td class="readonly text-red"><strong>${fmt(talhaoTotais.sacasPerdidas,1)}</strong></td><td class="readonly"><strong>${fmtPct(talhaoUmidadeMedia)}</strong></td><td class="readonly"><strong>${fmt(talhaoScHa,1)} Sc/ha</strong></td></tr>
+        </table></div>
+      ` : `<div class="empty">Lance colheitas para ver a produção por talhão.</div>`}
+    </div>
+
+    <div class="panel">
+      <p class="section-title">Produção por variedade</p>
+      ${variedadeRows.length ? `
+        <div class="table-wrap"><table style="min-width:760px;">
+          <tr>${dashboardTh('dash-variedade','variedade','Variedade')}${dashboardTh('dash-variedade','area','Área (ha)')}${dashboardTh('dash-variedade','sacas','Sacas líq.')}${dashboardTh('dash-variedade','scha','Sc / ha')}${dashboardTh('dash-variedade','sacasPerdidas','Sacas perdidas','color:var(--alert);')}${dashboardTh('dash-variedade','umidadeMed','Umidade méd.')}</tr>
+          ${variedadeVisibleRows.map(r=>`<tr><td class="readonly">${esc(r.variedade)}</td><td class="readonly">${fmt(r.area)}</td><td class="readonly">${fmt(r.sacas)}</td><td class="readonly"><strong>${fmt(r.scha,1)}</strong></td><td class="readonly text-red">${fmt(r.sacasPerdidas,1)}</td><td class="readonly"><strong>${fmtPct(r.umidadeMed)}</strong></td></tr>`).join('')}
+          <tr style="font-weight:700; border-top:2px solid var(--green-dark);"><td class="readonly"><strong>TOTAL</strong></td><td class="readonly"><strong>${fmt(variedadeTotais.area)}</strong></td><td class="readonly"><strong>${fmt(variedadeTotais.sacas)}</strong></td><td class="readonly"><strong>${fmt(variedadeScHa,1)}</strong></td><td class="readonly text-red"><strong>${fmt(variedadeTotais.sacasPerdidas,1)}</strong></td><td class="readonly"><strong>${fmtPct(variedadeUmidadeMedia)}</strong></td></tr>
+        </table></div>
+      ` : `<div class="empty">Cadastre a variedade nos talhões e/ou na colheita para ver a produção por variedade.</div>`}
+    </div>
+
+    ${freteMotorista.length ? `
+    <div class="panel">
+      <p class="section-title">Frete por motorista</p>
+      <div class="table-wrap"><table style="min-width:700px;">
+        <tr>${dashboardTh('dash-frete','mot','Motorista')}${dashboardTh('dash-frete','cargas','Cargas')}${dashboardTh('dash-frete','totalFrete','Total Frete')}${dashboardTh('dash-frete','adiantado','Adiantado')}${dashboardTh('dash-frete','aPagar','A Pagar')}</tr>
+        ${freteVisibleRows.map(r=>`<tr><td class="readonly">${esc(r.mot)}</td><td class="readonly">${r.cargas}</td><td class="readonly">${fmtR(r.totalFrete)}</td><td class="readonly">${fmtR(r.adiantado)}</td><td class="readonly text-red">${fmtR(r.aPagar)}</td></tr>`).join('')}
+        <tr style="font-weight:700; border-top:2px solid var(--green-dark);"><td class="readonly"><strong>TOTAL</strong></td><td class="readonly"><strong>${freteTotais.cargas}</strong></td><td class="readonly"><strong>${fmtR(freteTotais.totalFrete)}</strong></td><td class="readonly"><strong>${fmtR(freteTotais.adiantado)}</strong></td><td class="readonly text-red"><strong>${fmtR(freteTotais.aPagar)}</strong></td></tr>
+      </table></div>
+    </div>` : ''}
+
+    ${entregasLocal.length ? `
+    <div class="panel">
+      <p class="section-title">Entregas e vendas por local</p>
+      <div class="table-wrap"><table style="min-width:900px;">
+        <tr>${dashboardTh('dash-entregas','local','Local - Silo')}${dashboardTh('dash-entregas','cargas','Cargas')}${dashboardTh('dash-entregas','pesoLiq','Peso Líq. (kg)')}${dashboardTh('dash-entregas','sacasLiqLocal','Sacas (60kg)')}${dashboardTh('dash-entregas','vendidasLocal','Sacas Vendidas')}${dashboardTh('dash-entregas','saldo','Saldo a Vender')}${dashboardTh('dash-entregas','pctVendida','% Vendida')}${dashboardTh('dash-entregas','precoMedioLocal','Preço Médio')}</tr>
+        ${entregasVisibleRows.map(r=>`<tr><td class="readonly">${esc(r.local)}</td><td class="readonly">${r.cargas}</td><td class="readonly">${fmt(r.pesoLiq,0)}</td><td class="readonly">${fmt(r.sacasLiqLocal)}</td><td class="readonly">${fmt(r.vendidasLocal)}</td><td class="readonly">${fmt(r.saldo)}</td><td class="readonly">${fmtPct(r.pctVendida)}</td><td class="readonly">${fmtR(r.precoMedioLocal)}</td></tr>`).join('')}
+        <tr style="font-weight:700; border-top:2px solid var(--green-dark);"><td class="readonly"><strong>TOTAL</strong></td><td class="readonly"><strong>${entregasTotais.cargas}</strong></td><td class="readonly"><strong>${fmt(entregasTotais.pesoLiq,0)}</strong></td><td class="readonly"><strong>${fmt(entregasTotais.sacasLiqLocal)}</strong></td><td class="readonly"><strong>${fmt(entregasTotais.vendidasLocal)}</strong></td><td class="readonly"><strong>${fmt(entregasTotais.saldo)}</strong></td><td class="readonly"><strong>${fmtPct(entregasPctVendida)}</strong></td><td class="readonly"><strong>${fmtR(entregasPrecoMedio)}</strong></td></tr>
+      </table></div>
+    </div>` : ''}
+  `;
+}
+
+// =================== FILTRO ESTILO EXCEL ===================
+function displayValueForFilter(cfg, row, key){
+  const col = cfg.columns.find(c=>c.key===key);
+  let v = col.derived ? cfg.computeDerived(row)[key] : row[key];
+  if(col.type==='pct') v = fmtPct(v);
+  else if(col.type==='money') v = fmtR(v);
+  else if(col.type==='pctinput') v = fmtPct(v);
+  else if(col.type==='date') v = v ? fmtData(v) || v : '(vazio)';
+  else if(v===undefined||v===null||v==='') v = '(vazio)';
+  return String(v);
+}
+function getFilteredRows(cfg, excludeKey){
+  let rows = cfg.rows.slice();
+  const ts = tableState[cfg.tableKey];
+  Object.entries(ts.colFilters||{}).forEach(([key,set])=>{
+    if(key===excludeKey || !set) return;
+    rows = rows.filter(r=> set.has(displayValueForFilter(cfg,r,key)));
+  });
+  return rows;
+}
+function computeVisibleRows(cfg){
+  const ts = tableState[cfg.tableKey];
+  let rows = getFilteredRows(cfg, null);
+  if(ts.sortKey){
+    const col = cfg.columns.find(c=>c.key===ts.sortKey);
+    rows.sort((a,b)=>{
+      let va = col.derived ? cfg.computeDerived(a)[ts.sortKey] : a[ts.sortKey];
+      let vb = col.derived ? cfg.computeDerived(b)[ts.sortKey] : b[ts.sortKey];
+      if(typeof va === 'string' || typeof vb === 'string') return String(va||'').localeCompare(String(vb||''),'pt')*ts.sortDir;
+      return ((va||0)-(vb||0))*ts.sortDir;
+    });
+  }
+  return rows;
+}
+function closeFilterMenu(){
+  if(openFilterPanel){
+    openFilterPanel.panel.remove();
+    document.removeEventListener('click', outsideFilterClick, {capture:true});
+    openFilterPanel = null;
+  }
+}
+function outsideFilterClick(e){
+  if(openFilterPanel && !openFilterPanel.panel.contains(e.target) && !e.target.classList.contains('th-filter-btn')){
+    closeFilterMenu();
+  }
+}
+function toggleFilterMenu(tableKey, colKey, btnEl){
+  if(openFilterPanel && openFilterPanel.tableKey===tableKey && openFilterPanel.colKey===colKey){ closeFilterMenu(); return; }
+  closeFilterMenu();
+  const cfg = tableRegistry[tableKey];
+  const ts = tableState[tableKey];
+  const rows = getFilteredRows(cfg, colKey);
+  const uniqueVals = Array.from(new Set(rows.map(r=>displayValueForFilter(cfg,r,colKey)))).sort((a,b)=>String(a).localeCompare(String(b),'pt',{numeric:true}));
+  const activeSet = ts.colFilters[colKey];
+  const panel = document.createElement('div');
+  panel.className='filter-panel';
+  panel.addEventListener('click', e=>e.stopPropagation());
+  panel.innerHTML = `
+    <div class="fp-sort-row">
+      <button class="fp-btn" data-act="sort-asc">A→Z ▲</button>
+      <button class="fp-btn" data-act="sort-desc">Z→A ▼</button>
+    </div>
+    <input type="text" class="fp-search" placeholder="Buscar...">
+    <label class="fp-item fp-all"><input type="checkbox" class="fp-all-cb" ${!activeSet?'checked':''}> Selecionar tudo</label>
+    <div class="fp-list">
+      ${uniqueVals.map(v=>`<label class="fp-item"><input type="checkbox" class="fp-item-cb" value="${esc(v)}" ${(!activeSet || activeSet.has(v))?'checked':''}> ${esc(v)}</label>`).join('')}
+    </div>
+    <div class="fp-actions">
+      <button class="ghost" data-act="clear">Limpar filtro</button>
+      <button class="secondary" data-act="apply">OK</button>
+    </div>
+  `;
+  document.body.appendChild(panel);
+  const rect = btnEl.getBoundingClientRect();
+  const panelWidth = Math.min(230, window.innerWidth - 16);
+  panel.style.width = panelWidth + 'px';
+  let left = rect.right - panelWidth;
+  left = Math.max(8, Math.min(left, window.innerWidth - panelWidth - 8));
+  let top = rect.bottom + 6;
+  panel.style.left = left + 'px';
+  panel.style.top = top + 'px';
+  // Se não couber abaixo, abre acima do cabeçalho.
+  requestAnimationFrame(()=>{
+    const ph = panel.offsetHeight;
+    if(top + ph > window.innerHeight - 8){
+      top = Math.max(8, rect.top - ph - 6);
+      panel.style.top = top + 'px';
+    }
+  });
+  openFilterPanel = {tableKey,colKey,panel};
+
+  panel.querySelector('[data-act="sort-asc"]').addEventListener('click', ()=>{ ts.sortKey=colKey; ts.sortDir=1; render(); });
+  panel.querySelector('[data-act="sort-desc"]').addEventListener('click', ()=>{ ts.sortKey=colKey; ts.sortDir=-1; render(); });
+  panel.querySelector('.fp-search').addEventListener('input', e=>{
+    const q = e.target.value.toLowerCase();
+    panel.querySelectorAll('.fp-item:not(.fp-all)').forEach(lab=>{
+      lab.style.display = lab.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+  panel.querySelector('.fp-all-cb').addEventListener('change', e=>{
+    panel.querySelectorAll('.fp-item-cb').forEach(cb=>cb.checked = e.target.checked);
+  });
+  panel.querySelector('[data-act="clear"]').addEventListener('click', ()=>{
+    ts.colFilters[colKey] = null;
+    render();
+  });
+  panel.querySelector('[data-act="apply"]').addEventListener('click', ()=>{
+    const checked = Array.from(panel.querySelectorAll('.fp-item-cb:checked')).map(cb=>cb.value);
+    if(checked.length===uniqueVals.length){ ts.colFilters[colKey] = null; }
+    else { ts.colFilters[colKey] = new Set(checked); }
+    render();
+  });
+  setTimeout(()=>document.addEventListener('click', outsideFilterClick, {capture:true}), 0);
+}
+
+// =================== TABELA GENÉRICA (excel-like) ===================
+function renderTablePage(cfg){
+  tableState[cfg.tableKey] = tableState[cfg.tableKey] || {colFilters:{}, sortKey:null, sortDir:1};
+  tableRegistry[cfg.tableKey] = cfg;
+  const ts = tableState[cfg.tableKey];
+
+  const excel = !!cfg.larguras;
+  const theadCols = cfg.columns.map(c=>{
+    const active = ts.colFilters[c.key] || ts.sortKey===c.key;
+    const arrow = ts.sortKey===c.key ? (ts.sortDir>0?' ▲':' ▼') : '';
+    const resizer = excel ? `<span class="col-resizer no-print" title="Arraste para mudar a largura (duplo clique volta ao padrão)" onpointerdown="iniciarResizeColuna(event,'${cfg.tableKey}','${c.key}')" ondblclick="resetLarguraColuna('${cfg.tableKey}','${c.key}')"></span>` : '';
+    return `<th><div class="th-flex"><span>${c.label}${arrow}</span><button class="th-filter-btn ${active?'active':''}" onclick="toggleFilterMenu('${cfg.tableKey}','${c.key}', this)">▾</button></div>${resizer}</th>`;
+  }).join('') + '<th class="no-print"></th>';
+  const larg = excel ? larguraColunas(cfg) : null;
+  const colgroup = excel ? `<colgroup>${cfg.columns.map(c=>`<col data-key="${c.key}" style="width:${larg[c.key]}px">`).join('')}<col data-key="__acoes" style="width:44px"></colgroup>` : '';
+  const larguraTabela = excel ? Object.values(larg).reduce((a,b)=>a+b,0) + 44 : 0;
+  const estiloTabela = excel ? `style="width:${larguraTabela}px;"` : (cfg.minWidth?`style="min-width:${cfg.minWidth}px;"`:'');
+
+  return `
+    <h2>${cfg.title}</h2>
+    <div class="caption">${cfg.caption}</div>
+    ${cfg.formHtml || ''}
+    <div class="toolbar no-print">
+      ${cfg.semLinhaEmBranco ? '' : `<button class="secondary" onclick="addTableRow('${cfg.tableKey}')">+ Nova linha em branco</button>`}
+      <button class="secondary" onclick="exportTable('${cfg.tableKey}')">⬇️ Exportar Excel</button>
+      <button class="secondary" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+    ${cfg.metricsHtml || ''}
+    <div class="panel ${excel?'panel-excel':''}" style="padding:0;">
+      <div class="table-wrap">
+        <table id="tbl-${cfg.tableKey}" class="${excel?'tbl-excel sel-excel':''}" ${estiloTabela}>
+          ${colgroup}
+          <thead><tr>${theadCols}</tr></thead>
+          <tbody id="tbody-${cfg.tableKey}"></tbody>
+          ${cfg.totais ? `<tfoot id="tfoot-${cfg.tableKey}"></tfoot>` : ''}
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function tableCellHtml(cfg, row, idx, col){
+  if(col.derived){
+    const d = cfg.computeDerived(row);
+    const v = d[col.key];
+    let display;
+    if(col.type==='pct') display = fmtPct(v);
+    else if(col.type==='money') display = fmtR(v);
+    else if(col.type==='text') display = esc(v);
+    else display = fmt(v) + (col.unit ? ' '+col.unit : '');
+    const numerico = col.type!=='text';
+    return `<td class="readonly ${numerico?'td-num':''}" ${numerico?`data-num="${Number(v)||0}" data-unit="${col.type==='money'?'R$':col.type==='pct'?'%':esc(col.unit||'')}"`:''}>${display}</td>`;
+  }
+  if(col.type==='select'){
+    const optsList = col.optionsFn ? col.optionsFn(row) : [];
+    const opts = optsList.map(o=>`<option value="${esc(o)}" ${row[col.key]===o?'selected':''}>${esc(o)}</option>`).join('');
+    return `<td><select data-idx="${idx}" data-field="${col.key}" data-table="${cfg.tableKey}" onchange="onCellEdit(this,'${cfg.tableKey}')"><option value="">—</option>${opts}</select></td>`;
+  }
+  if(col.type==='date'){
+    return `<td><input type="date" data-idx="${idx}" data-field="${col.key}" data-table="${cfg.tableKey}" value="${esc(row[col.key])}" oninput="onCellEdit(this,'${cfg.tableKey}')"></td>`;
+  }
+  if(col.type==='pctinput'){
+    const v = fractionToPercentDisplay(row[col.key]);
+    return `<td><div class="cell-unit"><input type="number" step="0.1" data-idx="${idx}" data-field="${col.key}" data-table="${cfg.tableKey}" data-pct="1" value="${v}" oninput="onCellEdit(this,'${cfg.tableKey}')"><span>%</span></div></td>`;
+  }
+  if(col.type==='number'){
+  const unit = col.unit ? `<span>${col.unit}</span>` : '';
+  if(col.brDecimal){
+    const v = fmtNumInput(row[col.key]);
+    return `<td class="td-num" data-unit="${esc(col.unit||'')}"><div class="cell-unit cell-unit-junto"><input type="text" inputmode="decimal" data-br-dec="1" data-idx="${idx}" data-field="${col.key}" data-table="${cfg.tableKey}" value="${v}" style="width:${larguraInputNum(v)}" oninput="onCellEdit(this,'${cfg.tableKey}')" onchange="this.value=fmtNumInput(parseNumBR(this.value)); this.style.width=larguraInputNum(this.value)">${unit}</div></td>`;
+  }
+  if(col.brInteger){
+    const v = row[col.key]==='' || row[col.key]===undefined ? '' : Number(row[col.key]).toLocaleString('pt-BR',{maximumFractionDigits:0});
+    return `<td><div class="cell-unit"><input type="text" inputmode="numeric" data-br-int="1" data-idx="${idx}" data-field="${col.key}" data-table="${cfg.tableKey}" value="${v}" oninput="onCellEdit(this,'${cfg.tableKey}')">${unit}</div></td>`;
+  }
+  return `<td><div class="cell-unit"><input type="number" step="any" data-idx="${idx}" data-field="${col.key}" data-table="${cfg.tableKey}" value="${row[col.key]===undefined?'':row[col.key]}" oninput="onCellEdit(this,'${cfg.tableKey}')">${unit}</div></td>`;
+}
+  if(col.type==='checkbox'){
+    return `<td style="text-align:center; padding:7px 9px;"><input type="checkbox" style="width:auto;" data-idx="${idx}" data-field="${col.key}" data-table="${cfg.tableKey}" ${row[col.key]?'checked':''} onchange="onCellEditCheckbox(this,'${cfg.tableKey}')"></td>`;
+  }
+  return `<td><input type="text" data-idx="${idx}" data-field="${col.key}" data-table="${cfg.tableKey}" value="${esc(row[col.key])}" oninput="onCellEdit(this,'${cfg.tableKey}')"></td>`;
+}
+function onCellEditCheckbox(el, tableKey){
+  const cfg = tableRegistry[tableKey];
+  if(!cfg.onRowChange) recordUndo();
+  const idx = Number(el.dataset.idx);
+  const field = el.dataset.field;
+  const row = tableRowsVisible[tableKey][idx];
+  row[field] = el.checked;
+  if(cfg.onRowChange) cfg.onRowChange(row); else scheduleSave();
+}
+
+let tableRowsVisible = {};
+
+function renderTbody(tableKey){
+  const cfg = tableRegistry[tableKey];
+  const rows = computeVisibleRows(cfg);
+  tableRowsVisible[tableKey] = rows;
+  const tbody = document.getElementById('tbody-'+tableKey);
+  if(!tbody) return;
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="${cfg.columns.length+1}" class="empty">Nenhum registro encontrado (verifique os filtros) ou lance um novo registro acima.</td></tr>`;
+    atualizarTotaisTabela(tableKey);
+    return;
+  }
+  tbody.innerHTML = rows.map((row,idx)=>{
+    const cells = cfg.columns.map(col=>tableCellHtml(cfg, row, idx, col).replace('<td', `<td data-label="${esc(col.label)}"`)).join('');
+    return `<tr data-row-idx="${idx}">${cells}<td class="no-print td-acoes"><button class="ghost" onclick="deleteTableRow('${tableKey}', ${idx})">✕</button></td></tr>`;
+  }).join('');
+  atualizarTotaisTabela(tableKey);
+}
+
+// =================== TABELA ESTILO EXCEL: total, seleção e largura das colunas ===================
+function valorColuna(cfg, row, col){ return Number(col.derived ? (cfg.computeDerived(row)||{})[col.key] : row[col.key]) || 0; }
+function fmtTotalColuna(col, v){ return col.type==='money' ? fmtR(v) : fmt(v, col.decTotal ?? 1) + (col.unit ? ' '+col.unit : ''); }
+function atualizarTotaisTabela(tableKey){
+  const cfg = tableRegistry[tableKey];
+  if(!cfg) return;
+  const rows = tableRowsVisible[tableKey] || [];
+  const tfoot = document.getElementById('tfoot-'+tableKey);
+  if(tfoot && cfg.totais){
+    const filtrado = rows.length !== cfg.rows.length;
+    tfoot.innerHTML = `<tr class="linha-total">${cfg.columns.map((col,i)=>{
+      if(i===0) return `<td class="total-rotulo" data-label="TOTAL">TOTAL <small>(${rows.length} ${rows.length===1?'linha':'linhas'}${filtrado?', filtrado':''})</small></td>`;
+      if(cfg.totais.includes(col.key)) return `<td class="num" data-label="${esc(col.label)}">${fmtTotalColuna(col, rows.reduce((s,r)=>s+valorColuna(cfg,r,col),0))}</td>`;
+      return `<td class="vazio"></td>`;
+    }).join('')}<td class="no-print vazio"></td></tr>`;
+  }
+}
+// Números no padrão brasileiro dentro da célula (6.800 / 404,5) com a unidade colada.
+function fmtNumInput(n){ return (n===''||n===undefined||n===null||isNaN(Number(n))) ? '' : Number(n).toLocaleString('pt-BR',{maximumFractionDigits:2}); }
+function parseNumBR(v){
+  const t = String(v||'').replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.');
+  if(t===''||t==='-') return '';
+  const n = Number(t);
+  return isNaN(n) ? '' : n;
+}
+function larguraInputNum(v){ return `calc(${Math.max(2, String(v||'').length+1)}ch + 10px)`; }
+
+// Seleção de células estilo Excel: clicar e arrastar, Shift+clique (intervalo) ou
+// Ctrl+clique (células soltas). A barra mostra Média, Contagem e Soma.
+const selExcel = {table:null, anchor:null, cells:new Set(), arrastando:false};
+function gradeCelulas(table){
+  const tb = table.tBodies[0];
+  return tb ? [...tb.rows].map(tr=>[...tr.cells].filter(td=>!td.classList.contains('td-acoes') && !td.classList.contains('empty'))) : [];
+}
+function posCelula(table, td){
+  const g = gradeCelulas(table);
+  for(let r=0;r<g.length;r++){ const c = g[r].indexOf(td); if(c>-1) return {r,c}; }
+  return null;
+}
+function limparSelecaoExcel(){
+  selExcel.cells.forEach(td=>td.classList.remove('cel-sel'));
+  selExcel.cells.clear(); selExcel.table = null; selExcel.anchor = null; selExcel.arrastando = false;
+  atualizarBarraExcel();
+}
+function marcarIntervaloExcel(table, a, b){
+  selExcel.cells.forEach(td=>td.classList.remove('cel-sel'));
+  selExcel.cells.clear();
+  const g = gradeCelulas(table);
+  for(let r=Math.min(a.r,b.r); r<=Math.max(a.r,b.r); r++)
+    for(let c=Math.min(a.c,b.c); c<=Math.max(a.c,b.c); c++)
+      if(g[r] && g[r][c]){ g[r][c].classList.add('cel-sel'); selExcel.cells.add(g[r][c]); }
+  atualizarBarraExcel();
+}
+function valorCelulaExcel(td){
+  if(td.dataset.num!==undefined) return Number(td.dataset.num);
+  const dec = td.querySelector('input[data-br-dec]');
+  if(dec){ const v = parseNumBR(dec.value); return v==='' ? null : v; }
+  const n = td.querySelector('input[type=number]');
+  if(n && n.value!=='') return Number(n.value);
+  return null;
+}
+function celulaPreenchida(td){
+  const el = td.querySelector('input,select');
+  return el ? String(el.value||'').trim()!=='' : td.textContent.trim()!=='';
+}
+function atualizarBarraExcel(){
+  let barra = document.getElementById('barra-excel');
+  if(!barra){ barra = document.createElement('div'); barra.id='barra-excel'; barra.className='barra-excel no-print'; document.body.appendChild(barra); }
+  const cels = [...selExcel.cells].filter(td=>td.isConnected);
+  if(cels.length<2){ barra.classList.remove('ativa'); return; }
+  const nums = cels.map(valorCelulaExcel).filter(v=>v!==null);
+  const unidades = [...new Set(cels.filter(td=>valorCelulaExcel(td)!==null).map(td=>td.dataset.unit||''))];
+  const u = unidades.length===1 ? unidades[0] : '';
+  const f = v => u==='R$' ? fmtR(v) : u==='%' ? fmtPct(v) : fmt(v,2).replace(/,00$/,'') + (u?' '+u:'');
+  const soma = nums.reduce((a,b)=>a+b,0);
+  barra.innerHTML = nums.length
+    ? `<span>Média: <strong>${f(soma/nums.length)}</strong></span><span>Contagem: <strong>${cels.filter(celulaPreenchida).length}</strong></span><span>Soma: <strong>${f(soma)}</strong></span>`
+    : `<span>Contagem: <strong>${cels.filter(celulaPreenchida).length}</strong></span>`;
+  barra.classList.add('ativa');
+}
+document.addEventListener('mousedown', e=>{
+  if(e.button!==0) return;
+  const td = e.target.closest('table.sel-excel tbody td');
+  if(!td || td.classList.contains('td-acoes') || td.classList.contains('empty')){
+    if(selExcel.cells.size) limparSelecaoExcel();
+    return;
+  }
+  const table = td.closest('table');
+  const pos = posCelula(table, td);
+  if(!pos) return;
+  if(e.shiftKey && selExcel.table===table && selExcel.anchor){ e.preventDefault(); marcarIntervaloExcel(table, selExcel.anchor, pos); return; }
+  if((e.ctrlKey||e.metaKey) && selExcel.table===table){
+    e.preventDefault();
+    if(selExcel.cells.has(td)){ selExcel.cells.delete(td); td.classList.remove('cel-sel'); }
+    else { selExcel.cells.add(td); td.classList.add('cel-sel'); }
+    atualizarBarraExcel();
+    return;
+  }
+  limparSelecaoExcel();
+  selExcel.table = table; selExcel.anchor = pos; selExcel.arrastando = true;
+  selExcel.cells.add(td); td.classList.add('cel-sel');
+});
+document.addEventListener('mouseover', e=>{
+  if(!selExcel.arrastando || !selExcel.table) return;
+  const td = e.target.closest('td');
+  if(!td || td.closest('table')!==selExcel.table) return;
+  const pos = posCelula(selExcel.table, td);
+  if(!pos) return;
+  if(pos.r===selExcel.anchor.r && pos.c===selExcel.anchor.c && selExcel.cells.size<=1) return;
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  const s = window.getSelection && window.getSelection(); if(s) s.removeAllRanges();
+  marcarIntervaloExcel(selExcel.table, selExcel.anchor, pos);
+});
+document.addEventListener('mouseup', ()=>{ selExcel.arrastando = false; });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && selExcel.cells.size) limparSelecaoExcel(); });
+
+function lerLargurasSalvas(){ try{ return JSON.parse(localStorage.getItem('app-nelore-mra-custos-larguraColunas')||'{}'); }catch(e){ return {}; } }
+function larguraColunas(cfg){
+  const salvas = lerLargurasSalvas()[cfg.tableKey] || {};
+  const r = {};
+  cfg.columns.forEach(c=>{ r[c.key] = Number(salvas[c.key]) || cfg.larguras[c.key] || 120; });
+  return r;
+}
+function salvarLarguraColuna(tableKey, colKey, w){
+  const todas = lerLargurasSalvas();
+  todas[tableKey] = todas[tableKey] || {};
+  if(w===null) delete todas[tableKey][colKey]; else todas[tableKey][colKey] = w;
+  try{ localStorage.setItem('app-nelore-mra-custos-larguraColunas', JSON.stringify(todas)); }catch(e){}
+}
+function ajustarLarguraTabela(table){
+  table.style.width = [...table.querySelectorAll('col')].reduce((s,c)=>s+(parseFloat(c.style.width)||0),0) + 'px';
+}
+function iniciarResizeColuna(ev, tableKey, colKey){
+  ev.preventDefault(); ev.stopPropagation();
+  const table = document.getElementById('tbl-'+tableKey);
+  const col = table && table.querySelector(`col[data-key="${colKey}"]`);
+  if(!col) return;
+  const x0 = ev.clientX, w0 = parseFloat(col.style.width) || 120;
+  document.body.classList.add('redimensionando');
+  const mover = e=>{ col.style.width = Math.max(50, Math.round(w0 + e.clientX - x0)) + 'px'; ajustarLarguraTabela(table); };
+  const soltar = ()=>{
+    window.removeEventListener('pointermove', mover);
+    window.removeEventListener('pointerup', soltar);
+    document.body.classList.remove('redimensionando');
+    salvarLarguraColuna(tableKey, colKey, parseFloat(col.style.width));
+  };
+  window.addEventListener('pointermove', mover);
+  window.addEventListener('pointerup', soltar);
+}
+function resetLarguraColuna(tableKey, colKey){
+  const cfg = tableRegistry[tableKey];
+  salvarLarguraColuna(tableKey, colKey, null);
+  const col = document.querySelector(`#tbl-${tableKey} col[data-key="${colKey}"]`);
+  if(col && cfg){ col.style.width = (cfg.larguras[colKey]||120) + 'px'; ajustarLarguraTabela(col.closest('table')); }
+}
+
+function refreshDependentSelects(cfg, row, tr, changedField){
+  cfg.columns.forEach((col,ci)=>{
+    if(col.type!=='select' || col.dependsOn!==changedField) return;
+    const select = tr.children[ci] && tr.children[ci].querySelector('select');
+    if(!select) return;
+    const options = col.optionsFn ? col.optionsFn(row) : [];
+    let chosen = String(row[col.key]||'');
+    if(!options.includes(chosen)) chosen = options[0] || '';
+    row[col.key] = chosen;
+    select.innerHTML = `<option value="">—</option>` + options.map(o=>`<option value="${esc(o)}" ${o===chosen?'selected':''}>${esc(o)}</option>`).join('');
+  });
+}
+
+function onCellEdit(el, tableKey){
+  if(!tableRegistry[tableKey].onRowChange) recordUndo();
+  const idx = Number(el.dataset.idx);
+  const field = el.dataset.field;
+  const row = tableRowsVisible[tableKey][idx];
+  let val = el.value;
+
+if(el.dataset.brDec){
+  val = parseNumBR(val);
+  el.style.width = larguraInputNum(el.value);
+}
+else if(el.dataset.brInt){
+  const numeros = String(val).replace(/\D/g,'');
+  val = numeros==='' ? '' : Number(numeros);
+  el.value = numeros==='' ? '' : Number(numeros).toLocaleString('pt-BR');
+}
+else if(el.tagName==='INPUT' && el.type==='number'){
+  val = val==='' ? '' : Number(val);
+  if(el.dataset.pct) val = pctToFraction(val);
+}
+  row[field] = val;
+  const tr = el.closest('tr');
+  const cfg = tableRegistry[tableKey];
+  refreshDependentSelects(cfg, row, tr, field);
+  // autofill de campo dependente (ex: variedade sugerida a partir do talhão), só se o campo alvo estiver vazio
+  const editedCol = cfg.columns.find(c=>c.key===field);
+  if(editedCol && editedCol.autofillTarget && !row[editedCol.autofillTarget]){
+    const targetIdx = cfg.columns.findIndex(c=>c.key===editedCol.autofillTarget);
+    const newVal = editedCol.autofillFn(val);
+    if(newVal && targetIdx>-1){
+      row[editedCol.autofillTarget] = newVal;
+      const targetInput = tr.children[targetIdx].querySelector('input,select');
+      if(targetInput) targetInput.value = newVal;
+    }
+  }
+  cfg.columns.forEach((col,ci)=>{
+    if(col.derived){
+      const d = cfg.computeDerived(row);
+      const v = d[col.key];
+      let display;
+      if(col.type==='pct') display = fmtPct(v);
+      else if(col.type==='money') display = fmtR(v);
+      else if(col.type==='text') display = esc(v);
+      else display = fmt(v) + (col.unit ? ' '+col.unit : '');
+      tr.children[ci].textContent = display;
+      if(tr.children[ci].dataset.num!==undefined) tr.children[ci].dataset.num = Number(v)||0;
+    }
+  });
+  if(cfg.onRowChange) cfg.onRowChange(row); else scheduleSave();
+  if(cfg.totais) atualizarTotaisTabela(tableKey);
+  atualizarBarraExcel();
+}
+function addTableRow(tableKey){
+  const cfg = tableRegistry[tableKey];
+  if(!cfg.onRowChange) recordUndo();
+  const row = cfg.newRow();
+  cfg.rows.push(row);
+  if(cfg.onRowChange) cfg.onRowChange(row, true);
+  render();
+}
+function deleteTableRow(tableKey, idx){
+  const cfg = tableRegistry[tableKey];
+  const row = tableRowsVisible[tableKey][idx];
+  if(cfg.onRowDelete){
+    if(confirm('Excluir esta linha? Não dá pra desfazer.')) cfg.onRowDelete(row);
+    return;
+  }
+  recordUndo();
+  const realIdx = cfg.rows.indexOf(row);
+  if(realIdx>-1) cfg.rows.splice(realIdx,1);
+  render();
+}
+
+// =================== FORMULÁRIO DE INSERÇÃO (acima da tabela) ===================
+function renderAddForm(cfg){
+  const editableCols = cfg.columns.filter(c=>!c.derived);
+  const fields = editableCols.map(c=>{
+    const def = c.formDefault ? c.formDefault() : '';
+    if(c.type==='select'){
+      const optsList = c.optionsFn ? c.optionsFn(null) : [];
+      const opts = optsList.map(o=>`<option value="${esc(o)}" ${o===def?'selected':''}>${esc(o)}</option>`).join('');
+      return `<div><label>${c.label}</label><select name="${c.key}"><option value="">—</option>${opts}</select></div>`;
+    }
+    if(c.type==='date') return `<div><label>${c.label}</label><input type="date" name="${c.key}" value="${esc(def)}"></div>`;
+    if(c.type==='pctinput') return `<div><label>${c.label} (%)</label><input type="number" step="0.1" name="${c.key}" placeholder="Ex: 15,9"></div>`;
+    if(c.type==='number') return `<div><label>${c.label}${c.unit?` (${c.unit})`:''}</label><input type="number" step="any" inputmode="decimal" name="${c.key}" value="${esc(def)}"></div>`;
+    if(c.type==='checkbox') return `<div style="display:flex; align-items:flex-end; padding-bottom:8px;"><label style="display:flex; align-items:center; gap:6px; margin:0;"><input type="checkbox" name="${c.key}" style="width:auto;"> ${c.label}</label></div>`;
+    return `<div><label>${c.label}</label><input type="text" name="${c.key}" value="${esc(def)}"></div>`;
+  }).join('');
+  return `
+    <div class="panel">
+      <p class="section-title">${cfg.formTitle || 'Adicionar registro'}</p>
+      <div class="grid cols-3" id="addform-${cfg.tableKey}">${fields}</div>
+      <button class="primary" style="margin-top:14px;" onclick="submitAddForm('${cfg.tableKey}')" type="button">${cfg.formButton || 'Adicionar'}</button>
+    </div>
+  `;
+}
+function submitAddForm(tableKey){
+  const cfg = tableRegistry[tableKey];
+  const wrap = document.getElementById('addform-'+tableKey);
+  const row = {};
+  cfg.columns.filter(c=>!c.derived).forEach(c=>{
+    const el = wrap.querySelector(`[name="${c.key}"]`);
+    let v = c.type==='checkbox' ? (el ? el.checked : false) : (el ? el.value : '');
+    if(c.type==='number') v = v===''?0:Number(v);
+    if(c.type==='pctinput') v = pctToFraction(v);
+    row[c.key] = v;
+  });
+  if(cfg.validate){
+    const erro = cfg.validate(row);
+    if(erro){ alert(erro); return; }
+  }
+  if(cfg.prepareRow) cfg.prepareRow(row);
+  if(!cfg.onRowChange) recordUndo();
+  cfg.rows.push(row);
+  if(cfg.onRowChange) cfg.onRowChange(row, true);
+  if(cfg.afterAdd) cfg.afterAdd(row);
+  render();
+}
+
+// =================== EXPORTAR EXCEL (estilizado, via ExcelJS) ===================
+function styleSheet(ws, columns){
+  const header = ws.getRow(1);
+  header.eachCell(cell=>{
+    cell.font = {bold:true, color:{argb:'FFFFFFFF'}};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF4C6B3F'}};
+    cell.alignment = {vertical:'middle', horizontal:'center', wrapText:true};
+    cell.border = {bottom:{style:'thin'}, top:{style:'thin'}, left:{style:'thin'}, right:{style:'thin'}};
+  });
+  header.height = 26;
+  columns.forEach((c,i)=>{
+    const col = ws.getColumn(i+1);
+    col.width = Math.max(14, c.label.length+4);
+    if(c.type==='money') col.numFmt = '"R$" #,##0.00';
+    else if(c.type==='pct' || c.type==='pctinput') col.numFmt = '0.0%';
+    else if(c.type==='date') col.numFmt = 'dd/mm/yyyy';
+    else if(c.type==='number' || c.derived) col.numFmt = '#,##0.00';
+    col.alignment = {vertical:'middle'};
+  });
+  ws.views = [{state:'frozen', ySplit:1}];
+  const lastCol = String.fromCharCode(64 + Math.min(26,columns.length));
+  ws.autoFilter = `A1:${lastCol}1`;
+  ws.eachRow((row, rn)=>{ if(rn>1) row.eachCell(cell=>{ cell.border = {bottom:{style:'hair', color:{argb:'FFE4E0D4'}}}; }); });
+}
+async function addSheetForTable(workbook, sheetName, columns, rows, computeDerived){
+  const ws = workbook.addWorksheet(sheetName.slice(0,31));
+  ws.columns = columns.map(c=>({header:c.label, key:c.key}));
+  rows.forEach(r=>{
+    const rowData = {};
+    columns.forEach(c=>{
+      let v = c.derived ? computeDerived(r)[c.key] : r[c.key];
+      if(c.type==='pct' || c.type==='pctinput') v = Number(v)||0;
+      if(c.type==='date' && typeof v==='string' && /^\d{4}-\d{2}-\d{2}$/.test(v)){
+        const [y,m,d] = v.split('-').map(Number);
+        v = new Date(Date.UTC(y,m-1,d));
+      }
+      rowData[c.key] = v;
+    });
+    ws.addRow(rowData);
+  });
+  styleSheet(ws, columns);
+  return ws;
+}
+async function exportTable(tableKey){
+  const cfg = tableRegistry[tableKey];
+  const wb = new ExcelJS.Workbook();
+  await addSheetForTable(wb, cfg.title.replace(/[^\w\sÀ-ÿ-]/g,'').trim(), cfg.columns, cfg.rows, cfg.computeDerived);
+  const buf = await wb.xlsx.writeBuffer();
+  downloadBuffer(buf, cfg.exportFileName || `${cfg.exportName}_${S().nome.replace(/\//g,'-')}.xlsx`);
+}
+async function exportSafraCompleta(){
+  const s = S();
+  const wb = new ExcelJS.Workbook();
+  const colheitaCfg = buildColheitaCfg(s);
+  const adtoCfg = buildAdiantamentosCfg(s);
+  const vendaCfg = buildVendasCfg(s);
+  await addSheetForTable(wb, 'Cadastros - Talhoes', [{key:'talhao',label:'Talhão'},{key:'area',label:'Área (ha)',type:'number'},{key:'variedade',label:'Variedade 1'},{key:'variedade2',label:'Variedade 2'}], s.talhoes, ()=>({}));
+  await addSheetForTable(wb, 'Colheita', colheitaCfg.columns, colheitaCfg.rows, colheitaCfg.computeDerived);
+  await addSheetForTable(wb, 'Adiantamento', adtoCfg.columns, adtoCfg.rows, adtoCfg.computeDerived);
+  await addSheetForTable(wb, 'Silos e Vendas', vendaCfg.columns, vendaCfg.rows, vendaCfg.computeDerived);
+  const buf = await wb.xlsx.writeBuffer();
+  downloadBuffer(buf, `Custos_${s.cultura}_${s.nome.replace(/\//g,'-')}.xlsx`);
+}
+function downloadBuffer(buf, filename){
+  const blob = new Blob([buf], {type:'application/octet-stream'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// =================== CONFIG DE COLUNAS POR TABELA ===================
+function buildColheitaCfg(s){
+  return {
+    tableKey: 'colheita', title: '🚜 Colheita',
+    caption: 'Clique no ▾ do cabeçalho para filtrar ou ordenar. A variedade é sugerida pelo talhão; se houver duas variedades no mesmo talhão, você pode alterar a variedade na própria linha.',
+    rows: s.colheita, exportName: 'colheita', computeDerived: colheitaDerived,
+    columns: [
+      {key:'data', label:'Data', type:'date'},
+      {key:'talhao', label:'Talhão', type:'select', optionsFn:()=>{ const p=s.talhoes.filter(t=>t.plantado); return (p.length?p:s.talhoes).map(t=>t.talhao); }},
+      {key:'variedade', label:'Variedade', type:'select', dependsOn:'talhao', optionsFn:(row)=>{
+        const talhao = row && row.talhao ? row.talhao : ((s.talhoes.filter(t=>t.plantado)[0] || s.talhoes[0] || {}).talhao || '');
+        return variedadesDoTalhao(s, talhao);
+      }},
+      {key:'local', label:'Local - Silo', type:'select', optionsFn:()=>s.locais},
+      {key:'motorista', label:'Motorista', type:'select', optionsFn:()=>s.motoristas},
+      {key:'pesoBruto', label:'Peso Bruto', type:'number', unit:'kg'},
+      {key:'umidade', label:'Umidade', type:'pctinput'},
+      {key:'impureza', label:'Impureza', type:'pctinput'},
+      {key:'saldoLiquido', label:'Saldo Líquido', type:'number', unit:'kg'},
+      {key:'sacasBrutas', label:'Sacas Brutas', derived:true, unit:'sc'},
+      {key:'vlSaca', label:'Vl/Saca Frete', type:'number', unit:'R$'},
+      {key:'totalFrete', label:'Total Frete', derived:true, type:'money'},
+      {key:'sacasLiquidas', label:'Sacas Líquidas', derived:true, unit:'sc'},
+      {key:'pctDesconto', label:'% Desconto', derived:true, type:'pct'},
+    ],
+    newRow: ()=>{
+      const p = s.talhoes.filter(t=>t.plantado);
+      const defaultTalhao = (p[0] || s.talhoes[0] || {}).talhao || '';
+      const vars = variedadesDoTalhao(s, defaultTalhao);
+      return {data:'', talhao:defaultTalhao, variedade: vars[0]||'', local:s.locais[0]||'', motorista:s.motoristas[0]||'', pesoBruto:0, umidade:0, impureza:0, saldoLiquido:0, vlSaca:1.3};
+    },
+  };
+}
+function buildAdiantamentosCfg(s){
+  return {
+    tableKey:'adiantamentos', title:'💰 Adiantamentos',
+    caption: 'Lançamentos de adiantamento por motorista (diesel, borracharia, solda...).',
+    rows: s.adiantamentos, exportName:'adiantamentos', computeDerived: r=>({}),
+    columns: [
+      {key:'data', label:'Data', type:'date'},
+      {key:'motorista', label:'Motorista', type:'select', optionsFn:()=>s.motoristas},
+      {key:'servico', label:'Serviço', type:'text'},
+      {key:'valor', label:'Valor', type:'number', unit:'R$'},
+    ],
+    newRow: ()=>({data:'', motorista:s.motoristas[0]||'', servico:'', valor:0}),
+  };
+}
+function buildVendasCfg(s){
+  return {
+    tableKey:'vendas', title:'📦 Silos e Vendas',
+    caption: 'Lançamentos de vendas. O estoque por local é calculado automaticamente a partir da colheita.',
+    rows: s.vendas, exportName:'vendas', computeDerived: vendaDerived,
+columns: [
+  {key:'data', label:'Data', type:'date'},
+  {key:'local', label:'Local - Silo', type:'select', optionsFn:()=>s.locais},
+  {key:'pesoVendido', label:'Peso Vendido', type:'number', unit:'kg', brInteger:true},
+  {key:'sacasVendidas', label:'Sacas Vendidas', derived:true, unit:'sc'},
+  {key:'vlSaca', label:'Vl/Saca', type:'number', unit:'R$'},
+  {key:'totalVenda', label:'Total Venda', derived:true, type:'money'},
+],
+newRow: ()=>({data:'', local:'', pesoVendido:'', vlSaca:''}),
+  };
+}
+
+// =================== PÁGINA: COLHEITA ===================
+function pageColheita(){
+  const s = S();
+  const cfg = buildColheitaCfg(s);
+  cfg.formHtml = renderAddForm(cfg);
+
+  const totalCargas = s.colheita.length;
+  const totalSacas = s.colheita.reduce((sum,c)=>sum+colheitaDerived(c).sacasLiquidas,0);
+  const totalFrete = s.colheita.reduce((sum,c)=>sum+colheitaDerived(c).totalFrete,0);
+  cfg.metricsHtml = `<div class="metrics">
+    <div class="metric"><div class="val">${totalCargas}</div><div class="lbl">Total de cargas</div></div>
+    <div class="metric"><div class="val">${fmt(totalSacas)}</div><div class="lbl">Sacas líquidas totais</div></div>
+    <div class="metric"><div class="val">${fmtR(totalFrete)}</div><div class="lbl">Total frete</div></div>
+  </div>`;
+
+  return renderTablePage(cfg);
+}
+
+// =================== PÁGINA: ADIANTAMENTOS ===================
+function pageAdiantamentos(){
+  const s = S();
+  const cfg = buildAdiantamentosCfg(s);
+  cfg.formHtml = renderAddForm(cfg);
+
+  const resumo = s.motoristas.map(mot=>{
+    const cargas = s.colheita.filter(c=>c.motorista===mot);
+    const totalFrete = cargas.reduce((sum,c)=>sum+colheitaDerived(c).totalFrete,0);
+    const adiantado = s.adiantamentos.filter(a=>a.motorista===mot).reduce((sum,a)=>sum+Number(a.valor||0),0);
+    return {mot, cargas: cargas.length, totalFrete, adiantado, aPagar: totalFrete-adiantado};
+  });
+  const totFrete = resumo.reduce((sum,r)=>sum+r.totalFrete,0);
+  const totAdto = resumo.reduce((sum,r)=>sum+r.adiantado,0);
+
+  cfg.metricsHtml = `
+    <div class="metrics">
+      <div class="metric"><div class="val">${fmtR(totFrete)}</div><div class="lbl">Total de frete</div></div>
+      <div class="metric"><div class="val">${fmtR(totAdto)}</div><div class="lbl">Total adiantado</div></div>
+      <div class="metric"><div class="val text-red">${fmtR(totFrete-totAdto)}</div><div class="lbl">Saldo a pagar</div></div>
+    </div>
+    <div class="panel">
+      <p class="section-title">Resumo por motorista</p>
+      <div class="table-wrap"><table>
+        <tr><th style="padding:8px 10px;">Motorista</th><th style="padding:8px 10px;">Cargas</th><th style="padding:8px 10px;">Total Frete</th><th style="padding:8px 10px;">Adiantado</th><th style="padding:8px 10px;">A Pagar</th></tr>
+        ${resumo.map(r=>`<tr><td class="readonly">${esc(r.mot)}</td><td class="readonly">${r.cargas}</td><td class="readonly">${fmtR(r.totalFrete)}</td><td class="readonly">${fmtR(r.adiantado)}</td><td class="readonly text-red">${fmtR(r.aPagar)}</td></tr>`).join('')}
+      </table></div>
+    </div>
+  `;
+
+  return renderTablePage(cfg);
+}
+
+// =================== PÁGINA: SILOS E VENDAS ===================
+function pageVendas(){
+  const s = S();
+  const cfg = buildVendasCfg(s);
+  cfg.formHtml = renderAddForm(cfg);
+
+  const estoque = s.locais.map(local=>{
+    const cargasLocal = s.colheita.filter(c=>c.local===local);
+    const sacasLiq = cargasLocal.reduce((sum,c)=>sum+colheitaDerived(c).sacasLiquidas,0);
+    const vendidas = s.vendas.filter(v=>v.local===local).reduce((sum,v)=>sum+vendaDerived(v).sacasVendidas,0);
+    const saldo = Math.round((sacasLiq-vendidas)*100)/100; return {local, cargas: cargasLocal.length, sacasLiq, vendidas, saldo: Math.abs(saldo)<0.01 ? 0 : saldo};
+  });
+  const totalVendido = s.vendas.reduce((sum,v)=>sum+vendaDerived(v).sacasVendidas,0);
+  const faturamento = s.vendas.reduce((sum,v)=>sum+vendaDerived(v).totalVenda,0);
+  const vlMedio = totalVendido ? faturamento/totalVendido : 0;
+  const saldoEstoque = estoque.reduce((sum,e)=>sum+e.saldo,0);
+
+  cfg.metricsHtml = `
+    <div class="panel">
+      <p class="section-title">Estoque por local de entrega</p>
+      <div class="table-wrap"><table>
+        <tr><th style="padding:8px 10px;">Local - Silo</th><th style="padding:8px 10px;">Cargas</th><th style="padding:8px 10px;">Sacas (60kg)</th><th style="padding:8px 10px;">Sacas Vendidas</th><th style="padding:8px 10px;">Saldo a Vender</th></tr>
+        ${estoque.map(e=>`<tr><td class="readonly">${esc(e.local)}</td><td class="readonly">${e.cargas}</td><td class="readonly">${fmt(e.sacasLiq)}</td><td class="readonly">${fmt(e.vendidas)}</td><td class="readonly">${fmt(e.saldo)}</td></tr>`).join('')}
+      </table></div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="val">${fmt(totalVendido)}</div><div class="lbl">Total vendido (sc)</div></div>
+      <div class="metric"><div class="val">${fmtR(faturamento)}</div><div class="lbl">Faturamento total</div></div>
+      <div class="metric"><div class="val">${fmtR(vlMedio)}</div><div class="lbl">Vl médio/saca</div></div>
+      <div class="metric"><div class="val">${fmt(saldoEstoque)}</div><div class="lbl">Saldo em estoque (sc)</div></div>
+    </div>
+  `;
+
+  return renderTablePage(cfg);
+}
+
+// =================== PÁGINA: CADASTROS ===================
+function pageCadastros(){
+  const s = S();
+  const cfg = {
+    tableKey:'talhoes', title:'⚙️ Cadastros · Talhões',
+    caption: 'Marque "Será Plantado?" para os talhões que entram nesta safra — só esses contam na Área Plantada do Dashboard e aparecem pra lançar colheita.',
+    rows: s.talhoes, exportName:'talhoes', computeDerived: r=>({}),
+    columns: [
+      {key:'talhao', label:'Talhão', type:'text'},
+      {key:'area', label:'Área', type:'number', unit:'ha'},
+      {key:'variedade', label:'Variedade 1', type:'text'},
+      {key:'variedade2', label:'Variedade 2', type:'text'},
+      {key:'plantado', label:'Será Plantado?', type:'checkbox'},
+    ],
+    newRow: ()=>({talhao:'', area:0, variedade:'', variedade2:'', plantado:false}),
+  };
+  cfg.formHtml = renderAddForm(cfg);
+  const areaTotalCadastrada = s.talhoes.reduce((sum,t)=>sum+Number(t.area||0),0);
+  const areaPlantada = s.talhoes.filter(t=>t.plantado).reduce((sum,t)=>sum+Number(t.area||0),0);
+  cfg.metricsHtml = `<div class="metrics">
+    <div class="metric"><div class="val">${fmt(areaTotalCadastrada)}</div><div class="lbl">Área total cadastrada (ha)</div></div>
+    <div class="metric"><div class="val">${fmt(areaPlantada)}</div><div class="lbl">Área plantada nesta safra (ha)</div></div>
+  </div>`;
+
+  const talhaoTableHtml = renderTablePage(cfg);
+
+  return `
+    ${talhaoTableHtml}
+    <div class="grid cols-2">
+      <div class="panel">
+        <p class="section-title">Locais de entrega</p>
+        <div id="lista-locais">${s.locais.map((l,i)=>`<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line);"><span>${esc(l)}</span><button class="ghost no-print" onclick="removerLocal(${i})">remover</button></div>`).join('')}</div>
+        <form id="form-local" style="margin-top:12px; display:flex; gap:8px;" class="no-print">
+          <input type="text" name="local" placeholder="Novo local" required>
+          <button class="primary" type="submit">+</button>
+        </form>
+      </div>
+      <div class="panel">
+        <p class="section-title">Motoristas</p>
+        <div id="lista-motoristas">${s.motoristas.map((m,i)=>`<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line);"><span>${esc(m)}</span><button class="ghost no-print" onclick="removerMotorista(${i})">remover</button></div>`).join('')}</div>
+        <form id="form-mot" style="margin-top:12px; display:flex; gap:8px;" class="no-print">
+          <input type="text" name="mot" placeholder="Novo motorista" required>
+          <button class="primary" type="submit">+</button>
+        </form>
+      </div>
+    </div>
+  `;
+}
+function removerLocal(i){ recordUndo(); S().locais.splice(i,1); render(); }
+function removerMotorista(i){ recordUndo(); S().motoristas.splice(i,1); render(); }
+
+// =================== PÁGINA: CADASTRO DE SAFRA ===================
+function pageSafras(){
+  const cards = Object.entries(state.safras).map(([key,s])=>{
+    const areaTotal = s.talhoes.reduce((sum,t)=>sum+Number(t.area||0),0);
+    return `
+      <div class="safra-card ${key===state.safraAtual?'active':''}">
+        <div>
+          <h3>${esc(s.nome)} <span class="badge">${esc(s.cultura)}</span></h3>
+          <p>${esc(s.propriedade)} · ${fmt(areaTotal)} ha cadastrados · ${s.colheita.length} lançamentos de colheita</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="secondary" onclick="usarSafra('${key}')">Usar esta safra</button>
+          ${Object.keys(state.safras).length>1 ? `<button class="ghost" onclick="removerSafra('${key}')">Excluir</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <h2>🌾 Cadastro de Safra</h2>
+    <div class="caption">Ao criar uma nova safra, os talhões, locais de entrega e motoristas são copiados da safra atual (variedade e "Será Plantado?" ficam em branco/desmarcado pra você escolher de novo). Colheita, adiantamentos e vendas começam zerados.</div>
+    ${cards}
+    <div class="panel" style="margin-top:20px;">
+      <p class="section-title">Nova safra</p>
+      <div class="grid cols-2">
+        <div><label>Nome da safra</label><input type="text" id="nova-safra-nome" placeholder="Ex: Soja 2026/2027"></div>
+        <div><label>Cultura</label>
+          <select id="nova-safra-cultura">
+            <option>Soja</option><option>Milho</option><option>Sorgo</option><option>Algodão</option><option>Outra</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:14px;">
+        <label>Propriedade</label><input type="text" id="nova-safra-propriedade" value="${esc(S().propriedade)}">
+      </div>
+      <button class="primary" style="margin-top:14px;" onclick="criarNovaSafra()" type="button">Criar safra</button>
+    </div>
+  `;
+}
+function usarSafra(key){ state.safraAtual = key; setPage('dashboard'); }
+function removerSafra(key){
+  recordUndo();
+  delete state.safras[key];
+  if(state.safraAtual===key) state.safraAtual = Object.keys(state.safras)[0];
+  render();
+}
+function criarNovaSafra(){
+  const nome = document.getElementById('nova-safra-nome').value.trim();
+  if(!nome){ alert('Dá um nome pra safra antes de criar.'); return; }
+  const cultura = document.getElementById('nova-safra-cultura').value;
+  const propriedade = document.getElementById('nova-safra-propriedade').value.trim() || S().propriedade;
+  const atual = S();
+  const key = 'safra_' + Date.now();
+  recordUndo();
+  state.safras[key] = {
+    nome, cultura, produtor: PRODUTOR_FIXO, propriedade,
+    talhoes: JSON.parse(JSON.stringify(atual.talhoes)).map(t=>({...t, variedade:'', variedade2:'', plantado:false})),
+    locais: [...atual.locais],
+    motoristas: [...atual.motoristas],
+    colheita: [], adiantamentos: [], vendas: [],
+  };
+  state.safraAtual = key;
+  setPage('cadastros');
+}
+
+// =================== NAVEGAÇÃO ESTILO EXCEL ===================
+let pendingCellFocus = null;
+function focusTableCell(tableKey, rowIdx, field){
+  const tbody = document.getElementById('tbody-'+tableKey);
+  if(!tbody) return false;
+  const el = tbody.querySelector(`[data-idx="${rowIdx}"][data-field="${field}"]`);
+  if(!el) return false;
+  el.focus();
+  if(el.tagName==='INPUT' && el.type==='text') el.select();
+  return true;
+}
+function bindExcelEnterNavigation(){
+  Object.keys(tableRegistry).forEach(tableKey=>{
+    const tbody = document.getElementById('tbody-'+tableKey);
+    if(!tbody || tbody.dataset.excelEnterBound==='1') return;
+    tbody.dataset.excelEnterBound='1';
+    tbody.addEventListener('keydown', e=>{
+      if(e.key!=='Enter' || e.altKey || e.ctrlKey || e.metaKey) return;
+      const el = e.target.closest('input,select');
+      if(!el || !el.dataset.field) return;
+      e.preventDefault();
+      const field = el.dataset.field;
+      const rowIdx = Number(el.dataset.idx);
+      const targetIdx = e.shiftKey ? rowIdx-1 : rowIdx+1;
+      if(targetIdx>=0 && targetIdx<tableRowsVisible[tableKey].length){
+        focusTableCell(tableKey,targetIdx,field);
+        return;
+      }
+      // No último registro, Enter cria uma nova linha e continua na mesma coluna.
+      if(!e.shiftKey){
+        const cfg = tableRegistry[tableKey];
+        if(cfg && typeof cfg.newRow==='function' && !cfg.semLinhaEmBranco){
+          pendingCellFocus = {tableKey, field, rowIdx: tableRowsVisible[tableKey].length};
+          recordUndo();
+          cfg.rows.push(cfg.newRow());
+          render();
+          requestAnimationFrame(()=>{
+            if(pendingCellFocus){
+              focusTableCell(pendingCellFocus.tableKey,pendingCellFocus.rowIdx,pendingCellFocus.field);
+              pendingCellFocus=null;
+            }
+          });
+        }
+      }
+    });
+  });
+}
+
+// =================== EVENTOS ESTÁTICOS ===================
+function bindStaticEvents(){
+  Object.keys(tableRegistry).forEach(k=>{ if(document.getElementById('tbody-'+k)) renderTbody(k); });
+
+  const fLocal = document.getElementById('form-local');
+  if(fLocal) fLocal.addEventListener('submit', e=>{ e.preventDefault(); recordUndo(); const f=new FormData(fLocal); S().locais.push(f.get('local')); render(); });
+
+  const fMot = document.getElementById('form-mot');
+  if(fMot) fMot.addEventListener('submit', e=>{ e.preventDefault(); recordUndo(); const f=new FormData(fMot); S().motoristas.push(f.get('mot')); render(); });
+
+  // Campos dependentes no formulário de adicionar registro (ex.: Variedade depende do Talhão)
+  Object.values(tableRegistry).forEach(cfg=>{
+    const wrap = document.getElementById('addform-'+cfg.tableKey);
+    if(!wrap) return;
+    cfg.columns.forEach(sourceCol=>{
+      const sourceEl = wrap.querySelector(`[name="${sourceCol.key}"]`);
+      if(!sourceEl) return;
+      sourceEl.addEventListener('change', ()=>{
+        cfg.columns.forEach(depCol=>{
+          if(depCol.type!=='select' || depCol.dependsOn!==sourceCol.key) return;
+          const targetEl = wrap.querySelector(`[name="${depCol.key}"]`);
+          if(!targetEl) return;
+          const draft = {};
+          cfg.columns.filter(c=>!c.derived).forEach(c=>{
+            const e = wrap.querySelector(`[name="${c.key}"]`);
+            if(e) draft[c.key] = e.type==='checkbox' ? e.checked : e.value;
+          });
+          const options = depCol.optionsFn ? depCol.optionsFn(draft) : [];
+          targetEl.innerHTML = `<option value="">—</option>` + options.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');
+          targetEl.value = options[0] || '';
+        });
+      });
+    });
+    // Garante que os dependentes já abram corretamente ao carregar o formulário.
+    cfg.columns.forEach(sourceCol=>{
+      const sourceEl = wrap.querySelector(`[name="${sourceCol.key}"]`);
+      if(sourceEl && cfg.columns.some(c=>c.dependsOn===sourceCol.key)) sourceEl.dispatchEvent(new Event('change'));
+    });
+  });
+
+
+  bindExcelEnterNavigation();
+}
+
+// =================== PERFIS DE ACESSO ===================
+// E-mails de funcionários que só enxergam as abas de diesel (nunca os custos da safra).
+// O bloqueio de verdade fica nas regras do Firestore; isto aqui só ajusta a tela.
+// Pode ser e-mail completo ou só o login (ex.: "diesel").
+const USUARIOS_DIESEL = [
+  "mra",
+];
+// Login sem "@" vira e-mail neste domínio (o Firebase só aceita e-mail).
+// Ex.: "diesel" -> "diesel@fazendaparaiso.app". Crie o usuário no Firebase com esse e-mail.
+const DOMINIO_LOGIN = "app-nelore-mra.firebaseapp.com";
+function loginParaEmail(v){
+  v = String(v||'').trim().toLowerCase();
+  return v.includes('@') ? v : `${v}@${DOMINIO_LOGIN}`;
+}
+function loginExibicao(email){
+  return String(email||'').replace(new RegExp(`@${DOMINIO_LOGIN.replace(/\./g,'\\.')}$`,'i'), '');
+}
+let perfilDiesel = false;
+function ehUsuarioDiesel(user){
+  const email = (user && user.email || '').toLowerCase();
+  return USUARIOS_DIESEL.some(e=>loginParaEmail(e)===email);
+}
+
+// =================== DIESEL ===================
+// Fica em custos-safra/diesel (separado dos custos). Cada lançamento é salvo
+// individualmente (lancamentos.<id> / estoque.<id>), então duas pessoas lançando
+// ao mesmo tempo não apagam o registro uma da outra.
+const DIESEL_PADRAO = {
+  maquinas: ["Uniport","Colheitadeira","John Deere 7230","MF650","MF265","MF4283","Voltra BM125","Terceiros","Outros"],
+  areas: ["Lavoura","Pecuária","Fazenda","Outros"],
+  estacoes: ["Lavoura - Milho 25/26"],
+};
+const DIESEL_LISTAS = [['maquinas','Máquinas','Nova máquina'],['areas','Áreas','Nova área'],['estacoes','Estações','Nova estação']];
+let diesel = {maquinas:[...DIESEL_PADRAO.maquinas], areas:[...DIESEL_PADRAO.areas], estacoes:[...DIESEL_PADRAO.estacoes], lancamentos:[], estoque:[]};
+let dieselRef = null, dieselUnsub = null, dieselPronto = false;
+const dieselTimers = {}, dieselPendentes = new Set();
+let dieselConfigAberto = false;
+let dieselFiltro = {de:'', ate:'', estacao:''};
+
+function paginaDiesel(p){ return String(p||'').startsWith('diesel-'); }
+function hojeISO(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
+function novoIdDiesel(prefixo){ return prefixo + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function fmtData(iso){ return /^\d{4}-\d{2}-\d{2}$/.test(iso||'') ? iso.split('-').reverse().join('/') : ''; }
+function lsGet(k){ try{ return localStorage.getItem(k) || ''; }catch(e){ return ''; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function usuarioAtual(){ const u = firebase.auth && firebase.auth().currentUser; return u ? loginExibicao(u.email) : ''; }
+// Opções da lista + o valor atual da linha (caso tenha sido removido do cadastro depois).
+function opcoesDiesel(lista, row, key){
+  const itens = [...diesel[lista]];
+  if(row && row[key] && !itens.includes(row[key])) itens.push(row[key]);
+  return itens;
+}
+
+function dieselDocParaLocal(data){
+  const lista = m => Object.entries(m||{}).map(([id,r])=>({...r, id}));
+  return {
+    maquinas: Array.isArray(data.maquinas) ? data.maquinas : [...DIESEL_PADRAO.maquinas],
+    areas: Array.isArray(data.areas) ? data.areas : [...DIESEL_PADRAO.areas],
+    estacoes: Array.isArray(data.estacoes) ? data.estacoes : [...DIESEL_PADRAO.estacoes],
+    lancamentos: lista(data.lancamentos),
+    estoque: lista(data.estoque),
+  };
+}
+function dieselAssinatura(d){
+  const linhas = a => a.map(r=>JSON.stringify(Object.keys(r).sort().map(k=>[k,r[k]]))).sort();
+  return JSON.stringify([d.maquinas, d.areas, d.estacoes, linhas(d.lancamentos), linhas(d.estoque)]);
+}
+
+function iniciarDiesel(){
+  pararDiesel();
+  dieselRef = firebase.firestore().collection('apps').doc('custos').collection('dados').doc('diesel');
+  dieselUnsub = dieselRef.onSnapshot(snap=>{
+    if(!snap.exists){
+      dieselRef.set({...DIESEL_PADRAO, lancamentos:{}, estoque:{}}, {merge:true})
+        .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao criar diesel', 'err'); });
+      return;
+    }
+    const remoto = dieselDocParaLocal(snap.data());
+    // Linhas que ainda estão sendo digitadas/enviadas ficam com a versão local.
+    ['lancamentos','estoque'].forEach(col=>{
+      diesel[col].forEach(r=>{
+        if(!dieselPendentes.has(r.id)) return;
+        const i = remoto[col].findIndex(x=>x.id===r.id);
+        if(i>-1) remoto[col][i] = r; else remoto[col].push(r);
+      });
+    });
+    const primeiraVez = !dieselPronto;
+    const mudou = dieselAssinatura(remoto) !== dieselAssinatura(diesel);
+    if(mudou) diesel = remoto;
+    dieselPronto = true;
+    if(perfilDiesel && !snap.metadata.hasPendingWrites) setSyncStatus('🟢 Sincronizado', 'ok');
+    if((mudou || primeiraVez) && paginaDiesel(currentPage)) render();
+  }, err=>{
+    console.error(err);
+    setSyncStatus('🔴 Sem acesso ao diesel', 'err');
+  });
+}
+function pararDiesel(){
+  if(dieselUnsub){ dieselUnsub(); dieselUnsub = null; }
+  Object.keys(dieselTimers).forEach(id=>clearTimeout(dieselTimers[id]));
+  dieselPendentes.clear();
+  dieselRef = null; dieselPronto = false;
+  diesel = {maquinas:[...DIESEL_PADRAO.maquinas], areas:[...DIESEL_PADRAO.areas], estacoes:[...DIESEL_PADRAO.estacoes], lancamentos:[], estoque:[]};
+}
+function salvarLinhaDiesel(col, row, imediato){
+  if(!dieselRef) return;
+  dieselPendentes.add(row.id);
+  clearTimeout(dieselTimers[row.id]);
+  if(perfilDiesel) setSyncStatus('🟡 Salvando...', 'local');
+  dieselTimers[row.id] = setTimeout(()=>{
+    dieselTimers[row.id] = null;
+    const {id, ...dados} = row;
+    dieselRef.update({[`${col}.${id}`]: JSON.parse(JSON.stringify(dados))})
+      .then(()=>{
+        if(!dieselTimers[id]) dieselPendentes.delete(id);
+        if(perfilDiesel) setSyncStatus('🟢 Sincronizado', 'ok');
+      })
+      .catch(err=>{ console.error(err); dieselPendentes.delete(id); setSyncStatus('🔴 Erro ao salvar diesel', 'err'); alert('Não foi possível salvar. Confira a internet e tente de novo.'); });
+  }, imediato ? 0 : 500);
+}
+function excluirLinhaDiesel(col, row){
+  if(!dieselRef) return;
+  clearTimeout(dieselTimers[row.id]);
+  dieselTimers[row.id] = null;
+  dieselPendentes.delete(row.id);
+  const i = diesel[col].indexOf(row);
+  if(i>-1) diesel[col].splice(i,1);
+  dieselRef.update({[`${col}.${row.id}`]: firebase.firestore.FieldValue.delete()})
+    .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao excluir', 'err'); });
+  render();
+}
+function addItemDiesel(lista, valor){
+  valor = String(valor||'').trim();
+  if(!valor || !dieselRef) return;
+  if(diesel[lista].some(x=>x.toLowerCase()===valor.toLowerCase())){ alert('Esse item já está cadastrado.'); return; }
+  diesel[lista].push(valor);
+  dieselRef.update({[lista]: firebase.firestore.FieldValue.arrayUnion(valor)})
+    .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao salvar', 'err'); });
+  render();
+}
+function removerItemDiesel(lista, i){
+  if(perfilDiesel || !dieselRef) return;
+  const valor = diesel[lista][i];
+  if(valor===undefined || !confirm(`Remover "${valor}" da lista? Os lançamentos antigos continuam com esse nome.`)) return;
+  diesel[lista].splice(i,1);
+  dieselRef.update({[lista]: firebase.firestore.FieldValue.arrayRemove(valor)})
+    .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao salvar', 'err'); });
+  render();
+}
+function toggleDieselConfig(){ dieselConfigAberto = !dieselConfigAberto; render(); }
+function ordenarDiesel(){
+  const porCriacao = (a,b)=>(a.criadoEm||0)-(b.criadoEm||0);
+  diesel.lancamentos.sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')) || -porCriacao(a,b));
+  diesel.estoque.sort((a,b)=>String(a.data||'').localeCompare(String(b.data||'')) || porCriacao(a,b));
+}
+
+// Estoque: saldo corrido do tanque = entradas − usos (Controle Diesel) ± acertos.
+// A data só serve para ordenar o extrato; não muda a conta. O acerto compara a
+// medição com o saldo atual (o mesmo que aparece na tela).
+// diesel.estoque guarda entradas {tipo:'entrada', entrada} e acertos
+// {tipo:'acerto', entrada:<diferença>, medido, saldoSistema}. Linhas antigas sem tipo são entradas.
+function tipoEstoque(e){ return e && e.tipo==='acerto' ? 'acerto' : 'entrada'; }
+const ORDEM_MOV = {entrada:0, uso:1, acerto:2};
+function extratoDiesel(){
+  const movs = [
+    ...diesel.estoque.map(e=>{
+      const tipo = tipoEstoque(e);
+      return {id:e.id, data:e.data||'', tipo, litros:Number(e.entrada||0), criadoEm:e.criadoEm||0, area:'—',
+        estacao: e.estacao || diesel.estacoes[0] || '',
+        desc: tipo==='acerto' ? `Medido ${fmt(e.medido,1)} L · sistema ${fmt(e.saldoSistema,1)} L` : 'Entrada no tanque'};
+    }),
+    ...diesel.lancamentos.map(l=>({id:l.id, data:l.data||'', tipo:'uso', litros:-Number(l.litros||0), criadoEm:l.criadoEm||0,
+      area:l.area||'—', estacao:l.estacao||'', desc:[l.maquina, l.servico].filter(Boolean).join(' · ')})),
+  ].sort((a,b)=>a.data.localeCompare(b.data) || ORDEM_MOV[a.tipo]-ORDEM_MOV[b.tipo] || a.criadoEm-b.criadoEm);
+  let saldo = 0;
+  movs.forEach(m=>{ saldo += m.litros; m.saldo = saldo; m.tipoNome = {entrada:'Entrada', uso:'Saída', acerto:'Acerto'}[m.tipo]; });
+  return movs;
+}
+function calcEstoqueDiesel(){
+  const movs = extratoDiesel();
+  const soma = t => movs.filter(m=>m.tipo===t).reduce((s,m)=>s+m.litros,0);
+  return {movs, saldoAtual: movs.length ? movs[movs.length-1].saldo : 0,
+    totalEntradas: soma('entrada'), totalUsado: -soma('uso'), totalAcertos: soma('acerto'),
+    temEntradas: diesel.estoque.length>0};
+}
+
+function buildDieselControleCfg(){
+  return {
+    tableKey:'diesel-controle', title:'⛽ Controle Diesel',
+    caption:'Lance cada abastecimento de máquina. As linhas abaixo podem ser corrigidas direto na tabela; clique no ▾ do cabeçalho para filtrar.',
+    rows: diesel.lancamentos, exportName:'controle_diesel', exportFileName:`Controle_Diesel_${hojeISO()}.xlsx`,
+    computeDerived: ()=>({}), semLinhaEmBranco: true,
+    larguras: {data:135, maquina:170, litros:110, servico:320, area:130, estacao:160},
+    totais: ['litros'],
+    formTitle:'Novo lançamento', formButton:'Salvar lançamento',
+    columns: [
+      {key:'data', label:'Data', type:'date', formDefault: hojeISO},
+      {key:'maquina', label:'Máquina', type:'select', optionsFn: r=>opcoesDiesel('maquinas', r, 'maquina')},
+      {key:'litros', label:'Qtd Litros', type:'number', unit:'L', brDecimal:true},
+      {key:'servico', label:'Serviço Realizado', type:'text'},
+      {key:'area', label:'Área', type:'select', optionsFn: r=>opcoesDiesel('areas', r, 'area')},
+      {key:'estacao', label:'Estação', type:'select', optionsFn: r=>opcoesDiesel('estacoes', r, 'estacao'),
+        formDefault: ()=>{ const u = lsGet('app-nelore-mra-custos-dieselUltimaEstacao'); return diesel.estacoes.includes(u) ? u : (diesel.estacoes[0]||''); }},
+    ],
+    newRow: ()=>({id:novoIdDiesel('l'), data:hojeISO(), maquina:'', litros:'', servico:'', area:'', estacao:'', criadoEm:Date.now(), criadoPor:usuarioAtual()}),
+    validate: r=> !r.data ? 'Informe a data.' : !r.maquina ? 'Escolha a máquina.' : !(Number(r.litros)>0) ? 'Informe a quantidade de litros.' : !r.area ? 'Escolha a área.' : '',
+    prepareRow: r=>{ r.id = novoIdDiesel('l'); r.criadoEm = Date.now(); r.criadoPor = usuarioAtual(); },
+    afterAdd: r=>{ if(r.estacao) lsSet('app-nelore-mra-custos-dieselUltimaEstacao', r.estacao); },
+    onRowChange: (r, imediato)=>salvarLinhaDiesel('lancamentos', r, imediato),
+    onRowDelete: r=>excluirLinhaDiesel('lancamentos', r),
+  };
+}
+function dieselLancamentosFiltrados(){
+  const f = dieselFiltro;
+  return diesel.lancamentos.filter(l=>
+    (!f.de || (l.data||'')>=f.de) && (!f.ate || (l.data||'')<=f.ate) && (!f.estacao || l.estacao===f.estacao));
+}
+function agruparDiesel(lancs, chave){
+  const m = {};
+  lancs.forEach(l=>{
+    const nome = String(l[chave]||'').trim() || '(sem informação)';
+    if(!m[nome]) m[nome] = {nome, qtd:0, litros:0};
+    m[nome].qtd += 1;
+    m[nome].litros += Number(l.litros||0);
+  });
+  const total = lancs.reduce((s,l)=>s+Number(l.litros||0),0);
+  return Object.values(m).map(r=>({...r, pct: total ? r.litros/total : 0})).sort((a,b)=>b.litros-a.litros);
+}
+function descricaoFiltroDiesel(){
+  const f = dieselFiltro, p = [];
+  if(f.de || f.ate) p.push(`Período: ${f.de?fmtData(f.de):'início'} a ${f.ate?fmtData(f.ate):'hoje'}`);
+  else p.push('Período: todos os lançamentos');
+  p.push(`Estação: ${f.estacao || 'todas'}`);
+  return p.join(' · ');
+}
+function setFiltroDiesel(campo, valor){ dieselFiltro[campo] = valor; render(); }
+function limparFiltroDiesel(){ dieselFiltro = {de:'', ate:'', estacao:''}; render(); }
+
+function tabelaResumoDiesel(chave, titulo, rotulo, linhas){
+  const tk = 'resumo-'+chave;
+  const visiveis = dashboardRows(tk, linhas, [
+    {key:'nome', label:rotulo, type:'text'}, {key:'litros', label:'Litros', type:'number'}, {key:'pct', label:'%', type:'pct'},
+  ]);
+  const total = visiveis.reduce((s,r)=>s+r.litros,0), pctTotal = visiveis.reduce((s,r)=>s+r.pct,0);
+  return `
+    <div class="resumo-card">
+      <h3>${titulo}</h3>
+      ${linhas.length ? `
+      <table class="resumo sel-excel">
+        <colgroup><col><col style="width:32%"><col style="width:26%"></colgroup>
+        <thead><tr>${dashboardTh(tk,'nome',rotulo)}${dashboardTh(tk,'litros','Litros')}${dashboardTh(tk,'pct','%')}</tr></thead>
+        <tbody>
+        ${visiveis.map(r=>`<tr>
+          <td>${esc(r.nome)}</td>
+          <td class="num" data-num="${r.litros}" data-unit="L">${fmt(r.litros,1)} L</td>
+          <td class="num" data-num="${r.pct}" data-unit="%">${fmtPct(r.pct)}<div class="barra"><i style="width:${(r.pct*100).toFixed(1)}%"></i></div></td>
+        </tr>`).join('') || `<tr><td colspan="3" class="empty">Nenhuma linha no filtro.</td></tr>`}
+        </tbody>
+        <tfoot><tr><td>TOTAL</td><td class="num">${fmt(total,1)} L</td><td class="num">${fmtPct(pctTotal)}</td></tr></tfoot>
+      </table>` : `<div class="empty" style="text-align:center; padding:18px;">Nenhum lançamento no filtro.</div>`}
+    </div>`;
+}
+
+function pageDiesel(){
+  if(!dieselPronto) return `<h2>⛽ Diesel</h2><div class="panel"><div class="empty">Carregando dados do diesel...</div></div>`;
+  ordenarDiesel();
+  if(currentPage==='diesel-estoque') return pageDieselEstoque();
+  if(currentPage==='diesel-resumo') return pageDieselResumo();
+  return pageDieselControle();
+}
+function pageDieselControle(){
+  const cfg = buildDieselControleCfg();
+  const est = calcEstoqueDiesel();
+  const config = `
+    <div class="panel no-print">
+      <p class="section-title">Cadastros do diesel</p>
+      <div class="grid cols-3">
+        ${DIESEL_LISTAS.map(([k,titulo,ph])=>`
+          <div>
+            <label>${titulo}</label>
+            <div class="lista-cad">${diesel[k].map((v,i)=>`<div class="item-cad"><span>${esc(v)}</span>${perfilDiesel?'':`<button class="ghost" type="button" onclick="removerItemDiesel('${k}',${i})">✕</button>`}</div>`).join('') || '<div class="item-cad empty">Nenhum item</div>'}</div>
+            <form class="form-inline" onsubmit="event.preventDefault(); addItemDiesel('${k}', this.item.value);">
+              <input name="item" placeholder="${ph}" required>
+              <button class="primary" type="submit">+</button>
+            </form>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  cfg.formHtml = `
+    <div class="toolbar no-print"><button class="secondary" type="button" onclick="toggleDieselConfig()">⚙️ ${dieselConfigAberto?'Fechar cadastros':'Cadastrar máquinas, áreas e estações'}</button></div>
+    ${dieselConfigAberto ? config : ''}
+    <div class="no-print">${renderAddForm(cfg)}</div>`;
+  cfg.metricsHtml = `<div class="metric" style="display:inline-block; min-width:170px; margin-bottom:12px;">
+    <div class="val ${est.saldoAtual<0?'text-red':''}">${est.temEntradas?fmt(est.saldoAtual,1)+' L':'—'}</div><div class="lbl">Saldo no tanque</div>
+  </div>`;
+  return renderTablePage(cfg);
+}
+const LARGURAS_EXTRATO = {data:110, tipoNome:100, area:150, litros:120, saldo:120, estacao:150};
+function litrosFmt(v){ return fmt(v,1).replace(/,0$/,'') + ' L'; }
+function extratoMostrarEstacao(){ return lsGet('app-nelore-mra-custos-extratoMostrarEstacao')==='1'; }
+function toggleColunaEstacaoExtrato(){ lsSet('app-nelore-mra-custos-extratoMostrarEstacao', extratoMostrarEstacao() ? '0' : '1'); render(); }
+function limparFiltroEstacaoExtrato(){ const ts = tableState['diesel-extrato']; if(ts) ts.colFilters.estacao = null; render(); }
+function estacaoPadraoDiesel(){ const u = lsGet('app-nelore-mra-custos-dieselUltimaEstacao'); return diesel.estacoes.includes(u) ? u : (diesel.estacoes[diesel.estacoes.length-1]||''); }
+function selectEstacaoDiesel(id){
+  const atual = estacaoPadraoDiesel();
+  return `<select id="${id}"><option value="">—</option>${diesel.estacoes.map(e=>`<option value="${esc(e)}" ${e===atual?'selected':''}>${esc(e)}</option>`).join('')}</select>`;
+}
+function pageDieselEstoque(){
+  const est = calcEstoqueDiesel();
+  const tk = 'diesel-extrato';
+  const mostrarEstacao = extratoMostrarEstacao();
+  const todasColunas = [
+    {key:'data', label:'Data', type:'date'}, {key:'tipoNome', label:'Tipo', type:'text'}, {key:'area', label:'Área', type:'text'},
+    {key:'litros', label:'Litros', type:'number'}, {key:'saldo', label:'Saldo', type:'number'}, {key:'estacao', label:'Estação', type:'text'},
+  ];
+  const colunas = mostrarEstacao ? todasColunas : todasColunas.filter(c=>c.key!=='estacao');
+  // sempre em ordem de data (mais antiga em cima); no mesmo dia: entrada, saída, acerto
+  const filtradas = dashboardRows(tk, est.movs, todasColunas);
+  const ts = tableState[tk];
+  const visiveis = (!ts.sortKey || ts.sortKey==='data') ? est.movs.filter(m=>filtradas.includes(m)) : filtradas;
+  // filtrando por estação, o saldo é recalculado só com as linhas dessas estações
+  const filtroEst = ts.colFilters.estacao;
+  const saldoDe = {};
+  let saldoFinal = est.saldoAtual;
+  if(filtroEst){
+    let sAc = 0;
+    est.movs.forEach(m=>{ if(filtroEst.has(m.estacao || '(vazio)')){ sAc += m.litros; saldoDe[m.id] = sAc; } });
+    saldoFinal = sAc;
+  }
+  const saldoLinha = m => filtroEst ? saldoDe[m.id] : m.saldo;
+  const cfgExtrato = tableRegistry[tk];
+  cfgExtrato.larguras = LARGURAS_EXTRATO;
+  const larg = larguraColunas(cfgExtrato);
+  const larguraTabela = colunas.reduce((a,c)=>a+larg[c.key],0) + 44;
+  const th = c=>{
+    const ativo = ts.colFilters[c.key] || ts.sortKey===c.key;
+    const seta = ts.sortKey===c.key && c.key!=='data' ? (ts.sortDir>0?' ▲':' ▼') : '';
+    return `<th><div class="th-flex"><span>${c.label}${seta}</span><button class="th-filter-btn ${ativo && !(c.key==='data' && !ts.colFilters.data)?'active':''}" onclick="toggleFilterMenu('${tk}','${c.key}', this)">▾</button></div><span class="col-resizer no-print" title="Arraste para mudar a largura (duplo clique volta ao padrão)" onpointerdown="iniciarResizeColuna(event,'${tk}','${c.key}')" ondblclick="resetLarguraColuna('${tk}','${c.key}')"></span></th>`;
+  };
+  const sinal = v => (v>0?'+':'') + litrosFmt(v);
+  const linhas = visiveis.map(m=>{ const sl = saldoLinha(m); return `
+    <tr class="mov-${m.tipo}">
+      <td data-label="Data">${fmtData(m.data)}</td>
+      <td data-label="Tipo"><span class="tag-mov tag-${m.tipo}" ${m.tipo==='acerto'?`title="${esc(m.desc)}"`:''}>${m.tipoNome}</span></td>
+      <td data-label="Área" ${m.tipo==='uso'?`title="${esc(m.desc)}"`:''}>${esc(m.area)}</td>
+      <td data-label="Litros" class="td-num" data-num="${m.litros}" data-unit="L">${sinal(m.litros)}</td>
+      <td data-label="Saldo" class="td-num col-saldo ${sl<0?'text-red':''}" data-num="${sl}" data-unit="L">${litrosFmt(sl)}</td>
+      ${mostrarEstacao ? `<td data-label="Estação">${esc(m.estacao||'—')}</td>` : ''}
+      <td class="no-print td-acoes">${m.tipo==='uso' ? '' : `<button class="ghost" title="Excluir" onclick="excluirMovEstoque('${m.id}')">✕</button>`}</td>
+    </tr>`; }).join('');
+  const nomeFiltroEst = filtroEst ? [...filtroEst].join(', ') : '';
+  return `
+    <h2>🛢️ Estoque Diesel</h2>
+    <div class="caption">Saldo do tanque = entradas − usado (Controle Diesel) ± acertos. O acerto corrige a diferença da medição.</div>
+
+
+    <div class="grid cols-2 no-print estoque-forms">
+      <div class="panel form-entrada">
+        <p class="section-title">🟢 Entrada de diesel</p>
+        <div class="grid cols-3">
+          <div><label>Data</label><input type="date" id="ent-data" value="${hojeISO()}"></div>
+          <div><label>Litros que entraram</label><input type="text" inputmode="decimal" id="ent-litros" placeholder="Ex: 5.500"></div>
+          <div><label>Estação</label>${selectEstacaoDiesel('ent-estacao')}</div>
+        </div>
+        <button class="primary" type="button" style="margin-top:12px;" onclick="salvarEntradaDiesel()">Lançar entrada</button>
+      </div>
+      <div class="panel form-acerto">
+        <p class="section-title">🟠 Acerto de diesel (medição)</p>
+        <div class="grid cols-3">
+          <div><label>Data da medição</label><input type="date" id="ace-data" value="${hojeISO()}"></div>
+          <div><label>Quanto tem no tanque (medido)</label><input type="text" inputmode="decimal" id="ace-medido" placeholder="Ex: 5.400" oninput="previaAcertoDiesel()"></div>
+          <div><label>Estação</label>${selectEstacaoDiesel('ace-estacao')}</div>
+        </div>
+        <div id="ace-previa" class="previa-acerto">Digite o valor medido para ver o acerto.</div>
+        <button class="btn-acerto" type="button" onclick="salvarAcertoDiesel()">Lançar acerto</button>
+      </div>
+    </div>
+
+    <div class="toolbar no-print">
+      <button class="secondary" onclick="exportEstoqueDiesel()">⬇️ Exportar Excel</button>
+      <button class="secondary" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="secondary" onclick="toggleColunaEstacaoExtrato()">${mostrarEstacao ? 'Esconder coluna Estação' : 'Mostrar coluna Estação'}</button>
+    </div>
+    <p class="section-title">Extrato do tanque</p>
+    ${filtroEst ? `<div class="aviso-filtro no-print">Filtrando estação: <b>${esc(nomeFiltroEst)}</b> · o saldo mostra só essa estação <button class="ghost" type="button" onclick="limparFiltroEstacaoExtrato()">limpar</button></div>` : ''}
+    <div class="extrato-layout">
+    <div class="panel panel-excel" style="padding:0;">
+      <div class="table-wrap">
+        <table id="tbl-${tk}" class="tbl-excel sel-excel extrato" style="width:${larguraTabela}px;">
+          <colgroup>${colunas.map(c=>`<col data-key="${c.key}" style="width:${larg[c.key]}px">`).join('')}<col data-key="__acoes" style="width:44px"></colgroup>
+          <thead><tr>${colunas.map(th).join('')}<th class="no-print"></th></tr></thead>
+          <tbody>${linhas || `<tr><td colspan="${colunas.length+1}" class="empty">Nenhuma movimentação ainda. Lance a primeira entrada acima.</td></tr>`}</tbody>
+          <tfoot><tr class="linha-total"><td class="total-rotulo" colspan="4">SALDO ATUAL${filtroEst?` · ${esc(nomeFiltroEst)}`:''}</td><td class="num ${saldoFinal<0?'text-red':''}" data-label="Saldo atual">${litrosFmt(saldoFinal)}</td>${mostrarEstacao?'<td class="vazio"></td>':''}<td class="no-print vazio"></td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="extrato-resumo">
+      <div class="metric card-entrada"><div class="val cor-entrada">+${litrosFmt(est.totalEntradas)}</div><div class="lbl">Entradas</div></div>
+      <div class="metric card-saida"><div class="val cor-saida">−${litrosFmt(est.totalUsado)}</div><div class="lbl">Saídas</div></div>
+      <div class="metric card-acerto"><div class="val cor-acerto">${sinal(est.totalAcertos)}</div><div class="lbl">Acertos</div></div>
+      <div class="metric saldo-grande"><div class="val ${est.saldoAtual<0?'text-red':''}">${litrosFmt(est.saldoAtual)}</div><div class="lbl">Saldo total no tanque</div></div>
+    </div>
+    </div>
+  `;
+}
+function salvarEntradaDiesel(){
+  const data = document.getElementById('ent-data').value;
+  const litros = parseNumBR(document.getElementById('ent-litros').value);
+  if(!data){ alert('Informe a data.'); return; }
+  if(!(Number(litros)>0)){ alert('Informe quantos litros entraram no tanque.'); return; }
+  const estacao = document.getElementById('ent-estacao').value;
+  if(!estacao){ alert('Escolha a estação.'); return; }
+  lsSet('app-nelore-mra-custos-dieselUltimaEstacao', estacao);
+  const row = {id:novoIdDiesel('e'), tipo:'entrada', data, entrada:litros, estacao, criadoEm:Date.now(), criadoPor:usuarioAtual()};
+  diesel.estoque.push(row);
+  salvarLinhaDiesel('estoque', row, true);
+  render();
+}
+function previaAcertoDiesel(){
+  const el = document.getElementById('ace-previa');
+  if(!el) return;
+  const medido = parseNumBR(document.getElementById('ace-medido').value);
+  if(medido===''){ el.textContent = 'Digite o valor medido para ver o acerto.'; el.className='previa-acerto'; return; }
+  const sistema = calcEstoqueDiesel().saldoAtual, dif = medido - sistema;
+  const f = v => fmt(v,1).replace(/,0$/,'');
+  el.innerHTML = `Saldo no sistema: <strong>${f(sistema)} L</strong> · Medido: <strong>${f(medido)} L</strong> → acerto de <strong>${dif>0?'+':''}${f(dif)} L</strong>`;
+  el.className = 'previa-acerto ativa';
+}
+function salvarAcertoDiesel(){
+  const data = document.getElementById('ace-data').value;
+  const medido = parseNumBR(document.getElementById('ace-medido').value);
+  if(!data){ alert('Informe a data da medição.'); return; }
+  if(medido==='' || medido<0){ alert('Informe quanto tem no tanque.'); return; }
+  const estacao = document.getElementById('ace-estacao').value;
+  if(!estacao){ alert('Escolha a estação.'); return; }
+  const sistema = calcEstoqueDiesel().saldoAtual;
+  const dif = Math.round((medido - sistema)*100)/100;
+  if(dif===0){ alert('O saldo do sistema já bate com a medição. Nenhum acerto necessário.'); return; }
+  if(!confirm(`Lançar acerto de ${dif>0?'+':''}${fmt(dif,1)} L?\n\nSistema: ${fmt(sistema,1)} L\nMedido: ${fmt(medido,1)} L`)) return;
+  lsSet('app-nelore-mra-custos-dieselUltimaEstacao', estacao);
+  const row = {id:novoIdDiesel('a'), tipo:'acerto', data, entrada:dif, medido, saldoSistema:sistema, estacao, criadoEm:Date.now(), criadoPor:usuarioAtual()};
+  diesel.estoque.push(row);
+  salvarLinhaDiesel('estoque', row, true);
+  render();
+}
+function excluirMovEstoque(id){
+  const row = diesel.estoque.find(e=>e.id===id);
+  if(!row) return;
+  const nome = tipoEstoque(row)==='acerto' ? 'este acerto' : 'esta entrada';
+  if(confirm(`Excluir ${nome} de ${fmt(row.entrada,1)} L? Não dá pra desfazer.`)) excluirLinhaDiesel('estoque', row);
+}
+const COLS_EXTRATO = [
+  {key:'data', label:'Data', type:'date'}, {key:'tipoNome', label:'Tipo'}, {key:'area', label:'Área'},
+  {key:'litros', label:'Litros', type:'number'}, {key:'saldo', label:'Saldo', type:'number'}, {key:'estacao', label:'Estação'},
+];
+async function addExtratoSheet(wb, nome){
+  const movs = calcEstoqueDiesel().movs;
+  const ws = await addSheetForTable(wb, nome, COLS_EXTRATO, movs, ()=>({}));
+  ws.getColumn(3).width = 20;
+  movs.forEach((m,i)=>{
+    const cor = m.tipo==='entrada' ? 'FFE3F0DA' : m.tipo==='acerto' ? 'FFFCE5CC' : 'FFFDEEEC';
+    if(cor) ws.getRow(i+2).eachCell(c=>{ c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:cor}}; });
+  });
+  addLinhaTotal(ws, ['SALDO ATUAL', '', '', '', movs.length ? movs[movs.length-1].saldo : 0, '']);
+  return ws;
+}
+async function exportEstoqueDiesel(){
+  const wb = new ExcelJS.Workbook();
+  await addExtratoSheet(wb, 'Estoque Diesel');
+  const buf = await wb.xlsx.writeBuffer();
+  downloadBuffer(buf, `Estoque_Diesel_${hojeISO()}.xlsx`);
+}
+function pageDieselResumo(){
+  const lancs = dieselLancamentosFiltrados();
+  const total = lancs.reduce((s,l)=>s+Number(l.litros||0),0);
+  const media = lancs.length ? total/lancs.length : 0;
+  const estacoes = [...new Set([...diesel.estacoes, ...diesel.lancamentos.map(l=>l.estacao).filter(Boolean)])];
+  const temFiltro = dieselFiltro.de || dieselFiltro.ate || dieselFiltro.estacao;
+  return `
+    <div class="toolbar no-print" style="justify-content:flex-end;">
+      <button class="secondary" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="secondary" onclick="exportResumoDiesel()">⬇️ Exportar Excel</button>
+    </div>
+    <h2>📈 Resumo Diesel</h2>
+    <div class="caption">${esc(descricaoFiltroDiesel())}</div>
+    <div class="panel no-print">
+      <div class="filtros-resumo">
+        <div><label>De</label><input type="date" value="${esc(dieselFiltro.de)}" onchange="setFiltroDiesel('de', this.value)"></div>
+        <div><label>Até</label><input type="date" value="${esc(dieselFiltro.ate)}" onchange="setFiltroDiesel('ate', this.value)"></div>
+        <div><label>Estação</label><select onchange="setFiltroDiesel('estacao', this.value)"><option value="">Todas</option>${estacoes.map(e=>`<option value="${esc(e)}" ${e===dieselFiltro.estacao?'selected':''}>${esc(e)}</option>`).join('')}</select></div>
+        ${temFiltro ? `<div style="flex:0 0 auto;"><button class="ghost" style="padding:8px 12px;" onclick="limparFiltroDiesel()">Limpar filtros</button></div>` : ''}
+      </div>
+    </div>
+    <div class="resumo-kpis">
+      <div class="metric"><div class="val">${fmt(total,1)} L</div><div class="lbl">Litros usados</div></div>
+      <div class="metric"><div class="val">${lancs.length}</div><div class="lbl">Lançamentos</div></div>
+      <div class="metric"><div class="val">${fmt(media,1)} L</div><div class="lbl">Média por lançamento</div></div>
+    </div>
+    <div class="resumo-grid">
+      ${tabelaResumoDiesel('area', '🌾 Por Área', 'Área', agruparDiesel(lancs,'area'))}
+      ${tabelaResumoDiesel('maquina', '🚜 Por Máquina', 'Máquina', agruparDiesel(lancs,'maquina'))}
+      ${tabelaResumoDiesel('estacao', '📅 Por Estação', 'Estação', agruparDiesel(lancs,'estacao'))}
+    </div>
+  `;
+}
+
+// ---------- Excel do diesel ----------
+const COLS_RESUMO = rotulo => [{key:'nome',label:rotulo},{key:'qtd',label:'Lançamentos',type:'number'},{key:'litros',label:'Litros',type:'number'},{key:'pct',label:'% do total',type:'pct'}];
+function addLinhaTotal(ws, valores){
+  const row = ws.addRow(valores);
+  row.eachCell((cell, colNumber)=>{
+    const fmtCol = ws.getColumn(colNumber).numFmt;
+    if(fmtCol) cell.numFmt = fmtCol;
+    cell.font = {bold:true};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FFF5F3EA'}};
+    cell.border = {top:{style:'medium', color:{argb:'FF38502E'}}};
+  });
+}
+async function addResumoDieselSheets(wb, lancs, nomeAba){
+  for(const [chave, rotulo, titulo] of [['area','Área','Por Área'],['maquina','Máquina','Por Máquina'],['estacao','Estação','Por Estação']]){
+    const linhas = agruparDiesel(lancs, chave);
+    const ws = await addSheetForTable(wb, nomeAba(titulo), COLS_RESUMO(rotulo), linhas, ()=>({}));
+    ws.getColumn(1).width = 28;
+    ws.getColumn(2).numFmt = '0';
+    addLinhaTotal(ws, ['TOTAL', linhas.reduce((s,r)=>s+r.qtd,0), linhas.reduce((s,r)=>s+r.litros,0), linhas.length?1:0]);
+  }
+}
+async function exportResumoDiesel(){
+  const wb = new ExcelJS.Workbook();
+  await addResumoDieselSheets(wb, dieselLancamentosFiltrados(), t=>`Diesel ${t}`);
+  const buf = await wb.xlsx.writeBuffer();
+  downloadBuffer(buf, `Resumo_Diesel_${hojeISO()}.xlsx`);
+}
+
+// ---------- Backup completo (todas as abas, todas as safras) ----------
+async function exportBackupCompleto(){
+  if(perfilDiesel) return;
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Custos Safra · Fazenda Paraíso';
+  const indice = wb.addWorksheet('Índice');
+  const usados = new Set(['índice']);
+  const nomeAba = nome=>{
+    const base = String(nome).replace(/[:\\\/?*\[\]]/g,'-').slice(0,31);
+    let n = base, i = 2;
+    while(usados.has(n.toLowerCase())){ const suf = ` (${i++})`; n = base.slice(0,31-suf.length) + suf; }
+    usados.add(n.toLowerCase());
+    return n;
+  };
+  const itens = [];
+  const add = async (grupo, nome, columns, rows, cd)=>{
+    const n = nomeAba(nome);
+    await addSheetForTable(wb, n, columns, rows, cd || (()=>({})));
+    itens.push([grupo, n, rows.length]);
+  };
+
+  for(const s of Object.values(state.safras)){
+    const tag = s.nome.replace(/\//g,'-');
+    const col = buildColheitaCfg(s), adto = buildAdiantamentosCfg(s), vend = buildVendasCfg(s);
+    await add(s.nome, `${tag} Talhões`, [{key:'talhao',label:'Talhão'},{key:'area',label:'Área (ha)',type:'number'},{key:'variedade',label:'Variedade 1'},{key:'variedade2',label:'Variedade 2'},{key:'plantado',label:'Será Plantado?'}],
+      s.talhoes.map(t=>({...t, plantado: t.plantado?'Sim':'Não'})));
+    await add(s.nome, `${tag} Colheita`, col.columns, col.rows, col.computeDerived);
+    await add(s.nome, `${tag} Adiantamentos`, adto.columns, adto.rows, adto.computeDerived);
+    await add(s.nome, `${tag} Vendas`, vend.columns, vend.rows, vend.computeDerived);
+    const cad = Array.from({length:Math.max(s.locais.length, s.motoristas.length)}, (_,i)=>({local:s.locais[i]||'', motorista:s.motoristas[i]||''}));
+    await add(s.nome, `${tag} Cadastros`, [{key:'local',label:'Local de entrega'},{key:'motorista',label:'Motorista'}], cad);
+  }
+
+  if(dieselPronto){
+    ordenarDiesel();
+    const ctrl = buildDieselControleCfg();
+    await add('Diesel', 'Diesel Controle', ctrl.columns, ctrl.rows, ctrl.computeDerived);
+    const wsEst = await addExtratoSheet(wb, nomeAba('Diesel Estoque'));
+    itens.push(['Diesel', wsEst.name, calcEstoqueDiesel().movs.length]);
+    const antes = wb.worksheets.length;
+    await addResumoDieselSheets(wb, diesel.lancamentos, t=>nomeAba(`Diesel ${t}`));
+    wb.worksheets.slice(antes).forEach(ws=>itens.push(['Diesel', ws.name, ws.rowCount-2]));
+    const n = Math.max(diesel.maquinas.length, diesel.areas.length, diesel.estacoes.length);
+    await add('Diesel', 'Diesel Cadastros', [{key:'m',label:'Máquinas'},{key:'a',label:'Áreas'},{key:'e',label:'Estações'}],
+      Array.from({length:n}, (_,i)=>({m:diesel.maquinas[i]||'', a:diesel.areas[i]||'', e:diesel.estacoes[i]||''})));
+  }
+
+  // Capa / índice
+  indice.columns = [{width:30},{width:36},{width:14}];
+  indice.mergeCells('A1:C1');
+  indice.getCell('A1').value = 'Backup · Custos Safra · Fazenda Paraíso';
+  indice.getCell('A1').font = {bold:true, size:16, color:{argb:'FFFFFFFF'}};
+  indice.getCell('A1').fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF38502E'}};
+  indice.getCell('A1').alignment = {vertical:'middle', horizontal:'left', indent:1};
+  indice.getRow(1).height = 32;
+  indice.mergeCells('A2:C2');
+  indice.getCell('A2').value = `Gerado em ${new Date().toLocaleString('pt-BR')}`;
+  indice.getCell('A2').font = {italic:true, color:{argb:'FF6B6B5C'}};
+  const cab = indice.getRow(4);
+  cab.values = ['Grupo','Aba','Linhas'];
+  cab.eachCell(c=>{ c.font={bold:true, color:{argb:'FFFFFFFF'}}; c.fill={type:'pattern', pattern:'solid', fgColor:{argb:'FF4C6B3F'}}; c.alignment={horizontal:'center'}; });
+  itens.forEach(([grupo, aba, linhas])=>{
+    const r = indice.addRow([grupo, {text:aba, hyperlink:`#'${aba.replace(/'/g,"''")}'!A1`}, linhas]);
+    r.getCell(2).font = {color:{argb:'FF1F5FA8'}, underline:true};
+    r.eachCell(c=>{ c.border = {bottom:{style:'hair', color:{argb:'FFE4E0D4'}}}; });
+  });
+
+  const buf = await wb.xlsx.writeBuffer();
+  downloadBuffer(buf, `Backup_Custos_Safra_${hojeISO()}.xlsx`);
+}
+
+// =================== LOGIN FIREBASE ===================
+function showAuthState(loggedIn){
+  document.body.classList.remove('auth-pending','auth-logged-out','authenticated');
+  document.body.classList.add(loggedIn ? 'authenticated' : 'auth-logged-out');
+}
+function authErrorMessage(err){
+  const code = err && err.code || '';
+  if(code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')) return 'Login ou senha incorretos.';
+  if(code.includes('too-many-requests')) return 'Muitas tentativas. Aguarde um pouco e tente novamente.';
+  return 'Não foi possível entrar. Confira o login e a senha.';
+}
+function initAuth(){
+  if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(()=>{});
+
+  document.getElementById('logoutBtn').addEventListener('click', ()=>firebase.auth().signOut().then(()=>location.href='../index.html'));
+
+  firebase.auth().onAuthStateChanged(async user=>{
+    if(!user){ location.href='../index.html'; return; }
+    if(user){
+      // Permissão vem do App Nelore MRA: admin vê tudo; os outros precisam ter o Custos liberado
+      ALLOWED_PAGES = null;
+      if(String(user.email||'').toLowerCase()!==ADMIN_EMAIL){
+        let perfil=null;
+        try{ const d=await firebase.firestore().collection('users').doc(user.uid).get(); perfil=d.exists?d.data():null; }catch(e){ console.warn(e); }
+        if(!perfil||perfil.ativo===false||!(perfil.apps&&perfil.apps.custos)){ alert('Você não tem acesso ao Custos. Fale com o administrador.'); location.href='../index.html'; return; }
+        const pg=perfil.paginas&&perfil.paginas.custos;
+        ALLOWED_PAGES = Array.isArray(pg)&&pg.length ? pg : null;
+      }
+      document.querySelectorAll('.navbtn').forEach(b=>{ b.style.display = paginaPermitida(b.dataset.page) ? '' : 'none'; });
+      // Quem só tem telas de diesel nunca carrega nem grava os custos da safra (as regras também bloqueiam)
+      perfilDiesel = !!ALLOWED_PAGES && ALLOWED_PAGES.every(p=>paginaDiesel(p));
+      if(!paginaPermitida(currentPage)) currentPage = primeiraPaginaPermitida();
+      document.body.classList.toggle('perfil-diesel', perfilDiesel);
+      document.getElementById('user-badge').textContent = loginExibicao(user.email);
+      showAuthState(true);
+      iniciarDiesel();
+      if(perfilDiesel){
+        // Funcionário do diesel nunca carrega nem grava os custos da safra.
+        setSyncStatus('🟡 Conectando...', 'local');
+        currentPage = 'diesel-controle';
+        render();
+      }
+      else if(!firebaseReady) initFirebase();
+      else render();
+    }else{
+      pararDiesel();
+      perfilDiesel = false;
+      document.body.classList.remove('perfil-diesel');
+      document.getElementById('user-badge').textContent = '';
+      showAuthState(false);
+      clearUndoHistory();
+      firebaseReady=false;
+      if(unsubscribeSnapshot){ unsubscribeSnapshot(); unsubscribeSnapshot=null; }
+      db=null; docRef=null;
+      setSyncStatus('⚪ Aguardando login', 'local');
+    }
+  });
+}
+
+if(FIREBASE_CONFIGURADO){
+  initAuth();
+} else {
+  showAuthState(true);
+  render();
+}
+</script>
+</body>
+</html>
