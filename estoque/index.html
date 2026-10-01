@@ -100,6 +100,12 @@ tfoot td{background:#eef3ef;font-weight:800;padding:11px 10px}
 .menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 12px;border-radius:8px;font-size:14.5px}.menu button:hover{background:#f3f6f4}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#17211c;color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;z-index:50;max-width:90vw;text-align:center}
 .hist td{padding:9px 10px}
+.h-dia{font-size:11.5px;font-weight:800;color:var(--suave);text-transform:uppercase;letter-spacing:.04em;padding:12px 0 4px;border-bottom:1px solid var(--linha)}
+.h-it{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--linha);font-size:14px;align-items:flex-start}
+.h-hora{color:var(--muito-suave);font-size:12.5px;min-width:40px;padding-top:1px}.h-txt{flex:1;min-width:0;line-height:1.45}.h-txt div{color:#334139;font-size:13.5px}
+.h-por{color:var(--muito-suave);font-size:12px;white-space:nowrap}
+.h-tag{font-size:11px;font-weight:800;border-radius:5px;padding:1px 6px}.h-tag.novo{background:#e3f3e8;color:#1f6a49}.h-tag.exc{background:#fbeeec;color:#a33627}
+.mais{color:#1f6a49;font-weight:700}.menos{color:#b0473a;font-weight:700}
 @media(max-width:860px){
   main{padding:12px 16px 110px}
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.kpi{padding:10px 12px}.kpi .v{font-size:22px}
@@ -134,8 +140,7 @@ tfoot td{background:#eef3ef;font-weight:800;padding:11px 10px}
     <button class="btn btn-primary desk" onclick="novaLinha()">+ Linha</button>
     <button class="btn btn-ghost desk" onclick="exportar(linhas,'estoque_gado_atual')">⬇ Excel</button>
     <button class="btn btn-ghost desk" onclick="window.print()">🖨 Imprimir</button>
-    <button class="btn btn-ghost desk" onclick="abrirHistorico()">📅 Meses fechados</button>
-    <button class="btn btn-ouro desk" onclick="fecharMes()">Fechar mês</button>
+    <button class="btn btn-ghost desk" onclick="abrirHistorico()">🕘 Mudanças</button>
   </div>
   <div id="avisoFiltro"></div>
   <div class="filtro-cel" id="filtroCel"></div>
@@ -149,7 +154,7 @@ tfoot td{background:#eef3ef;font-weight:800;padding:11px 10px}
 <script>
 /* ESTOQUE GADO — planilha geral do rebanho: uma linha por pasto + categoria (apps/estoque/linhas).
    Computador: edita direto na tabela. Celular: lista por pasto, toca na linha pra editar.
-   "Fechar mês" guarda uma foto em apps/estoque/fechamentos/AAAA-MM. */
+   "🕘 Mudanças": toda alteração fica anotada sozinha em apps/estoque/historico (quem, quando, de → para). */
 const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDomain:'app-nelore-mra.firebaseapp.com',projectId:'app-nelore-mra',storageBucket:'app-nelore-mra.firebasestorage.app',messagingSenderId:'1043343802346',appId:'1:1043343802346:web:219f5d73748271a85dfc93'};
 const ADMIN_EMAIL='mandrade.gado@terra.com.br', USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
 const CATEGORIAS=['Vacas','Novilhas','Bezerros','Bezerras','Garrotes','Touros','Bois','Matrizes','Receptoras','Doadoras'];
@@ -157,7 +162,7 @@ firebase.initializeApp(FIREBASE_CONFIG);
 const fs=firebase.firestore();
 fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
 const base=fs.collection('apps').doc('estoque');
-const colLinhas=base.collection('linhas'), colFech=base.collection('fechamentos');
+const colLinhas=base.collection('linhas'), colHist=base.collection('historico');
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const num=v=>{const n=Number(String(v??'').replace(',','.'));return Number.isFinite(n)?n:0};
@@ -314,6 +319,11 @@ function desenhar(){
       <div class="mf">♂ ${fmt(num(l.machos))}<br>♀ ${fmt(num(l.femeas))}</div><div class="tt">${fmt(num(l.machos)+num(l.femeas))}</div></div>`).join('')}</div>`).join('');
 }
 const carimbo=()=>({atualizadoEm:firebase.firestore.FieldValue.serverTimestamp(),atualizadoEmLocal:new Date().toISOString(),atualizadoPor:meuNome});
+/* ---------- histórico automático: cada mudança fica anotada (apps/estoque/historico) ---------- */
+const NOMES_CAMPO={local:'Pasto',categoria:'Categoria',machos:'Machos',femeas:'Fêmeas',obs:'Observação'};
+function anotar(l,acao,mud){
+  colHist.add({em:new Date().toISOString(),por:meuNome,acao,local:(l&&l.local)||'',categoria:(l&&l.categoria)||'',mud:mud||[]}).catch(()=>{});
+}
 function novaLinha(){
   const ref=colLinhas.doc();
   ref.set({local:'',categoria:'',machos:'',femeas:'',obs:'',criadoEm:new Date().toISOString(),...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
@@ -326,10 +336,14 @@ function editar(id,campo,valor){
   ultimaEdicao=Date.now();
   valor=String(valor).trim();
   if((campo==='machos'||campo==='femeas')&&valor!==''&&!Number.isFinite(Number(valor.replace(',','.')))){toast('Digite só número.');desenhar();return}
+  const l=linhas.find(x=>x.id===id)||{};const antes=String(l[campo]??'').trim();
   colLinhas.doc(id).update({[campo]:valor,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
+  if(antes!==valor)anotar(campo==='local'||campo==='categoria'?{...l,[campo]:valor}:l,'mudou',[{c:campo,de:antes,para:valor}]);
   if(campo==='local'||campo==='categoria')redesenharDepois=true;
 }
-function apagar(id){if(!confirm('Excluir esta linha do estoque?'))return;colLinhas.doc(id).delete().catch(e=>toast('Não excluiu: '+e.message));fecharJanela()}
+function apagar(id){if(!confirm('Excluir esta linha do estoque?'))return;const l=linhas.find(x=>x.id===id);
+  if(l&&(l.local||l.categoria||num(l.machos)||num(l.femeas)))anotar(l,'excluiu',[{c:'machos',de:String(num(l.machos)),para:''},{c:'femeas',de:String(num(l.femeas)),para:''}]);
+  colLinhas.doc(id).delete().catch(e=>toast('Não excluiu: '+e.message));fecharJanela()}
 
 /* ---------- formulário do celular ---------- */
 function fecharJanela(){const m=$('#janela');if(m)m.remove()}
@@ -353,46 +367,48 @@ function editarLinha(id){
 function salvarLinha(id){
   const d={local:$('#eLocal').value.trim(),categoria:$('#eCat').value.trim(),machos:String(num($('#eM').value)),femeas:String(num($('#eF').value)),obs:$('#eObs').value.trim()};
   if(!d.local&&!d.categoria){toast('Informe pelo menos o pasto ou a categoria.');return}
-  if(id)colLinhas.doc(id).update({...d,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
-  else colLinhas.add({...d,criadoEm:new Date().toISOString(),...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
+  if(id){const l=linhas.find(x=>x.id===id)||{};
+    const mud=Object.keys(NOMES_CAMPO).map(c=>({c,de:String(l[c]??'').trim(),para:d[c]})).filter(x=>(x.c==='machos'||x.c==='femeas')?num(x.de)!==num(x.para):x.de!==x.para);
+    colLinhas.doc(id).update({...d,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
+    if(mud.length)anotar(d,'mudou',mud)}
+  else{colLinhas.add({...d,criadoEm:new Date().toISOString(),...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
+    anotar(d,'criou',[{c:'machos',de:'',para:d.machos},{c:'femeas',de:'',para:d.femeas}])}
   fecharJanela();toast(navigator.onLine?'Salvo.':'Guardado no aparelho. Envia quando a internet voltar.');
 }
 function abrirMenu(ev){
   ev.stopPropagation();const old=$('.menu');if(old){old.remove();return}
   const m=document.createElement('div');m.className='menu';
-  m.innerHTML=`<button onclick="fecharMes()">📌 Fechar mês</button><button onclick="abrirHistorico()">📅 Meses fechados</button><button onclick="exportar(linhas,'estoque_gado_atual')">⬇ Excel</button><button onclick="window.print()">🖨 Imprimir</button>`;
+  m.innerHTML=`<button onclick="abrirHistorico()">🕘 Mudanças</button><button onclick="exportar(linhas,'estoque_gado_atual')">⬇ Excel</button><button onclick="window.print()">🖨 Imprimir</button>`;
   document.body.appendChild(m);setTimeout(()=>document.addEventListener('click',()=>m.remove(),{once:true}),0);
 }
 
-/* ---------- fechamento do mês ---------- */
-async function fecharMes(){
-  if(!linhas.length){toast('Não tem nada no estoque pra fechar.');return}
-  const d=new Date();const sug=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-  const mes=prompt('Fechar o estoque de qual mês? (AAAA-MM)',sug);if(!mes)return;
-  if(!/^\d{4}-\d{2}$/.test(mes)){toast('Use o formato AAAA-MM, ex: '+sug);return}
-  const ref=colFech.doc(mes);
-  try{const ex=await ref.get();if(ex.exists&&!confirm(`O mês ${mes} já foi fechado. Substituir pela foto de agora?`))return}catch(e){}
-  const ls=ordenadas(linhas).map(({id,...r})=>({local:r.local||'',categoria:r.categoria||'',machos:num(r.machos),femeas:num(r.femeas),obs:r.obs||''}));
-  const t=totais(ls);
-  ref.set({mes,linhas:ls,machos:t.m,femeas:t.f,total:t.m+t.f,fechadoEm:firebase.firestore.FieldValue.serverTimestamp(),fechadoEmLocal:new Date().toISOString(),fechadoPor:meuNome}).catch(e=>toast('Não salvou: '+e.message));
-  toast(`Estoque de ${mes} fechado: ${fmt(t.m+t.f)} cabeças.`);
-}
+/* ---------- tela de mudanças ---------- */
+let histDocs=[],histPasto='';
 async function abrirHistorico(){
-  let docs=[];
-  try{docs=(await colFech.get()).docs.map(d=>d.data()).sort((a,b)=>b.mes.localeCompare(a.mes))}catch(e){toast('Não consegui abrir: '+e.message);return}
-  window.__fech=docs;
+  try{histDocs=(await colHist.orderBy('em','desc').limit(500).get()).docs.map(d=>d.data())}catch(e){toast('Não consegui abrir: '+e.message);return}
+  histPasto='';
   const m=document.createElement('div');m.className='modal';m.id='janela';m.onclick=e=>{if(e.target===m)m.remove()};
-  m.innerHTML=`<div class="folha larga"><div class="folha-cab"><h2>📅 Meses fechados</h2><button class="x" onclick="fecharJanela()">×</button></div>
-    <div class="folha-corpo">${docs.length?`<table class="hist"><thead><tr><th>Mês</th><th class="n">Machos</th><th class="n">Fêmeas</th><th class="n">Total</th><th></th></tr></thead><tbody>
-    ${docs.map((d,i)=>`<tr><td><b>${esc(d.mes)}</b><div class="quando">${esc(d.fechadoPor||'')} ${d.fechadoEmLocal?new Date(d.fechadoEmLocal).toLocaleDateString('pt-BR'):''}</div></td><td class="n">${fmt(d.machos)}</td><td class="n">${fmt(d.femeas)}</td><td class="n"><b>${fmt(d.total)}</b></td>
-    <td style="text-align:right;white-space:nowrap"><button class="btn btn-ghost" style="padding:6px 10px;font-size:12.5px" onclick="verFech(${i})">Ver</button> <button class="btn btn-ghost" style="padding:6px 10px;font-size:12.5px" onclick="exportar(__fech[${i}].linhas,'estoque_gado_'+__fech[${i}].mes)">⬇</button></td></tr>`).join('')}</tbody></table>`:'<div class="vazio">Nenhum mês fechado ainda.</div>'}
-    <div id="fechDet"></div></div></div>`;
-  document.body.appendChild(m);
+  m.innerHTML=`<div class="folha larga"><div class="folha-cab"><h2>🕘 Mudanças no estoque</h2><button class="x" onclick="fecharJanela()">×</button></div>
+    <div class="folha-corpo"><select class="input" style="margin-bottom:12px" onchange="histPasto=this.value;desenharHist()"><option value="">Todos os pastos</option>${[...new Set(histDocs.map(h=>h.local).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true})).map(p=>`<option>${esc(p)}</option>`).join('')}</select>
+    <div id="histLista"></div></div></div>`;
+  document.body.appendChild(m);desenharHist();
 }
-function verFech(i){
-  const d=window.__fech[i];
-  $('#fechDet').innerHTML=`<h3 style="margin:18px 0 8px">Estoque de ${esc(d.mes)}</h3><div style="overflow-x:auto"><table class="hist"><thead><tr><th>Local</th><th>Categoria</th><th class="n">M</th><th class="n">F</th><th class="n">Total</th></tr></thead><tbody>
-    ${d.linhas.map(l=>`<tr><td>${esc(l.local)}</td><td>${esc(l.categoria)}</td><td class="n">${fmt(l.machos)}</td><td class="n">${fmt(l.femeas)}</td><td class="n"><b>${fmt(l.machos+l.femeas)}</b></td></tr>`).join('')}</tbody></table></div>`;
+function desenharHist(){
+  const ls=histDocs.filter(h=>!histPasto||h.local===histPasto);
+  if(!ls.length){$('#histLista').innerHTML='<div class="vazio">Nenhuma mudança anotada ainda.<br>A partir de agora, tudo que mudar no estoque aparece aqui sozinho.</div>';return}
+  const quant=x=>x===''?'—':fmt(num(x));
+  let html='',dia='';
+  ls.forEach(h=>{
+    const d=new Date(h.em),ds=d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+    if(ds!==dia){dia=ds;html+=`<div class="h-dia">${ds}</div>`}
+    const oq=h.acao==='criou'?'<span class="h-tag novo">novo</span>':h.acao==='excluiu'?'<span class="h-tag exc">excluído</span>':'';
+    const det=(h.mud||[]).filter(x=>!(h.acao!=='mudou'&&num(x.de)===0&&num(x.para)===0)).map(x=>{
+      const n=NOMES_CAMPO[x.c]||x.c;
+      if(x.c==='machos'||x.c==='femeas'){const dif=num(x.para)-num(x.de);return h.acao==='mudou'?`${n}: ${quant(x.de)} → <b>${quant(x.para)}</b> <span class="${dif>0?'mais':'menos'}">(${dif>0?'+':''}${fmt(dif)})</span>`:`${n}: <b>${quant(h.acao==='excluiu'?x.de:x.para)}</b>`}
+      return `${n}: ${esc(x.de||'—')} → <b>${esc(x.para||'—')}</b>`}).join(' · ');
+    html+=`<div class="h-it"><div class="h-hora">${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div><div class="h-txt"><b>${esc(h.local||'(sem pasto)')}</b> · ${esc(h.categoria||'sem categoria')} ${oq}<div>${det}</div></div><div class="h-por">${esc(h.por||'')}</div></div>`;
+  });
+  $('#histLista').innerHTML=html;
 }
 function exportar(ls,nome){
   if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
