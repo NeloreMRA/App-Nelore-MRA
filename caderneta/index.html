@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#153e2c">
+<title>Caderneta · App Nelore MRA</title>
+<link rel="icon" href="../logo.webp">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--verde:#1f6a49;--verde-esc:#153e2c;--ouro:#b39a3b;--fundo:#f5f7f5;--borda:#e1e7e2;--texto:#17211c;--suave:#5d6a62;--roxo:#7a52c7;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--texto);background:var(--fundo)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--fundo)}button,input,select,textarea{font:inherit}
+.hidden{display:none!important}
+.topo{background:linear-gradient(135deg,#123526 0%,#1f6a49 100%);color:#fff;position:sticky;top:0;z-index:5}
+.topo:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ouro)}
+.topo-in{max-width:900px;margin:0 auto;padding:10px 14px 13px;display:flex;align-items:center;gap:10px}
+.topo img{width:40px;height:40px;border-radius:50%;flex:0 0 40px}
+.topo .t{font-size:17px;font-weight:800}.topo .s{font-size:11px;opacity:.8}
+.topo .acoes{margin-left:auto;display:flex;gap:6px}
+.topo .acoes button{background:#ffffff1a;color:#fff;border:1px solid #ffffff40;border-radius:8px;padding:7px 10px;cursor:pointer;font-size:13px;font-weight:600}
+main{max-width:900px;margin:0 auto;padding:14px 14px 110px}
+.offline{background:#fff3d6;border:1px solid #ecd28f;color:#6b4f12;border-radius:10px;padding:9px 12px;font-size:13px;margin-bottom:12px}
+.mes{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff;border:1px solid var(--borda);border-radius:12px;padding:8px}
+.mes button{border:0;background:#eef3ef;border-radius:8px;width:42px;height:38px;font-size:18px;cursor:pointer;color:var(--verde-esc)}
+.mes .nome{font-weight:800;font-size:16px;text-align:center}.mes .nome small{display:block;font-weight:500;font-size:12px;color:var(--suave);text-transform:none}
+.resumo{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.chip{border:1px solid var(--borda);background:#fff;border-radius:99px;padding:6px 11px;font-size:12.5px;cursor:pointer;color:var(--texto);display:flex;gap:5px;align-items:center}
+.chip b{font-weight:800}.chip.on{background:var(--verde);border-color:var(--verde);color:#fff}
+.busca{width:100%;border:1px solid #d7ded9;border-radius:10px;padding:10px 12px;font-size:15px;background:#fff;margin-bottom:12px}
+.dia{font-size:12px;font-weight:800;color:var(--suave);text-transform:uppercase;letter-spacing:.04em;margin:16px 2px 8px}
+.item{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:11px 12px;margin-bottom:8px;display:flex;gap:11px;cursor:pointer;border-left:4px solid var(--cor,#9aa49d)}
+.item .ic{font-size:22px;line-height:1.2}
+.item .ti{font-weight:800;font-size:15px}.item .li{font-size:13px;color:#33413a;margin-top:3px;display:flex;flex-wrap:wrap;gap:4px 12px}
+.item .ob{font-size:13.5px;margin-top:5px;white-space:pre-wrap;word-break:break-word}
+.item .por{font-size:11px;color:var(--suave);margin-top:6px}.pend{color:#a0681a;font-weight:700}
+.vazio{background:#fff;border:1px dashed #c9d4cc;border-radius:12px;padding:26px;text-align:center;color:var(--suave)}
+.fab{position:fixed;right:18px;bottom:22px;background:var(--verde);color:#fff;border:0;border-radius:99px;padding:15px 22px;font-size:16px;font-weight:800;box-shadow:0 8px 22px #153e2c55;cursor:pointer;z-index:6}
+.barra{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.btn{border:0;border-radius:9px;padding:11px 16px;font-weight:700;cursor:pointer}
+.btn-primary{background:var(--verde);color:#fff}.btn-ghost{background:#fff;border:1px solid #d9dfda;color:#334139}.btn-danger{background:#fff;border:1px solid #e7bbb5;color:#a33627}
+/* formulário */
+.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.folha{background:#fff;width:min(560px,100%);max-height:94vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px 22px}
+@media(min-width:700px){.modal{align-items:center}.folha{border-radius:18px}}
+.folha h2{margin:0 0 14px;font-size:18px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field label{font-size:12.5px;color:var(--suave);font-weight:700}
+.input{width:100%;border:1px solid #d7ded9;border-radius:10px;padding:11px 12px;font-size:16px;color:var(--texto);background:#fff;outline:none}
+.input:focus{border-color:#72a386;box-shadow:0 0 0 3px #72a38622}
+textarea.input{min-height:90px;resize:vertical}
+.tipos{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px}
+.tipo{border:1px solid #d9dfda;background:#fff;border-radius:10px;padding:10px 8px;font-size:13.5px;cursor:pointer;text-align:left;display:flex;gap:7px;align-items:center}
+.tipo.on{border-color:var(--verde);background:#eef6f1;font-weight:800;box-shadow:inset 0 0 0 1px var(--verde)}
+.duas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fotos{display:flex;gap:8px;flex-wrap:wrap}.foto{position:relative;width:84px;height:84px;border-radius:10px;overflow:hidden;border:1px solid var(--borda);background:#eef1ef}
+.foto img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}.foto button{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;border:0;background:#000a;color:#fff;cursor:pointer;line-height:1}
+.addfoto{width:84px;height:84px;border:2px dashed #b7c9bd;border-radius:10px;display:grid;place-items:center;color:var(--verde);font-weight:800;font-size:12px;text-align:center;cursor:pointer;background:#fff}
+.zoom{position:fixed;inset:0;background:#000e;display:grid;place-items:center;z-index:40;padding:10px}.zoom img{max-width:100%;max-height:100%;border-radius:8px}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#17211c;color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;z-index:30}
+@media print{.topo,.fab,.offline,.busca,.resumo,.mes button,.barra{display:none!important}main{padding:0}.item{break-inside:avoid;border-left-width:2px}}
+</style>
+</head>
+<body>
+<header class="topo"><div class="topo-in">
+  <img src="../logo.webp" alt="Nelore MRA">
+  <div><div class="t">📒 Caderneta</div><div class="s" id="quem"></div></div>
+  <div class="acoes"><button onclick="location.href='../index.html'">← App</button></div>
+</div></header>
+<main>
+  <div id="offline" class="offline hidden">📵 Sem internet. Pode lançar normal: fica guardado no celular e envia sozinho quando a internet voltar.</div>
+  <div class="mes"><button onclick="mudaMes(-1)" aria-label="Mês anterior">◀</button><div class="nome" id="mesNome"></div><button onclick="mudaMes(1)" aria-label="Próximo mês">▶</button></div>
+  <div class="resumo" id="resumo"></div>
+  <input class="busca" id="busca" placeholder="🔎 Buscar por RGD, local ou observação..." oninput="desenhar()">
+  <div id="lista"><div class="vazio">Carregando...</div></div>
+  <div class="barra"><button class="btn btn-ghost" onclick="exportarMes()">⬇ Excel do mês</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div>
+</main>
+<button class="fab" onclick="abrirForm()">+ Lançar</button>
+
+<script>
+/* CADERNETA — anotações do dia a dia, uma por documento em apps/caderneta/lancamentos.
+   Funciona sem internet (o Firestore guarda no aparelho e envia quando voltar). */
+const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDomain:'app-nelore-mra.firebaseapp.com',projectId:'app-nelore-mra',storageBucket:'app-nelore-mra.firebasestorage.app',messagingSenderId:'1043343802346',appId:'1:1043343802346:web:219f5d73748271a85dfc93'};
+const ADMIN_EMAIL='mandrade.gado@terra.com.br', USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
+// Única coisa "travada": o tipo de acontecimento. O resto é livre.
+const TIPOS=[
+  ['Nascimento','🐮','#2a78d6'],['Morte','✝️','#5d6a62'],['Vacina / Medicamento','💉','#1b9e8f'],['Doença / Tratamento','🩺','#d2559a'],
+  ['Compra','🛒','#7a52c7'],['Venda','💰','#a08a10'],['Troca de pasto','🔁','#e08a1e'],['Contagem','🔢','#1f6a49'],
+  ['Desmama','🍼','#2a78d6'],['Pesagem','⚖️','#7a52c7'],['Cobertura / Monta','❤️','#d2559a'],['Manutenção (cerca, água...)','🔧','#a08a10'],['Geral','📝','#5d6a62']
+];
+const tipoInfo=n=>TIPOS.find(t=>t[0]===n)||[n,'📝','#9aa49d'];
+firebase.initializeApp(FIREBASE_CONFIG);
+const fs=firebase.firestore();
+fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+const col=fs.collection('apps').doc('caderneta').collection('lancamentos');
+const cfgRef=fs.collection('apps').doc('caderneta').collection('config').doc('listas');
+// Fotos ficam comprimidas num documento próprio cada (não precisa do Storage pago do Firebase)
+const colFotos=fs.collection('apps').doc('caderneta').collection('fotos');
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const hoje=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const fmtData=s=>s?s.split('-').reverse().join('/'):'';
+let eu=null, ehAdmin=false, meuNome='', mes=hoje().slice(0,7), itens=[], filtroTipo='', locais=[], parar=null;
+
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2400)}
+function statusRede(){$('#offline').classList.toggle('hidden',navigator.onLine)}
+addEventListener('online',statusRede);addEventListener('offline',statusRede);statusRede();
+
+firebase.auth().onAuthStateChanged(async u=>{
+  if(!u){location.href='../index.html';return}
+  eu=u;ehAdmin=String(u.email||'').toLowerCase()===ADMIN_EMAIL;
+  let perfil=null;
+  try{const d=await fs.collection('users').doc(u.uid).get();perfil=d.exists?d.data():null}catch(e){console.warn(e)}
+  if(!ehAdmin&&(!perfil||perfil.ativo===false||!(perfil.apps&&perfil.apps.caderneta))){alert('Você não tem acesso à Caderneta. Fale com o administrador.');location.href='../index.html';return}
+  meuNome=ehAdmin?'Administrador':((perfil&&(perfil.nome||perfil.usuario))||String(u.email).replace(USER_DOMAIN,''));
+  $('#quem').textContent=meuNome;
+  cfgRef.onSnapshot(d=>{locais=(d.exists&&d.data().locais)||[]},()=>{});
+  ouvirMes();
+});
+
+function ouvirMes(){
+  if(parar)parar();
+  const [a,m]=mes.split('-').map(Number);
+  const nm=new Date(a,m-1,1).toLocaleDateString('pt-BR',{month:'long'});
+  $('#mesNome').innerHTML=`${nm.charAt(0).toUpperCase()+nm.slice(1)} de ${a}<small id="mesQtd"></small>`;
+  $('#lista').innerHTML='<div class="vazio">Carregando...</div>';
+  parar=col.where('mes','==',mes).onSnapshot({includeMetadataChanges:true},snap=>{
+    itens=snap.docs.map(d=>({id:d.id,...d.data(),_pend:d.metadata.hasPendingWrites}));
+    desenhar();
+  },e=>{$('#lista').innerHTML=`<div class="vazio">Não consegui carregar.<br><small>${esc(e.message)}</small></div>`});
+}
+function mudaMes(d){const [a,m]=mes.split('-').map(Number);const n=new Date(a,m-1+d,1);mes=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;filtroTipo='';ouvirMes()}
+
+function visiveis(){
+  const q=$('#busca').value.trim().toLowerCase();
+  return itens.filter(i=>(!filtroTipo||i.acontecimento===filtroTipo)&&(!q||[i.rgd,i.local,i.obs,i.acontecimento,i.criadoPorNome].join(' ').toLowerCase().includes(q)))
+    .sort((a,b)=>String(b.data).localeCompare(String(a.data))||String(b.criadoEmLocal||'').localeCompare(String(a.criadoEmLocal||'')));
+}
+function desenhar(){
+  const cont={};itens.forEach(i=>cont[i.acontecimento]=(cont[i.acontecimento]||0)+1);
+  const q=$('#mesQtd');if(q)q.textContent=`${itens.length} lançamento(s)`;
+  $('#resumo').innerHTML=Object.keys(cont).length?`<button class="chip ${!filtroTipo?'on':''}" onclick="filtroTipo='';desenhar()">Todos <b>${itens.length}</b></button>`+
+    TIPOS.filter(t=>cont[t[0]]).concat(Object.keys(cont).filter(k=>!TIPOS.some(t=>t[0]===k)).map(k=>[k,'📝'])).map(t=>`<button class="chip ${filtroTipo===t[0]?'on':''}" onclick="filtroTipo=${esc(JSON.stringify(t[0]))};desenhar()">${t[1]} ${esc(t[0])} <b>${cont[t[0]]}</b></button>`).join(''):'';
+  const v=visiveis();
+  if(!v.length){$('#lista').innerHTML=`<div class="vazio">${itens.length?'Nada encontrado com esse filtro.':'Nenhum lançamento neste mês.<br>Toque em <b>+ Lançar</b> pra anotar.'}</div>`;return}
+  let html='',dia='';
+  v.forEach(i=>{
+    if(i.data!==dia){dia=i.data;const d=new Date(dia+'T12:00');html+=`<div class="dia">${d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'})}</div>`}
+    const [n,ic,cor]=tipoInfo(i.acontecimento);
+    html+=`<div class="item" style="--cor:${cor}" onclick="abrirForm('${i.id}')"><div class="ic">${ic}</div><div style="min-width:0;flex:1">
+      <div class="ti">${esc(n)}</div>
+      <div class="li">${i.rgd?`<span>🏷 RGD <b>${esc(i.rgd)}</b></span>`:''}${i.local?`<span>📍 ${esc(i.local)}</span>`:''}${i.qtd?`<span>🐄 ${esc(i.qtd)} cab.</span>`:''}${(i.fotos||[]).length?`<span>📷 ${i.fotos.length} foto(s)</span>`:''}</div>
+      ${i.obs?`<div class="ob">${esc(i.obs)}</div>`:''}
+      <div class="por">por ${esc(i.criadoPorNome||'')}${i._pend?' · <span class="pend">⏳ aguardando internet pra enviar</span>':''}</div></div></div>`;
+  });
+  $('#lista').innerHTML=html;
+}
+
+/* ---------- formulário ---------- */
+function podeEditar(i){return ehAdmin||i.criadoPorUid===eu.uid}
+function abrirForm(id){
+  const i=id?itens.find(x=>x.id===id):null;
+  if(i&&!podeEditar(i)){toast('Só quem lançou (ou o administrador) pode alterar.');return}
+  const sel=i?i.acontecimento:'';
+  const m=document.createElement('div');m.className='modal';m.id='form';
+  m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="folha"><h2>${i?'Editar lançamento':'Novo lançamento'}</h2>
+    <div class="field"><label>O que aconteceu? *</label><div class="tipos">${TIPOS.map(t=>`<button type="button" class="tipo ${t[0]===sel?'on':''}" data-t="${esc(t[0])}" onclick="document.querySelectorAll('.tipo').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${t[1]} ${esc(t[0])}</button>`).join('')}</div></div>
+    <div class="duas"><div class="field"><label>Data *</label><input id="fData" class="input" type="date" value="${esc(i?i.data:hoje())}"></div>
+    <div class="field"><label>RGD (opcional)</label><input id="fRgd" class="input" value="${esc(i?i.rgd:'')}" autocapitalize="characters"></div></div>
+    <div class="duas"><div class="field"><label>Local / pasto</label><input id="fLocal" class="input" list="listaLocais" value="${esc(i?i.local:'')}"><datalist id="listaLocais">${locais.map(l=>`<option value="${esc(l)}">`).join('')}</datalist></div>
+    <div class="field"><label>Qtd. de cabeças</label><input id="fQtd" class="input" inputmode="numeric" value="${esc(i?i.qtd:'')}"></div></div>
+    <div class="field"><label>Fotos</label><div class="fotos" id="fFotos"></div>
+      <input id="fArq" type="file" accept="image/*" capture="environment" multiple class="hidden" onchange="addFotos(this.files);this.value=''"></div>
+    <div class="field"><label>Observação</label><textarea id="fObs" class="input" placeholder="Ex: pasto X com 28 cabeças (14 M e 14 F)">${esc(i?i.obs:'')}</textarea></div>
+    <div class="barra">${i?`<button class="btn btn-danger" style="margin-right:auto" onclick="apagar('${i.id}')">Apagar</button>`:''}<button class="btn btn-ghost" onclick="document.getElementById('form').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvar(${i?`'${i.id}'`:''})">Salvar</button></div>
+  </div>`;
+  document.body.appendChild(m);
+  fotosForm=[];removidas=[];desenharFotos();
+  (i&&i.fotos||[]).forEach(fid=>colFotos.doc(fid).get().then(d=>{if(d.exists&&document.getElementById('form')){fotosForm.push({id:fid,dados:d.data().dados});desenharFotos()}}).catch(()=>{}));
+}
+/* ---------- fotos: comprime no próprio celular (máx. 1280 px, ~150 KB) ---------- */
+let fotosForm=[],removidas=[];
+function desenharFotos(){
+  const el=document.getElementById('fFotos');if(!el)return;
+  el.innerHTML=fotosForm.map((f,k)=>`<div class="foto"><img src="${f.dados}" onclick="verFoto(${k})"><button type="button" onclick="tirarFoto(${k})" aria-label="Remover">×</button></div>`).join('')
+    +(fotosForm.length<4?`<div class="addfoto" onclick="document.getElementById('fArq').click()">📷<br>Adicionar</div>`:'');
+}
+function comprimir(arq){return new Promise((ok,erro)=>{const r=new FileReader();r.onerror=erro;r.onload=()=>{const img=new Image();img.onerror=erro;img.onload=()=>{
+  const M=1280,esc=Math.min(1,M/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*esc);c.height=Math.round(img.height*esc);
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);let q=0.7,d=c.toDataURL('image/jpeg',q);while(d.length>600000&&q>0.3){q-=0.1;d=c.toDataURL('image/jpeg',q)}ok(d)};img.src=r.result};r.readAsDataURL(arq)})}
+async function addFotos(files){for(const f of [...files].slice(0,4-fotosForm.length)){try{fotosForm.push({id:null,dados:await comprimir(f)})}catch(e){toast('Não consegui ler essa foto.')}}desenharFotos()}
+function tirarFoto(k){const f=fotosForm[k];if(f.id)removidas.push(f.id);fotosForm.splice(k,1);desenharFotos()}
+function verFoto(k){const z=document.createElement('div');z.className='zoom';z.onclick=()=>z.remove();z.innerHTML=`<img src="${fotosForm[k].dados}">`;document.body.appendChild(z)}
+function salvar(id){
+  const t=document.querySelector('.tipo.on');if(!t){toast('Escolha o que aconteceu.');return}
+  const data=$('#fData').value;if(!data){toast('Informe a data.');return}
+  const dados={acontecimento:t.dataset.t,data,mes:data.slice(0,7),rgd:$('#fRgd').value.trim().toUpperCase(),local:$('#fLocal').value.trim(),qtd:$('#fQtd').value.trim(),obs:$('#fObs').value.trim()};
+  const lancId=id||col.doc().id;
+  dados.fotos=fotosForm.map(f=>{if(f.id)return f.id;const ref=colFotos.doc();ref.set({dados:f.dados,lancamentoId:lancId,mes:dados.mes,criadoPorUid:eu.uid,criadoEmLocal:new Date().toISOString()}).catch(e=>toast('Foto não salvou: '+e.message));return ref.id});
+  removidas.forEach(fid=>colFotos.doc(fid).delete().catch(()=>{}));
+  // Gravação vai pra fila do aparelho na hora (funciona sem internet) — não espera o servidor.
+  if(id){col.doc(id).update({...dados,alteradoEm:firebase.firestore.FieldValue.serverTimestamp(),alteradoPor:meuNome}).catch(e=>toast('Não salvou: '+e.message))}
+  else{col.doc(lancId).set({...dados,criadoPorUid:eu.uid,criadoPorNome:meuNome,criadoEm:firebase.firestore.FieldValue.serverTimestamp(),criadoEmLocal:new Date().toISOString()}).catch(e=>toast('Não salvou: '+e.message))}
+  if(dados.local&&!locais.includes(dados.local))cfgRef.set({locais:firebase.firestore.FieldValue.arrayUnion(dados.local)},{merge:true}).catch(()=>{});
+  document.getElementById('form').remove();
+  toast(navigator.onLine?'Lançamento salvo.':'Guardado no celular. Envia quando a internet voltar.');
+  if(dados.mes!==mes){mes=dados.mes;ouvirMes()}
+}
+function apagar(id){
+  if(!confirm('Apagar este lançamento?'))return;
+  const i=itens.find(x=>x.id===id);(i&&i.fotos||[]).forEach(fid=>colFotos.doc(fid).delete().catch(()=>{}));
+  col.doc(id).delete().catch(e=>toast('Não apagou: '+e.message));
+  document.getElementById('form').remove();toast('Lançamento apagado.');
+}
+function exportarMes(){
+  if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
+  const v=visiveis().slice().reverse();if(!v.length){toast('Nada pra exportar neste mês.');return}
+  const ws=XLSX.utils.json_to_sheet(v.map(i=>({DATA:fmtData(i.data),ACONTECIMENTO:i.acontecimento,RGD:i.rgd||'',LOCAL:i.local||'',QTD_CABECAS:i.qtd||'',OBSERVACAO:i.obs||'',FOTOS:(i.fotos||[]).length||'',LANCADO_POR:i.criadoPorNome||''})));
+  ws['!cols']=[{wch:12},{wch:24},{wch:14},{wch:20},{wch:12},{wch:50},{wch:18}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Caderneta '+mes);XLSX.writeFile(wb,`caderneta_${mes}.xlsx`);
+}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
+</script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#153e2c">
+<title>Estoque Gado · App Nelore MRA</title>
+<link rel="icon" href="../logo.webp">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--verde:#1f6a49;--verde-esc:#153e2c;--ouro:#b39a3b;--fundo:#f5f7f5;--borda:#e1e7e2;--texto:#17211c;--suave:#5d6a62;--teal:#1b9e8f;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--texto);background:var(--fundo)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--fundo)}button,input,select{font:inherit}
+.hidden{display:none!important}
+.topo{background:linear-gradient(135deg,#123526 0%,#1f6a49 100%);color:#fff;position:relative}
+.topo:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--ouro)}
+.topo-in{max-width:1200px;margin:0 auto;padding:10px 16px 13px;display:flex;align-items:center;gap:10px}
+.topo img{width:40px;height:40px;border-radius:50%}
+.topo .t{font-size:17px;font-weight:800}.topo .s{font-size:11px;opacity:.8}
+.topo .acoes{margin-left:auto}.topo .acoes button{background:#ffffff1a;color:#fff;border:1px solid #ffffff40;border-radius:8px;padding:7px 10px;cursor:pointer;font-size:13px;font-weight:600}
+main{max-width:1200px;margin:0 auto;padding:16px}
+.offline{background:#fff3d6;border:1px solid #ecd28f;color:#6b4f12;border-radius:10px;padding:9px 12px;font-size:13px;margin-bottom:12px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:12px 14px;border-top:3px solid var(--k,var(--teal))}
+.kpi .l{font-size:12px;color:var(--suave);font-weight:600}.kpi .v{font-size:26px;font-weight:800;margin-top:4px}
+.barra{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:16px 0 10px}
+.btn{border:0;border-radius:9px;padding:9px 14px;font-weight:700;cursor:pointer;font-size:14px}
+.btn-primary{background:var(--verde);color:#fff}.btn-ghost{background:#fff;border:1px solid #d9dfda;color:#334139}.btn-ouro{background:#b39a3b;color:#fff}
+.card{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:hidden}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{background:#f8faf8;color:var(--suave);font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:9px 8px;border-bottom:1px solid var(--borda);text-align:left;white-space:nowrap}
+td{border-bottom:1px solid #eef1ef;padding:3px 5px;vertical-align:middle}
+td.n,th.n{text-align:right}
+.cel{width:100%;border:1px solid transparent;border-radius:6px;padding:7px 7px;background:transparent;min-width:70px}
+.cel:hover{border-color:#dce3de}.cel:focus{outline:none;border-color:#72a386;background:#fff}
+.cel.num{text-align:right;width:80px;min-width:60px}
+.tot{font-weight:800;text-align:right;padding-right:10px}
+.grupo td{background:#f3f8f5;font-weight:800;color:var(--verde-esc);padding:8px 10px;font-size:13px}
+tfoot td{background:#eef3ef;font-weight:800;padding:10px 8px}
+.quando{font-size:11px;color:var(--suave);white-space:nowrap}
+.mini{border:1px solid #e7bbb5;background:#fff;color:#a33627;border-radius:7px;padding:4px 8px;cursor:pointer;font-size:12px}
+.lado{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:12px}
+.cat{padding:12px 14px}.cat h3{margin:0 0 8px;font-size:14px}.cat .r{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f2f0;font-size:13px}.cat .r:last-child{border:0}
+.vazio{padding:26px;text-align:center;color:var(--suave)}
+.modal{position:fixed;inset:0;background:#0007;display:grid;place-items:center;padding:14px;z-index:20}
+.janela{background:#fff;border-radius:14px;width:min(820px,100%);max-height:90vh;overflow:auto;padding:18px}
+.janela h2{margin:0 0 12px;font-size:17px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#17211c;color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;z-index:30}
+@media(max-width:800px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.lado{grid-template-columns:1fr}}
+@media print{.topo,.barra,.mini,.offline{display:none!important}.cel{border:0}}
+</style>
+</head>
+<body>
+<header class="topo"><div class="topo-in">
+  <img src="../logo.webp" alt="Nelore MRA">
+  <div><div class="t">🐂 Estoque Gado</div><div class="s" id="quem"></div></div>
+  <div class="acoes"><button onclick="location.href='../index.html'">← App</button></div>
+</div></header>
+<main>
+  <div id="offline" class="offline hidden">📵 Sem internet. Pode editar normal: fica guardado e envia sozinho quando a internet voltar.</div>
+  <div class="kpis" id="kpis"></div>
+  <div class="barra">
+    <button class="btn btn-primary" onclick="novaLinha()">+ Linha</button>
+    <span style="margin-left:auto"></span>
+    <button class="btn btn-ghost" onclick="exportar(linhas,'estoque_gado_atual')">⬇ Excel</button>
+    <button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button>
+    <button class="btn btn-ghost" onclick="abrirHistorico()">📅 Meses fechados</button>
+    <button class="btn btn-ouro" onclick="fecharMes()">Fechar mês</button>
+  </div>
+  <div class="lado">
+    <div class="card"><div class="wrap" id="tabela"><div class="vazio">Carregando...</div></div></div>
+    <div class="card cat" id="porCategoria"></div>
+  </div>
+</main>
+<datalist id="dlCategorias"></datalist><datalist id="dlLocais"></datalist>
+
+<script>
+/* ESTOQUE GADO — planilha geral do rebanho: uma linha por pasto + categoria
+   (apps/estoque/linhas). "Fechar mês" guarda uma foto em apps/estoque/fechamentos/AAAA-MM. */
+const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDomain:'app-nelore-mra.firebaseapp.com',projectId:'app-nelore-mra',storageBucket:'app-nelore-mra.firebasestorage.app',messagingSenderId:'1043343802346',appId:'1:1043343802346:web:219f5d73748271a85dfc93'};
+const ADMIN_EMAIL='mandrade.gado@terra.com.br', USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
+const CATEGORIAS=['Vacas','Novilhas','Bezerros','Bezerras','Garrotes','Touros','Bois','Matrizes','Receptoras','Doadoras'];
+firebase.initializeApp(FIREBASE_CONFIG);
+const fs=firebase.firestore();
+fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+const base=fs.collection('apps').doc('estoque');
+const colLinhas=base.collection('linhas'), colFech=base.collection('fechamentos');
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const num=v=>{const n=Number(String(v??'').replace(',','.'));return Number.isFinite(n)?n:0};
+const fmt=n=>Number(n||0).toLocaleString('pt-BR');
+let eu=null, meuNome='', linhas=[];
+
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2400)}
+function statusRede(){$('#offline').classList.toggle('hidden',navigator.onLine)}
+addEventListener('online',statusRede);addEventListener('offline',statusRede);statusRede();
+
+firebase.auth().onAuthStateChanged(async u=>{
+  if(!u){location.href='../index.html';return}
+  eu=u;const ehAdmin=String(u.email||'').toLowerCase()===ADMIN_EMAIL;
+  let perfil=null;
+  try{const d=await fs.collection('users').doc(u.uid).get();perfil=d.exists?d.data():null}catch(e){console.warn(e)}
+  if(!ehAdmin&&(!perfil||perfil.ativo===false||!(perfil.apps&&perfil.apps.estoque))){alert('Você não tem acesso ao Estoque Gado. Fale com o administrador.');location.href='../index.html';return}
+  meuNome=ehAdmin?'Administrador':((perfil&&(perfil.nome||perfil.usuario))||String(u.email).replace(USER_DOMAIN,''));
+  $('#quem').textContent=meuNome;
+  colLinhas.onSnapshot(snap=>{
+    linhas=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // não redesenha se alguém está digitando numa célula (evita perder o foco)
+    if(digitando()){resumo();redesenharDepois=true}else desenhar();
+  },e=>{$('#tabela').innerHTML=`<div class="vazio">Não consegui carregar.<br><small>${esc(e.message)}</small></div>`});
+});
+
+// Enquanto alguém digita numa célula a tabela não se reorganiza (senão o cursor pula);
+// reorganiza quando a pessoa sai da tabela.
+let redesenharDepois=false;
+let ultimaEdicao=0;
+const digitando=()=>!!(document.activeElement&&document.activeElement.classList.contains('cel'))||Date.now()-ultimaEdicao<800;
+document.addEventListener('focusout',e=>{if(e.relatedTarget&&e.relatedTarget.classList&&e.relatedTarget.classList.contains('cel'))return;setTimeout(function tenta(){if(!redesenharDepois)return;if(digitando()){setTimeout(tenta,400);return}redesenharDepois=false;desenhar()},150)});
+const ordenadas=ls=>ls.slice().sort((a,b)=>String(a.local||'~').localeCompare(String(b.local||'~'),'pt-BR',{numeric:true})||String(a.categoria||'').localeCompare(String(b.categoria||''),'pt-BR')||String(a.criadoEm||'').localeCompare(String(b.criadoEm||'')));
+function totais(ls){const t={m:0,f:0,cat:{},loc:{}};ls.forEach(l=>{const m=num(l.machos),f=num(l.femeas);t.m+=m;t.f+=f;const c=l.categoria||'(sem categoria)';t.cat[c]=(t.cat[c]||0)+m+f;const p=l.local||'(sem local)';t.loc[p]=(t.loc[p]||0)+m+f});return t}
+function resumo(){
+  const t=totais(linhas);
+  const k=(l,v,c)=>`<div class="kpi" style="--k:${c}"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+  $('#kpis').innerHTML=k('Total de cabeças',fmt(t.m+t.f),'#1f6a49')+k('Machos',fmt(t.m),'#2a78d6')+k('Fêmeas',fmt(t.f),'#d2559a')+k('Pastos / locais',Object.keys(t.loc).length,'#b39a3b');
+  const cats=Object.entries(t.cat).sort((a,b)=>b[1]-a[1]);
+  $('#porCategoria').innerHTML=`<h3>Por categoria</h3>${cats.length?cats.map(([c,v])=>`<div class="r"><span>${esc(c)}</span><b>${fmt(v)}</b></div>`).join(''):'<div class="vazio" style="padding:10px">—</div>'}`;
+  $('#dlCategorias').innerHTML=[...new Set([...CATEGORIAS,...linhas.map(l=>l.categoria).filter(Boolean)])].map(c=>`<option value="${esc(c)}">`).join('');
+  $('#dlLocais').innerHTML=[...new Set(linhas.map(l=>l.local).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join('');
+  document.querySelectorAll('tr[data-id]').forEach(tr=>{const l=linhas.find(x=>x.id===tr.dataset.id);if(l){const c=tr.querySelector('.tot');if(c)c.textContent=fmt(num(l.machos)+num(l.femeas))}});
+  const ft=$('#ftM');if(ft){ft.textContent=fmt(t.m);$('#ftF').textContent=fmt(t.f);$('#ftT').textContent=fmt(t.m+t.f)}
+}
+function desenhar(){
+  resumo();
+  if(!linhas.length){$('#tabela').innerHTML='<div class="vazio">Nenhuma linha ainda. Clique em <b>+ Linha</b> e lance cada pasto com a categoria e a quantidade de machos e fêmeas.</div>';return}
+  const ls=ordenadas(linhas);const t=totais(ls);let html='',loc=null;
+  ls.forEach(l=>{
+    const p=l.local||'(sem local)';
+    if(p!==loc){loc=p;html+=`<tr class="grupo"><td colspan="5">📍 ${esc(p)}</td><td colspan="3" style="text-align:right">${fmt(t.loc[p])} cab.</td></tr>`}
+    const quando=l.atualizadoEmLocal?new Date(l.atualizadoEmLocal).toLocaleDateString('pt-BR'):'';
+    html+=`<tr data-id="${l.id}">
+      <td><input class="cel" list="dlLocais" value="${esc(l.local)}" placeholder="Pasto" onchange="editar('${l.id}','local',this.value)"></td>
+      <td><input class="cel" style="min-width:120px" list="dlCategorias" value="${esc(l.categoria)}" placeholder="Categoria" onchange="editar('${l.id}','categoria',this.value)"></td>
+      <td class="n"><input class="cel num" inputmode="numeric" value="${l.machos??''}" onchange="editar('${l.id}','machos',this.value)"></td>
+      <td class="n"><input class="cel num" inputmode="numeric" value="${l.femeas??''}" onchange="editar('${l.id}','femeas',this.value)"></td>
+      <td class="tot">${fmt(num(l.machos)+num(l.femeas))}</td>
+      <td><input class="cel" style="min-width:160px" value="${esc(l.obs)}" placeholder="—" onchange="editar('${l.id}','obs',this.value)"></td>
+      <td class="quando" title="${esc(l.atualizadoPor||'')}">${quando}<br>${esc(l.atualizadoPor||'')}</td>
+      <td><button class="mini" onclick="apagar('${l.id}')">Excluir</button></td></tr>`;
+  });
+  $('#tabela').innerHTML=`<table><thead><tr><th>Local / pasto</th><th>Categoria</th><th class="n">Machos</th><th class="n">Fêmeas</th><th class="n">Total</th><th>Observação</th><th>Atualizado</th><th></th></tr></thead>
+    <tbody>${html}</tbody><tfoot><tr><td colspan="2">TOTAL</td><td class="n" id="ftM">${fmt(t.m)}</td><td class="n" id="ftF">${fmt(t.f)}</td><td class="n" id="ftT">${fmt(t.m+t.f)}</td><td colspan="3"></td></tr></tfoot></table>`;
+}
+const carimbo=()=>({atualizadoEm:firebase.firestore.FieldValue.serverTimestamp(),atualizadoEmLocal:new Date().toISOString(),atualizadoPor:meuNome});
+function novaLinha(){
+  const ref=colLinhas.doc();
+  ref.set({local:'',categoria:'',machos:'',femeas:'',obs:'',criadoEm:new Date().toISOString(),...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
+  // mostra a linha nova na hora e já põe o cursor nela
+  if(!linhas.some(l=>l.id===ref.id))linhas.push({id:ref.id,local:'',categoria:'',machos:'',femeas:'',obs:''});
+  redesenharDepois=false;ultimaEdicao=0;desenhar();
+  const tr=document.querySelector(`tr[data-id="${ref.id}"]`);if(tr){tr.scrollIntoView({block:'nearest'});tr.querySelector('.cel').focus()}
+}
+function editar(id,campo,valor){
+  ultimaEdicao=Date.now();
+  valor=String(valor).trim();
+  if((campo==='machos'||campo==='femeas')&&valor!==''&&!Number.isFinite(Number(valor.replace(',','.')))){toast('Digite só número.');desenhar();return}
+  colLinhas.doc(id).update({[campo]:valor,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
+  if(campo==='local'||campo==='categoria')redesenharDepois=true;
+}
+function apagar(id){if(!confirm('Excluir esta linha do estoque?'))return;colLinhas.doc(id).delete().catch(e=>toast('Não excluiu: '+e.message))}
+
+/* ---------- fechamento do mês ---------- */
+async function fecharMes(){
+  if(!linhas.length){toast('Não tem nada no estoque pra fechar.');return}
+  const d=new Date();const sug=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const mes=prompt('Fechar o estoque de qual mês? (AAAA-MM)',sug);if(!mes)return;
+  if(!/^\d{4}-\d{2}$/.test(mes)){toast('Use o formato AAAA-MM, ex: '+sug);return}
+  const ref=colFech.doc(mes);
+  try{const ex=await ref.get();if(ex.exists&&!confirm(`O mês ${mes} já foi fechado. Substituir pela foto de agora?`))return}catch(e){}
+  const ls=ordenadas(linhas).map(({id,...r})=>({local:r.local||'',categoria:r.categoria||'',machos:num(r.machos),femeas:num(r.femeas),obs:r.obs||''}));
+  const t=totais(ls);
+  ref.set({mes,linhas:ls,machos:t.m,femeas:t.f,total:t.m+t.f,fechadoEm:firebase.firestore.FieldValue.serverTimestamp(),fechadoEmLocal:new Date().toISOString(),fechadoPor:meuNome}).catch(e=>toast('Não salvou: '+e.message));
+  toast(`Estoque de ${mes} fechado: ${fmt(t.m+t.f)} cabeças.`);
+}
+async function abrirHistorico(){
+  let docs=[];
+  try{docs=(await colFech.get()).docs.map(d=>d.data()).sort((a,b)=>b.mes.localeCompare(a.mes))}catch(e){toast('Não consegui abrir: '+e.message);return}
+  const m=document.createElement('div');m.className='modal';m.onclick=e=>{if(e.target===m)m.remove()};
+  window.__fech=docs;
+  m.innerHTML=`<div class="janela"><h2>📅 Meses fechados</h2>${docs.length?`<table><thead><tr><th>Mês</th><th class="n">Machos</th><th class="n">Fêmeas</th><th class="n">Total</th><th>Fechado por</th><th></th></tr></thead><tbody>
+    ${docs.map((d,i)=>`<tr><td><b>${esc(d.mes)}</b></td><td class="n">${fmt(d.machos)}</td><td class="n">${fmt(d.femeas)}</td><td class="n"><b>${fmt(d.total)}</b></td><td class="quando">${esc(d.fechadoPor||'')} ${d.fechadoEmLocal?new Date(d.fechadoEmLocal).toLocaleDateString('pt-BR'):''}</td>
+    <td><button class="btn btn-ghost" style="padding:5px 9px;font-size:12px" onclick="verFech(${i})">Ver</button> <button class="btn btn-ghost" style="padding:5px 9px;font-size:12px" onclick="exportar(__fech[${i}].linhas,'estoque_gado_'+__fech[${i}].mes)">⬇ Excel</button></td></tr>`).join('')}</tbody></table>`:'<div class="vazio">Nenhum mês fechado ainda.</div>'}
+    <div id="fechDet"></div><div style="text-align:right;margin-top:12px"><button class="btn btn-ghost" onclick="this.closest('.modal').remove()">Fechar</button></div></div>`;
+  document.body.appendChild(m);
+}
+function verFech(i){
+  const d=window.__fech[i];
+  $('#fechDet').innerHTML=`<h2 style="margin-top:16px">Estoque de ${esc(d.mes)}</h2><table><thead><tr><th>Local</th><th>Categoria</th><th class="n">Machos</th><th class="n">Fêmeas</th><th class="n">Total</th><th>Obs.</th></tr></thead><tbody>
+    ${d.linhas.map(l=>`<tr><td>${esc(l.local)}</td><td>${esc(l.categoria)}</td><td class="n">${fmt(l.machos)}</td><td class="n">${fmt(l.femeas)}</td><td class="n"><b>${fmt(l.machos+l.femeas)}</b></td><td>${esc(l.obs)}</td></tr>`).join('')}</tbody></table>`;
+}
+function exportar(ls,nome){
+  if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
+  if(!ls||!ls.length){toast('Nada pra exportar.');return}
+  const rows=ordenadas(ls).map(l=>({LOCAL:l.local||'',CATEGORIA:l.categoria||'',MACHOS:num(l.machos),FEMEAS:num(l.femeas),TOTAL:num(l.machos)+num(l.femeas),OBSERVACAO:l.obs||''}));
+  const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:22},{wch:16},{wch:9},{wch:9},{wch:9},{wch:40}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Estoque');XLSX.writeFile(wb,nome+'.xlsx');
+}
+window.novaLinha=novaLinha;window.editar=editar;window.apagar=apagar;window.fecharMes=fecharMes;window.abrirHistorico=abrirHistorico;window.verFech=verFech;window.exportar=exportar;
+if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
+</script>
+</body>
+</html>

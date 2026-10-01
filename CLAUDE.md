@@ -18,8 +18,10 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - `config/apps`: `links` (sistemas antigos) e `usarNovo` (chave que faz o botão abrir a versão de dentro do App).
 - Excluir usuário apaga o perfil (perde o acesso); o login continua existindo no Firebase, então o nome de usuário fica reservado.
 - Dados de cada app novo ficam em `apps/<id do app>/...` (as regras liberam por app).
-- **Fase 1:** IATF, Custos e Contábil abrem os sistemas atuais (repositórios e Firebase próprios, NÃO mexer neles a partir daqui). Trazer pra dentro depois, um por vez, **copiando** os dados (o antigo fica intacto como reserva).
-- Próximo app: **Gado & Caderneta** (estoque de gado + caderneta digital offline, dividida por mês).
+- **Tombamento feito em 01/10/2026**: os dados de IATF, Custos e Contábil foram copiados dos Firebase antigos e tudo roda aqui. Os repositórios antigos (IATF-MRA, custos-safra, Contabil-MRA) ficam só como arquivo — NÃO são mais usados nem alterados.
+- `caderneta/index.html` — Caderneta: lançamentos em `apps/caderneta/lancamentos` (um por documento, campo `mes` = AAAA-MM), fotos comprimidas no aparelho em `apps/caderneta/fotos` (sem Storage pago), locais em `apps/caderneta/config/listas`. Só o tipo de acontecimento é lista fixa. Quem lançou (ou o admin) edita/apaga.
+- `estoque/index.html` — Estoque Gado: planilha por pasto + categoria em `apps/estoque/linhas`; "Fechar mês" grava foto em `apps/estoque/fechamentos/AAAA-MM`.
+- Sem internet: `sw.js` guarda as telas no aparelho e o Firestore usa `enablePersistence` (lança offline e envia depois). `manifest.webmanifest` + ícones permitem instalar no celular.
 
 ## Fluxo de trabalho
 - Testar no navegador antes de enviar; abrir PR e fazer o merge no `main` direto (autorizado pelo dono).
