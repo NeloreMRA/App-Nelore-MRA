@@ -21,7 +21,7 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - Dados de cada app novo ficam em `apps/<id do app>/...` (as regras liberam por app).
 - **Tombamento feito em 01/10/2026**: os dados de IATF, Custos e Contábil foram copiados dos Firebase antigos e tudo roda aqui. Os repositórios antigos (IATF-MRA, custos-safra, Contabil-MRA) ficam só como arquivo — NÃO são mais usados nem alterados.
 - `caderneta/index.html` — Caderneta: lançamentos em `apps/caderneta/lancamentos` (um por documento, campo `mes` = AAAA-MM), fotos comprimidas no aparelho em `apps/caderneta/fotos` (sem Storage pago), locais em `apps/caderneta/config/listas`. Só o tipo de acontecimento é lista fixa. Quem lançou (ou o admin) edita/apaga.
-- `estoque/index.html` — Estoque Gado: planilha livre igual Excel (fórmulas SOMA, SOMASE etc., várias abas). Cada aba em `apps/estoque/abas/{id}` `{nome, ordem, celulas:{A1:'...'}, negrito, larguras}`. "Fechar mês" grava cópia das abas em `apps/estoque/fechamentos/AAAA-MM`. (`apps/estoque/linhas` é o formato antigo, só lido uma vez pra montar a 1ª aba.)
+- `estoque/index.html` — Estoque Gado: tabela por pasto + categoria em `apps/estoque/linhas` (computador edita na tabela; celular lista por pasto). Filtro/ordenação estilo Excel em cada coluna (igual Custos), soma das células selecionadas (arrastar/Shift/Ctrl). "Fechar mês" grava foto em `apps/estoque/fechamentos/AAAA-MM`. (Teve uma versão "planilha livre" em `apps/estoque/abas` que o dono não gostou — removida.)
 - Sem internet: `sw.js` guarda as telas no aparelho e o Firestore usa `enablePersistence` (lança offline e envia depois). `manifest.webmanifest` + ícones permitem instalar no celular.
 
 ## Fluxo de trabalho
