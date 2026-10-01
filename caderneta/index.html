@@ -20,13 +20,13 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .hidden{display:none!important}
 /* topo */
 .topo{background:var(--verde-esc);color:#fff;position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top)}
-.topo-in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.topo-in{max-width:1800px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
 .topo img{width:34px;height:34px;border-radius:50%}
 .topo .t{font-size:16px;font-weight:800;line-height:1.1}.topo .s{font-size:11.5px;opacity:.75}
 .topo .acoes{margin-left:auto;display:flex;gap:6px}
 .icobtn{background:#ffffff14;color:#fff;border:1px solid #ffffff30;border-radius:9px;height:36px;padding:0 11px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 /* estrutura */
-.pag{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:250px minmax(0,1fr);gap:22px;padding:20px 16px 120px}
+.pag{max-width:1800px;margin:0 auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;padding:20px 24px 120px}
 .lateral{position:sticky;top:76px;align-self:start;display:flex;flex-direction:column;gap:18px}
 .bloco h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muito-suave)}
 .meses-v{display:flex;flex-direction:column;gap:2px}
@@ -76,7 +76,9 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .tabd td{padding:0 8px;height:32px;border-bottom:1px solid #edf0ee;border-right:1px solid #f0f2f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tabd tbody tr{cursor:pointer}.tabd tbody tr:hover td{background:#f5faf7}
 .tabd tr.novodia td{border-top:2px solid #dfe6e1}
-.tabd .c{text-align:center}.tabd .n{text-align:right}
+.tabd .c{text-align:center}
+.tabd td.obs{white-space:normal;word-break:break-word;padding-top:6px;padding-bottom:6px;line-height:1.35}
+.xdel{border:0;background:none;border-radius:6px;padding:3px 6px;font-size:14px;opacity:.45}.xdel:hover{opacity:1;background:#fbeeec}.tabd .n{text-align:right}
 .tabd .por{color:var(--muito-suave);font-size:12px}
 .tabd tr.rapido td{position:sticky;top:31px;z-index:1;background:#f6faf7;padding:4px;height:auto;border-bottom:2px solid #cfe0d5;overflow:visible}
 .tabd .rapido input,.tabd .rapido select{width:100%;border:1px solid #d7ded9;border-radius:6px;padding:6px 7px;font-size:13.5px;background:#fff;outline:none;min-width:0}
@@ -154,11 +156,11 @@ textarea.input{min-height:86px;resize:vertical}
       <button class="btn btn-primary novo" onclick="abrirForm()">+ Novo lançamento</button>
     </div>
     <div class="faixa" id="filtrosH" style="margin-bottom:12px"></div>
-    <div class="tabd" id="tabd"><table><colgroup><col style="width:128px"><col style="width:190px"><col style="width:112px"><col style="width:130px"><col style="width:64px"><col><col style="width:44px"><col style="width:104px"></colgroup>
-      <thead><tr><th>Data</th><th>Acontecimento</th><th>RGD</th><th>Local</th><th class="n">Cab.</th><th>Observação</th><th class="c">📷</th><th>Por</th></tr>
+    <div class="tabd" id="tabd"><table><colgroup><col style="width:132px"><col style="width:225px"><col style="width:112px"><col style="width:130px"><col style="width:64px"><col><col style="width:44px"><col style="width:120px"><col style="width:44px"></colgroup>
+      <thead><tr><th>Data</th><th>Acontecimento</th><th>RGD</th><th>Local</th><th class="n">Cab.</th><th>Observação</th><th class="c">📷</th><th>Por</th><th></th></tr>
       <tr class="rapido"><td><input type="date" id="rData"></td><td><select id="rTipo"></select></td><td><input id="rRgd" placeholder="RGD" autocapitalize="characters"></td>
-        <td><input id="rLocal" list="dlLocais" placeholder="Local"></td><td><input id="rQtd" inputmode="numeric" placeholder="Cab."></td><td><input id="rObs" placeholder="Observação (Enter lança)"></td>
-        <td colspan="2"><button onclick="lancarRapido()" title="Lançar (Enter)">+ Lançar</button></td></tr></thead>
+        <td><input id="rLocal" list="dlLocais" placeholder="Local"></td><td><input id="rQtd" inputmode="numeric" placeholder="Cab."></td><td><input id="rObs" placeholder="Observação"></td>
+        <td colspan="3"><button onclick="lancarRapido()" title="Lançar (Enter)">+ Lançar</button></td></tr></thead>
       <tbody id="corpoD"></tbody></table></div>
     <datalist id="dlLocais"></datalist>
     <div class="lista so-cel-l" id="lista"><div class="vazio">Carregando...</div></div>
@@ -173,9 +175,9 @@ const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDoma
 const ADMIN_EMAIL='mandrade.gado@terra.com.br', USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
 // Única coisa "travada": o tipo de acontecimento. O resto é livre.
 const TIPOS=[
-  ['Nascimento','🐮','#2a78d6'],['Morte','✝️','#5d6a62'],['Vacina / Medicamento','💉','#1b9e8f'],['Doença / Tratamento','🩺','#d2559a'],
-  ['Compra','🛒','#7a52c7'],['Venda','💰','#a08a10'],['Troca de pasto','🔁','#e08a1e'],['Contagem','🔢','#1f6a49'],
-  ['Desmama','🍼','#2a78d6'],['Pesagem','⚖️','#7a52c7'],['Cobertura / Monta','❤️','#d2559a'],['Manutenção (cerca, água...)','🔧','#a08a10'],['Geral','📝','#5d6a62']
+  ['Nascimento','🐮','#2a78d6'],['Morte','✝️','#c0392b'],['Vacina / Medicamento','💉','#1b9e8f'],['Doença / Tratamento','🩺','#e05a9c'],
+  ['Compra','🛒','#7a52c7'],['Venda','💰','#c9a227'],['Troca de pasto','🔁','#e08a1e'],['Contagem','🔢','#1f6a49'],
+  ['Desmama','🍼','#5bb8e8'],['Pesagem','⚖️','#8b5a2b'],['Cobertura / Monta','❤️','#9c2f6e'],['Manutenção (cerca, água...)','🔧','#7d8c2a'],['Geral','📝','#8a958d']
 ];
 const tipoInfo=n=>TIPOS.find(t=>t[0]===n)||[n,'📝','#9aa49d'];
 firebase.initializeApp(FIREBASE_CONFIG);
@@ -250,14 +252,15 @@ function desenhar(){
   desenharMeses();
   const v=visiveis();
   if(!v.length){$('#lista').innerHTML=`<div class="vazio">${itens.length?'Nada encontrado com esse filtro.':`Nenhum lançamento em ${nomeMes(mes).toLowerCase()}.<br>Toque em <b>+ Lançar</b> pra anotar.`}</div>`;
-    $('#corpoD').innerHTML=`<tr><td colspan="8" class="vazio" style="height:auto;white-space:normal">${itens.length?'Nada encontrado com esse filtro.':'Nada lançado neste mês. Use a linha verde acima pra lançar.'}</td></tr>`;return}
+    $('#corpoD').innerHTML=`<tr><td colspan="9" class="vazio" style="height:auto;white-space:normal">${itens.length?'Nada encontrado com esse filtro.':'Nada lançado neste mês. Use a linha verde acima pra lançar.'}</td></tr>`;return}
   // computador: tabela
   let d0='';
   $('#corpoD').innerHTML=v.map(i=>{const [n,ic,cor]=tipoInfo(i.acontecimento);const nf=(i.fotos||[]).length;const novo=i.data!==d0;d0=i.data;
-    return `<tr class="${novo?'novodia':''}" onclick="abrirForm('${i.id}')"><td>${novo?fmtData(i.data).slice(0,5)+' <span class="por">'+new Date(i.data+'T12:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')+'</span>':''}</td>
+    return `<tr class="${novo?'novodia':''}" onclick="abrirForm('${i.id}')"><td>${fmtData(i.data)} <span class="por">${new Date(i.data+'T12:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span></td>
       <td title="${esc(n)}"><span class="dot" style="background:${cor};display:inline-block;margin-right:6px"></span>${esc(n)}</td><td>${i.rgd?`<span class="rgd">${esc(i.rgd)}</span>`:''}</td>
-      <td title="${esc(i.local||'')}">${esc(i.local||'')}</td><td class="n">${esc(i.qtd||'')}</td><td title="${esc(i.obs||'')}">${esc(i.obs||'')}</td>
-      <td class="c">${nf?'📷'+(nf>1?nf:''):''}</td><td class="por">${i._pend?'<span class="pend">⏳ a enviar</span>':esc(i.criadoPorNome||'')}</td></tr>`}).join('');
+      <td title="${esc(i.local||'')}">${esc(i.local||'')}</td><td class="n">${esc(i.qtd||'')}</td><td class="obs">${esc(i.obs||'')}</td>
+      <td class="c">${nf?'📷'+(nf>1?nf:''):''}</td><td class="por">${i._pend?'<span class="pend">⏳ a enviar</span>':esc(i.criadoPorNome||'')}</td>
+      <td class="c">${podeEditar(i)?`<button class="xdel" title="Excluir" onclick="event.stopPropagation();apagar('${i.id}')">🗑</button>`:''}</td></tr>`}).join('');
   let html='',dia='';
   v.forEach(i=>{
     if(i.data!==dia){dia=i.data;const d=new Date(dia+'T12:00');const ds=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});html+=`<div class="dia">${dia===hoje()?'Hoje · ':''}${ds}</div>`}
@@ -266,7 +269,7 @@ function desenhar(){
     html+=`<div class="reg" style="--cor:${cor}" onclick="abrirForm('${i.id}')">
       <div class="corpo"><div class="l1">${ic} <span class="ti">${esc(n)}</span> ${i.rgd?`<span class="rgd">${esc(i.rgd)}</span>`:''}</div>
         ${extras.length?`<div class="l2">${extras.join(' · ')}</div>`:''}</div>
-      <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${nf?(miniFotos[i.fotos[0]]?`<img class="mini-foto" src="${miniFotos[i.fotos[0]]}" alt="">`:'📷'):''}</div>
+      <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${podeEditar(i)?`<button class="xdel" style="font-size:16px;padding:6px" title="Excluir" onclick="event.stopPropagation();apagar('${i.id}')">🗑</button>`:''}${nf?(miniFotos[i.fotos[0]]?`<img class="mini-foto" src="${miniFotos[i.fotos[0]]}" alt="">`:'📷'):''}</div>
     </div>`;
   });
   $('#lista').innerHTML=html;
@@ -360,7 +363,7 @@ function apagar(id){
   if(!confirm('Apagar este lançamento?'))return;
   const i=itens.find(x=>x.id===id);(i&&i.fotos||[]).forEach(fid=>colFotos.doc(fid).delete().catch(()=>{}));
   col.doc(id).delete().catch(e=>toast('Não apagou: '+e.message));
-  document.getElementById('form').remove();toast('Lançamento apagado.');
+  const f=document.getElementById('form');if(f)f.remove();toast('Lançamento apagado.');
 }
 function exportarMes(){
   if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
