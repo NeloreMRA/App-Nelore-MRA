@@ -134,14 +134,20 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&
 let eu=null, perfil=null, ehAdmin=false, tela='inicio', usuarios=[];
 
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
-function loginParaEmail(v){v=String(v||'').trim().toLowerCase();return v.includes('@')?v:v+USER_DOMAIN}
-function emailParaUsuario(e){e=String(e||'');return e.endsWith(USER_DOMAIN)?e.slice(0,-USER_DOMAIN.length):e}
+// Quem foi excluído e criado de novo com o mesmo nome ganha outro e-mail interno (usuario+2@...);
+// a tabela "logins" diz qual e-mail usar pra cada nome de usuário.
+async function loginParaEmail(v){
+  v=String(v||'').trim().toLowerCase();if(v.includes('@'))return v;
+  try{const d=await fs.collection('logins').doc(v).get();if(d.exists&&d.data().email)return d.data().email}catch(e){}
+  return v+USER_DOMAIN;
+}
+function emailParaUsuario(e){e=String(e||'');return e.endsWith(USER_DOMAIN)?e.slice(0,-USER_DOMAIN.length).replace(/\+\d+$/,''):e}
 function erroAuth(c){return ({'auth/invalid-credential':'Usuário ou senha incorretos.','auth/wrong-password':'Usuário ou senha incorretos.','auth/user-not-found':'Usuário ou senha incorretos.','auth/invalid-email':'Usuário inválido.','auth/too-many-requests':'Muitas tentativas. Aguarde um pouco.','auth/network-request-failed':'Sem conexão com a internet.','auth/email-already-in-use':'Esse usuário já existe.','auth/weak-password':'A senha precisa ter pelo menos 6 caracteres.'})[c]||'Não foi possível concluir. Tente de novo.'}
 
 /* ---------- LOGIN ---------- */
 $('#loginForm').addEventListener('submit',async e=>{
   e.preventDefault();$('#lgErro').textContent='';$('#lgBtn').disabled=true;$('#lgBtn').textContent='Entrando...';
-  try{await auth.signInWithEmailAndPassword(loginParaEmail($('#lgUser').value),$('#lgPass').value);$('#lgPass').value=''}
+  try{await auth.signInWithEmailAndPassword(await loginParaEmail($('#lgUser').value),$('#lgPass').value);$('#lgPass').value=''}
   catch(ex){$('#lgErro').textContent=erroAuth(ex.code)}
   finally{$('#lgBtn').disabled=false;$('#lgBtn').textContent='Entrar'}
 });
@@ -219,11 +225,21 @@ async function criarUsuario(){
   // Cria o login numa "segunda conexão", pra não deslogar o administrador
   const sec=firebase.apps.find(a=>a.name==='criador')||firebase.initializeApp(FIREBASE_CONFIG,'criador');
   try{
-    const cred=await sec.auth().createUserWithEmailAndPassword(usuario+USER_DOMAIN,senha);
-    await fs.collection('users').doc(cred.user.uid).set({nome,usuario,email:usuario+USER_DOMAIN,apps,ativo:true,criadoEm:firebase.firestore.FieldValue.serverTimestamp(),criadoPor:eu.email});
+    if(usuarios.some(u=>(u.usuario||emailParaUsuario(u.email))===usuario)){const e=new Error();e.code='auth/email-already-in-use';throw e}
+    const login=fs.collection('logins').doc(usuario);
+    try{await login.set({email:usuario+USER_DOMAIN})}catch(e){throw new Error('Falta atualizar as regras do Firebase (firestore.rules).')}
+    // Se o nome já foi usado por alguém excluído, o login antigo continua existindo: usa usuario+2, +3...
+    let cred=null,email='';
+    for(let n=1;n<=20&&!cred;n++){
+      email=usuario+(n>1?'+'+n:'')+USER_DOMAIN;
+      try{cred=await sec.auth().createUserWithEmailAndPassword(email,senha)}catch(e){if(e.code!=='auth/email-already-in-use')throw e}
+    }
+    if(!cred){const e=new Error();e.code='auth/email-already-in-use';throw e}
+    if(email!==usuario+USER_DOMAIN)await login.set({email});
+    await fs.collection('users').doc(cred.user.uid).set({nome,usuario,email,apps,ativo:true,criadoEm:firebase.firestore.FieldValue.serverTimestamp(),criadoPor:eu.email});
     await sec.auth().signOut();
     toast(`Usuário "${usuario}" criado.`);telaConfig();
-  }catch(ex){toast(erroAuth(ex.code)||ex.message);btn.disabled=false;btn.textContent='+ Criar usuário'}
+  }catch(ex){toast(ex.code?erroAuth(ex.code):ex.message);btn.disabled=false;btn.textContent='+ Criar usuário'}
 } window.criarUsuario=criarUsuario;
 async function mudarPermissao(uid,app,on){
   try{await fs.collection('users').doc(uid).update({['apps.'+app]:on});toast('Permissão salva.')}catch(e){toast('Não salvou: '+e.message);telaConfig()}
@@ -234,8 +250,8 @@ async function mudarAtivo(uid,ativo){
 
 async function excluirUsuario(uid){
   const u=usuarios.find(x=>x.uid===uid);if(!u)return;
-  if(!confirm(`Excluir o usuário "${u.usuario}" (${u.nome})?\n\nEle perde todo o acesso na hora. O nome de usuário "${u.usuario}" fica reservado e não pode ser criado de novo.`))return;
-  try{await fs.collection('users').doc(uid).delete();toast('Usuário excluído.');telaConfig()}catch(e){toast('Não excluiu: '+e.message)}
+  if(!confirm(`Excluir o usuário "${u.usuario}" (${u.nome})?\n\nEle perde todo o acesso na hora.`))return;
+  try{await fs.collection('users').doc(uid).delete();fs.collection('logins').doc(u.usuario||emailParaUsuario(u.email)).delete().catch(()=>{});toast('Usuário excluído.');telaConfig()}catch(e){toast('Não excluiu: '+e.message)}
 } window.excluirUsuario=excluirUsuario;
 /* Telas que o usuário vê dentro de cada app (vazio = todas) */
 function abrirTelas(uid){

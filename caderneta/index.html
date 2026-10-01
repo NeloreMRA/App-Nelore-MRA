@@ -60,18 +60,30 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .lista{background:#fff;border:1px solid var(--borda);border-radius:14px;overflow:hidden}
 .pag>section{min-width:0}
 .dia{background:#f8faf8;border-bottom:1px solid var(--linha);padding:8px 16px;font-size:12px;font-weight:800;color:var(--suave);text-transform:uppercase;letter-spacing:.04em;z-index:2}
-.reg{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--linha);cursor:pointer;align-items:flex-start}
+.reg{display:flex;gap:10px;padding:8px 12px;border-bottom:1px solid var(--linha);cursor:pointer;align-items:center;border-left:3px solid var(--cor)}
 .reg:last-child{border-bottom:0}.reg:hover{background:#fafcfa}
-.reg .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:18px;flex:0 0 36px;background:color-mix(in srgb,var(--cor) 14%,#fff)}
 .reg .corpo{flex:1;min-width:0}
-.reg .l1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.reg .ti{font-weight:700;font-size:15px}
-.reg .rgd{font-size:13px;font-weight:700;color:var(--verde-esc);background:var(--verde-claro);border-radius:6px;padding:1px 7px}
-.reg .l2{font-size:13px;color:var(--suave);margin-top:3px;display:flex;flex-wrap:wrap;gap:2px 12px}
-.reg .ob{font-size:14px;margin-top:5px;color:#26332b;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.reg .dir{text-align:right;font-size:11.5px;color:var(--muito-suave);white-space:nowrap;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.reg .mini-foto{width:44px;height:44px;border-radius:8px;object-fit:cover;background:#eef1ef}
+.reg .l1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.reg .ti{font-weight:700}
+.rgd{font-size:12.5px;font-weight:700;color:var(--verde-esc);background:var(--verde-claro);border-radius:5px;padding:0 6px}
+.reg .l2{font-size:12.5px;color:var(--suave);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reg .dir{text-align:right;font-size:11px;color:var(--muito-suave);white-space:nowrap;display:flex;align-items:center;gap:6px}
+.reg .mini-foto{width:32px;height:32px;border-radius:6px;object-fit:cover;background:#eef1ef}
+/* tabela do computador (igual planilha) */
+.tabd{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:auto;max-height:calc(100vh - 170px)}
+.tabd table{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px;table-layout:fixed}
+.tabd th{position:sticky;top:0;z-index:2;background:#f3f5f3;color:var(--suave);font-size:11px;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:7px 8px;border-bottom:1px solid var(--borda);border-right:1px solid #e8ebe9;white-space:nowrap}
+.tabd td{padding:0 8px;height:32px;border-bottom:1px solid #edf0ee;border-right:1px solid #f0f2f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabd tbody tr{cursor:pointer}.tabd tbody tr:hover td{background:#f5faf7}
+.tabd tr.novodia td{border-top:2px solid #dfe6e1}
+.tabd .c{text-align:center}.tabd .n{text-align:right}
+.tabd .por{color:var(--muito-suave);font-size:12px}
+.tabd tr.rapido td{position:sticky;top:31px;z-index:1;background:#f6faf7;padding:4px;height:auto;border-bottom:2px solid #cfe0d5;overflow:visible}
+.tabd .rapido input,.tabd .rapido select{width:100%;border:1px solid #d7ded9;border-radius:6px;padding:6px 7px;font-size:13.5px;background:#fff;outline:none;min-width:0}
+.tabd .rapido input:focus,.tabd .rapido select:focus{border-color:#72a386;box-shadow:0 0 0 2px #72a38633}
+.tabd .rapido button{width:100%;border:0;border-radius:6px;background:var(--verde);color:#fff;font-weight:800;padding:7px 0;font-size:13px}
 .pend{color:#a0681a;font-weight:700}
+.so-cel-l{display:none}
 .vazio{padding:40px 20px;text-align:center;color:var(--suave);line-height:1.5}
 .offline{background:#fff3d6;border:1px solid #ecd28f;color:#6b4f12;border-radius:10px;padding:9px 12px;font-size:13px;margin-bottom:12px}
 .fab{display:none;position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));background:var(--verde);color:#fff;border:0;border-radius:16px;padding:15px 20px;font-size:16px;font-weight:800;box-shadow:0 8px 24px #153e2c55;z-index:8}
@@ -108,13 +120,13 @@ textarea.input{min-height:86px;resize:vertical}
   .fab{display:block}
   .lista{border-radius:12px;margin:0 -4px}
   .dia{padding:7px 14px}
-  .reg{padding:12px 14px}
+  .tabd{display:none}.so-cel-l{display:block}
   .modal{padding:0;align-items:flex-end}
   .folha{width:100%;max-height:96vh;border-radius:18px 18px 0 0}
   .folha-pe{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
 }
 @media(min-width:861px){.topo .so-cel{display:none}}
-@media print{.topo,.lateral,.faixa,.fab,.offline,.busca,.cab .novo{display:none!important}.pag{display:block;padding:0}.lista{border:0}.dia{position:static}.reg{break-inside:avoid}}
+@media print{.topo,.lateral,.faixa,.fab,.offline,.busca,.cab .novo,.so-cel-l,tr.rapido{display:none!important}.tabd{display:block!important;max-height:none;overflow:visible;border:0}.pag{display:block;padding:0}.lista{border:0}.dia{position:static}.reg{break-inside:avoid}}
 </style>
 </head>
 <body>
@@ -142,7 +154,14 @@ textarea.input{min-height:86px;resize:vertical}
       <button class="btn btn-primary novo" onclick="abrirForm()">+ Novo lançamento</button>
     </div>
     <div class="faixa" id="filtrosH" style="margin-bottom:12px"></div>
-    <div class="lista" id="lista"><div class="vazio">Carregando...</div></div>
+    <div class="tabd" id="tabd"><table><colgroup><col style="width:128px"><col style="width:190px"><col style="width:112px"><col style="width:130px"><col style="width:64px"><col><col style="width:44px"><col style="width:104px"></colgroup>
+      <thead><tr><th>Data</th><th>Acontecimento</th><th>RGD</th><th>Local</th><th class="n">Cab.</th><th>Observação</th><th class="c">📷</th><th>Por</th></tr>
+      <tr class="rapido"><td><input type="date" id="rData"></td><td><select id="rTipo"></select></td><td><input id="rRgd" placeholder="RGD" autocapitalize="characters"></td>
+        <td><input id="rLocal" list="dlLocais" placeholder="Local"></td><td><input id="rQtd" inputmode="numeric" placeholder="Cab."></td><td><input id="rObs" placeholder="Observação (Enter lança)"></td>
+        <td colspan="2"><button onclick="lancarRapido()" title="Lançar (Enter)">+ Lançar</button></td></tr></thead>
+      <tbody id="corpoD"></tbody></table></div>
+    <datalist id="dlLocais"></datalist>
+    <div class="lista so-cel-l" id="lista"><div class="vazio">Carregando...</div></div>
   </section>
 </div>
 <button class="fab" onclick="abrirForm()">+ Lançar</button>
@@ -187,7 +206,8 @@ firebase.auth().onAuthStateChanged(async u=>{
   if(!ehAdmin&&(!perfil||perfil.ativo===false||!(perfil.apps&&perfil.apps.caderneta))){alert('Você não tem acesso à Caderneta. Fale com o administrador.');location.href='../index.html';return}
   meuNome=ehAdmin?'Administrador':((perfil&&(perfil.nome||perfil.usuario))||String(u.email).replace(USER_DOMAIN,''));
   $('#quem').textContent=meuNome;
-  cfgRef.onSnapshot(d=>{locais=(d.exists&&d.data().locais)||[]},()=>{});
+  cfgRef.onSnapshot(d=>{locais=(d.exists&&d.data().locais)||[];$('#dlLocais').innerHTML=locais.map(l=>`<option value="${esc(l)}">`).join('')},()=>{});
+  prepararRapido();
   desenharMeses();ouvirMes();
 });
 
@@ -203,7 +223,7 @@ function irMes(m){mes=m;filtroTipo='';ouvirMes()}
 function ouvirMes(){
   if(parar)parar();
   $('#titulo').textContent=nomeMes(mes);
-  $('#lista').innerHTML='<div class="vazio">Carregando...</div>';
+  $('#lista').innerHTML='<div class="vazio">Carregando...</div>';$('#corpoD').innerHTML='';
   desenharMeses();
   parar=col.where('mes','==',mes).onSnapshot({includeMetadataChanges:true},snap=>{
     itens=snap.docs.map(d=>({id:d.id,...d.data(),_pend:d.metadata.hasPendingWrites}));
@@ -229,18 +249,24 @@ function desenhar(){
     tipos.map(t=>`<button class="pill ${filtroTipo===t[0]?'on':''}" onclick='filtrar(${esc(JSON.stringify(t[0]))})'>${t[1]} ${esc(t[0])} <b>${cont[t[0]]}</b></button>`).join(''):'';
   desenharMeses();
   const v=visiveis();
-  if(!v.length){$('#lista').innerHTML=`<div class="vazio">${itens.length?'Nada encontrado com esse filtro.':`Nenhum lançamento em ${nomeMes(mes).toLowerCase()}.<br>Toque em <b>+ Lançar</b> pra anotar.`}</div>`;return}
+  if(!v.length){$('#lista').innerHTML=`<div class="vazio">${itens.length?'Nada encontrado com esse filtro.':`Nenhum lançamento em ${nomeMes(mes).toLowerCase()}.<br>Toque em <b>+ Lançar</b> pra anotar.`}</div>`;
+    $('#corpoD').innerHTML=`<tr><td colspan="8" class="vazio" style="height:auto;white-space:normal">${itens.length?'Nada encontrado com esse filtro.':'Nada lançado neste mês. Use a linha verde acima pra lançar.'}</td></tr>`;return}
+  // computador: tabela
+  let d0='';
+  $('#corpoD').innerHTML=v.map(i=>{const [n,ic,cor]=tipoInfo(i.acontecimento);const nf=(i.fotos||[]).length;const novo=i.data!==d0;d0=i.data;
+    return `<tr class="${novo?'novodia':''}" onclick="abrirForm('${i.id}')"><td>${novo?fmtData(i.data).slice(0,5)+' <span class="por">'+new Date(i.data+'T12:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')+'</span>':''}</td>
+      <td title="${esc(n)}"><span class="dot" style="background:${cor};display:inline-block;margin-right:6px"></span>${esc(n)}</td><td>${i.rgd?`<span class="rgd">${esc(i.rgd)}</span>`:''}</td>
+      <td title="${esc(i.local||'')}">${esc(i.local||'')}</td><td class="n">${esc(i.qtd||'')}</td><td title="${esc(i.obs||'')}">${esc(i.obs||'')}</td>
+      <td class="c">${nf?'📷'+(nf>1?nf:''):''}</td><td class="por">${i._pend?'<span class="pend">⏳ a enviar</span>':esc(i.criadoPorNome||'')}</td></tr>`}).join('');
   let html='',dia='';
   v.forEach(i=>{
     if(i.data!==dia){dia=i.data;const d=new Date(dia+'T12:00');const ds=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});html+=`<div class="dia">${dia===hoje()?'Hoje · ':''}${ds}</div>`}
     const [n,ic,cor]=tipoInfo(i.acontecimento);const nf=(i.fotos||[]).length;
-    const extras=[i.local?`📍 ${esc(i.local)}`:'',i.qtd?`🐄 ${esc(i.qtd)} cab.`:'',nf?`📷 ${nf}`:''].filter(Boolean);
+    const extras=[i.local?`📍 ${esc(i.local)}`:'',i.qtd?`${esc(i.qtd)} cab.`:'',i.obs?esc(i.obs):''].filter(Boolean);
     html+=`<div class="reg" style="--cor:${cor}" onclick="abrirForm('${i.id}')">
-      <div class="ic">${ic}</div>
-      <div class="corpo"><div class="l1"><span class="ti">${esc(n)}</span>${i.rgd?`<span class="rgd">${esc(i.rgd)}</span>`:''}</div>
-        ${extras.length?`<div class="l2">${extras.map(x=>`<span>${x}</span>`).join('')}</div>`:''}
-        ${i.obs?`<div class="ob">${esc(i.obs)}</div>`:''}</div>
-      <div class="dir">${nf&&miniFotos[i.fotos[0]]?`<img class="mini-foto" src="${miniFotos[i.fotos[0]]}" alt="">`:''}<span>${esc(i.criadoPorNome||'')}</span>${i._pend?'<span class="pend">⏳ a enviar</span>':''}</div>
+      <div class="corpo"><div class="l1">${ic} <span class="ti">${esc(n)}</span> ${i.rgd?`<span class="rgd">${esc(i.rgd)}</span>`:''}</div>
+        ${extras.length?`<div class="l2">${extras.join(' · ')}</div>`:''}</div>
+      <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${nf?(miniFotos[i.fotos[0]]?`<img class="mini-foto" src="${miniFotos[i.fotos[0]]}" alt="">`:'📷'):''}</div>
     </div>`;
   });
   $('#lista').innerHTML=html;
@@ -258,10 +284,10 @@ function abrirMenu(ev){
 
 /* ---------- formulário ---------- */
 function podeEditar(i){return ehAdmin||i.criadoPorUid===eu.uid}
-function abrirForm(id){
-  const i=id?itens.find(x=>x.id===id):null;
+function abrirForm(id,base){
+  const i=id?itens.find(x=>x.id===id):null;const b=base||{};
   const so=i&&!podeEditar(i);   // outros veem, mas não alteram
-  const sel=i?i.acontecimento:'';
+  const sel=i?i.acontecimento:(b.acontecimento||'');
   const m=document.createElement('div');m.className='modal';m.id='form';
   m.onclick=e=>{if(e.target===m)m.remove()};
   const ro=so?'disabled':'';
@@ -270,15 +296,15 @@ function abrirForm(id){
     <div class="folha-corpo">
       ${so?`<div class="offline" style="background:#f1f4f2;border-color:#dde4df;color:#4a5850">Lançado por ${esc(i.criadoPorNome||'')}. Só quem lançou (ou o administrador) pode alterar.</div>`:''}
       <div class="field"><label>O que aconteceu? *</label><div class="tipos">${TIPOS.map(t=>`<button type="button" ${ro} class="tipo ${t[0]===sel?'on':''}" data-t="${esc(t[0])}" onclick="document.querySelectorAll('.tipo').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${t[1]} ${esc(t[0])}</button>`).join('')}</div></div>
-      <div class="duas"><div class="field"><label>Data *</label><input id="fData" ${ro} class="input" type="date" value="${esc(i?i.data:hoje())}"></div>
+      <div class="duas"><div class="field"><label>Data *</label><input id="fData" ${ro} class="input" type="date" value="${esc(i?i.data:(b.data||hoje()))}"></div>
       <div class="field"><label>RGD</label><input id="fRgd" ${ro} class="input" value="${esc(i?i.rgd:'')}" placeholder="opcional" autocapitalize="characters"></div></div>
-      <div class="duas"><div class="field"><label>Local / pasto</label><input id="fLocal" ${ro} class="input" list="listaLocais" value="${esc(i?i.local:'')}" placeholder="opcional"><datalist id="listaLocais">${locais.map(l=>`<option value="${esc(l)}">`).join('')}</datalist></div>
+      <div class="duas"><div class="field"><label>Local / pasto</label><input id="fLocal" ${ro} class="input" list="listaLocais" value="${esc(i?i.local:(b.local||''))}" placeholder="opcional"><datalist id="listaLocais">${locais.map(l=>`<option value="${esc(l)}">`).join('')}</datalist></div>
       <div class="field"><label>Cabeças</label><input id="fQtd" ${ro} class="input" inputmode="numeric" value="${esc(i?i.qtd:'')}" placeholder="opcional"></div></div>
       <div class="field"><label>Observação</label><textarea id="fObs" ${ro} class="input" placeholder="Ex: pasto X com 28 cabeças (14 M e 14 F)">${esc(i?i.obs:'')}</textarea></div>
       <div class="field" style="margin-bottom:0"><label>Fotos</label><div class="fotos" id="fFotos"></div>
         <input id="fArq" type="file" accept="image/*" capture="environment" multiple class="hidden" onchange="addFotos(this.files);this.value=''"></div>
     </div>
-    <div class="folha-pe">${so?'<button class="btn btn-ghost" style="margin-left:auto" onclick="document.getElementById(\'form\').remove()">Fechar</button>':`${i?`<button class="btn btn-danger esq" onclick="apagar('${i.id}')">Apagar</button>`:'<span class="esq"></span>'}<button class="btn btn-ghost" onclick="document.getElementById('form').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvar(${i?`'${i.id}'`:''})">Salvar</button>`}</div>
+    <div class="folha-pe">${so?'<button class="btn btn-ghost" style="margin-left:auto" onclick="document.getElementById(\'form\').remove()">Fechar</button>':`${i?`<button class="btn btn-danger esq" onclick="apagar('${i.id}')">Apagar</button>`:'<span class="esq"></span>'}<button class="btn btn-ghost" onclick="document.getElementById('form').remove()">Cancelar</button>${i?'':'<button class="btn btn-ghost" onclick="salvar(null,true)" title="Salva e já abre outro igual">Salvar e +1</button>'}<button class="btn btn-primary" onclick="salvar(${i?`'${i.id}'`:''})">Salvar</button>`}</div>
   </div>`;
   document.body.appendChild(m);
   fotosForm=[];removidas=[];somenteVer=so;desenharFotos();
@@ -298,7 +324,7 @@ function comprimir(arq){return new Promise((ok,erro)=>{const r=new FileReader();
 async function addFotos(files){for(const f of [...files].slice(0,4-fotosForm.length)){try{fotosForm.push({id:null,dados:await comprimir(f)})}catch(e){toast('Não consegui ler essa foto.')}}desenharFotos()}
 function tirarFoto(k){const f=fotosForm[k];if(f.id)removidas.push(f.id);fotosForm.splice(k,1);desenharFotos()}
 function verFoto(k){const z=document.createElement('div');z.className='zoom';z.onclick=()=>z.remove();z.innerHTML=`<img src="${fotosForm[k].dados}">`;document.body.appendChild(z)}
-function salvar(id){
+function salvar(id,outro){
   const t=document.querySelector('.tipo.on');if(!t){toast('Escolha o que aconteceu.');return}
   const data=$('#fData').value;if(!data){toast('Informe a data.');return}
   const dados={acontecimento:t.dataset.t,data,mes:data.slice(0,7),rgd:$('#fRgd').value.trim().toUpperCase(),local:$('#fLocal').value.trim(),qtd:$('#fQtd').value.trim(),obs:$('#fObs').value.trim()};
@@ -312,6 +338,23 @@ function salvar(id){
   document.getElementById('form').remove();
   toast(navigator.onLine?'Lançamento salvo.':'Guardado no aparelho. Envia quando a internet voltar.');
   if(dados.mes!==mes)irMes(dados.mes);
+  if(outro)abrirForm(null,{data:dados.data,acontecimento:dados.acontecimento,local:dados.local});
+}
+/* ---------- linha de lançamento rápido (computador) ---------- */
+function prepararRapido(){
+  $('#rTipo').innerHTML='<option value="">— escolha —</option>'+TIPOS.map(t=>`<option>${esc(t[0])}</option>`).join('');
+  $('#rData').value=hoje();
+  ['rData','rTipo','rRgd','rLocal','rQtd','rObs'].forEach(id=>$('#'+id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarRapido()}}));
+}
+function lancarRapido(){
+  const tipo=$('#rTipo').value,data=$('#rData').value;
+  if(!tipo){toast('Escolha o acontecimento.');$('#rTipo').focus();return}
+  if(!data){toast('Informe a data.');$('#rData').focus();return}
+  const dados={acontecimento:tipo,data,mes:data.slice(0,7),rgd:$('#rRgd').value.trim().toUpperCase(),local:$('#rLocal').value.trim(),qtd:$('#rQtd').value.trim(),obs:$('#rObs').value.trim(),fotos:[]};
+  col.doc().set({...dados,criadoPorUid:eu.uid,criadoPorNome:meuNome,criadoEm:firebase.firestore.FieldValue.serverTimestamp(),criadoEmLocal:new Date().toISOString()}).catch(e=>toast('Não salvou: '+e.message));
+  if(dados.local&&!locais.includes(dados.local))cfgRef.set({locais:firebase.firestore.FieldValue.arrayUnion(dados.local)},{merge:true}).catch(()=>{});
+  ['rRgd','rQtd','rObs'].forEach(id=>$('#'+id).value='');$('#rRgd').focus();
+  if(dados.mes!==mes){irMes(dados.mes);toast('Lançado em '+nomeMes(dados.mes)+'.')}
 }
 function apagar(id){
   if(!confirm('Apagar este lançamento?'))return;

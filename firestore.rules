@@ -19,6 +19,12 @@ service cloud.firestore {
       allow write: if ehAdmin();
     }
 
+    // Nome de usuário -> e-mail interno do login (usado na tela de entrar, antes do login).
+    match /logins/{usuario} {
+      allow read: if true;
+      allow write: if ehAdmin();
+    }
+
     // Configurações gerais (links dos apps etc.)
     match /config/{doc} {
       allow read: if ehAdmin() || ativo();
