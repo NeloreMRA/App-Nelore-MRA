@@ -213,7 +213,22 @@ async function telaConfig(){
       <td class="c"><span class="pill ${u.ativo===false?'off':'on'}">${u.ativo===false?'Bloqueado':'Ativo'}</span></td>
       <td style="white-space:nowrap"><button class="mini" onclick="abrirTelas('${u.uid}')">Telas</button> <button class="mini" onclick="mudarAtivo('${u.uid}',${u.ativo===false})">${u.ativo===false?'Desbloquear':'Bloquear'}</button> <button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirUsuario('${u.uid}')">Excluir</button></td></tr>`).join('')}
     </tbody></table></div>`:'<div class="vazio">Nenhum usuário criado ainda.</div>'}
-  </div>`;
+  </div>
+  <div class="card"><h3>Espaço no Firebase</h3><div id="uso"><div class="vazio" style="padding:10px">Carregando...</div></div></div>`;
+  mostrarUso();
+}
+// Espaço usado: calculado pelo backup diário (GitHub Actions) e gravado em config/uso
+const fmtMB=b=>b<1048576?Math.max(1,Math.round(b/1024)).toLocaleString('pt-BR')+' KB':b>=1073741824?(b/1073741824).toLocaleString('pt-BR',{maximumFractionDigits:2})+' GB':(b/1048576).toLocaleString('pt-BR',{maximumFractionDigits:b<10485760?1:0})+' MB';
+async function mostrarUso(){
+  const el=$('#uso');if(!el)return;
+  let u=null;try{const d=await fs.collection('config').doc('uso').get();u=d.exists?d.data():null}catch(e){}
+  if(!u||!u.bytes){el.innerHTML='<div class="vazio" style="padding:10px">Ainda não calculado. Atualiza no backup de madrugada.</div>';return}
+  const lim=u.limite||1073741824,pct=Math.min(100,u.bytes/lim*100),cor=pct>=80?'#b0473a':pct>=60?'#c58a12':'#1f6a49';
+  const partes=Object.entries(u.partes||{}).sort((a,b)=>b[1]-a[1]);
+  el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap"><div style="font-size:22px;font-weight:800">${fmtMB(u.bytes)} <span style="font-size:14px;color:var(--suave);font-weight:600">de ${fmtMB(lim)} usados</span></div><div style="font-weight:800;color:${cor}">${pct.toLocaleString('pt-BR',{maximumFractionDigits:pct<1?2:0})}%</div></div>
+    <div style="height:12px;background:#edf1ee;border-radius:99px;overflow:hidden;margin:8px 0 4px"><div style="height:100%;width:${Math.max(pct,0.5)}%;background:${cor}"></div></div>
+    <div style="font-size:13px;color:var(--suave)">Livre: <b>${fmtMB(Math.max(0,lim-u.bytes))}</b> · atualizado em ${u.atualizadoEm?new Date(u.atualizadoEm).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}):'—'}</div>
+    ${partes.length?`<div class="tabela-wrap" style="margin-top:12px"><table><tbody>${partes.map(([n,b])=>`<tr><td>${esc(n)}</td><td style="text-align:right;white-space:nowrap">${fmtMB(b)}</td></tr>`).join('')}</tbody></table></div>`:''}`;
 }
 async function criarUsuario(){
   const nome=$('#nuNome').value.trim(),usuario=$('#nuUser').value.trim().toLowerCase(),senha=$('#nuPass').value;
