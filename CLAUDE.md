@@ -15,12 +15,13 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - Admin: `mandrade.gado@terra.com.br` (vê tudo e é o único que abre Configurações).
 - Funcionários entram com **usuário + senha** (sem e-mail): por baixo o login vira `usuario@app-nelore-mra.firebaseapp.com`.
 - Permissões em `users/{uid}`: `{nome, usuario, apps:{iatf,custos,contabil,gado}, paginas:{iatf:[telas]}, ativo}` (`paginas` vazio = todas as telas).
+- `logins/{usuario}` → `{email}`: e-mail interno do login. Usuário excluído e recriado com o mesmo nome vira `usuario+2@...` (o login antigo não dá pra apagar pelo navegador).
 - `config/apps`: `links` (sistemas antigos) e `usarNovo` (chave que faz o botão abrir a versão de dentro do App).
 - Excluir usuário apaga o perfil (perde o acesso); o login continua existindo no Firebase, então o nome de usuário fica reservado.
 - Dados de cada app novo ficam em `apps/<id do app>/...` (as regras liberam por app).
 - **Tombamento feito em 01/10/2026**: os dados de IATF, Custos e Contábil foram copiados dos Firebase antigos e tudo roda aqui. Os repositórios antigos (IATF-MRA, custos-safra, Contabil-MRA) ficam só como arquivo — NÃO são mais usados nem alterados.
 - `caderneta/index.html` — Caderneta: lançamentos em `apps/caderneta/lancamentos` (um por documento, campo `mes` = AAAA-MM), fotos comprimidas no aparelho em `apps/caderneta/fotos` (sem Storage pago), locais em `apps/caderneta/config/listas`. Só o tipo de acontecimento é lista fixa. Quem lançou (ou o admin) edita/apaga.
-- `estoque/index.html` — Estoque Gado: planilha por pasto + categoria em `apps/estoque/linhas`; "Fechar mês" grava foto em `apps/estoque/fechamentos/AAAA-MM`.
+- `estoque/index.html` — Estoque Gado: planilha livre igual Excel (fórmulas SOMA, SOMASE etc., várias abas). Cada aba em `apps/estoque/abas/{id}` `{nome, ordem, celulas:{A1:'...'}, negrito, larguras}`. "Fechar mês" grava cópia das abas em `apps/estoque/fechamentos/AAAA-MM`. (`apps/estoque/linhas` é o formato antigo, só lido uma vez pra montar a 1ª aba.)
 - Sem internet: `sw.js` guarda as telas no aparelho e o Firestore usa `enablePersistence` (lança offline e envia depois). `manifest.webmanifest` + ícones permitem instalar no celular.
 
 ## Fluxo de trabalho
