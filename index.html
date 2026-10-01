@@ -112,7 +112,8 @@ const USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
 
 // Apps do portal. "link" = abre o sistema atual; sem link = feito aqui dentro (em breve).
 const APPS=[
-  {id:'iatf',nome:'IATF MRA',desc:'Matrizes, IATF, estoque de sêmen, FIV e embriões.',ico:'🐄',cor:'#1f6a49',fundo:'#eef6f1',link:'https://neloremra.github.io/IATF-MRA/'},
+  {id:'iatf',nome:'IATF MRA',desc:'Matrizes, IATF, estoque de sêmen, FIV e embriões.',ico:'🐄',cor:'#1f6a49',fundo:'#eef6f1',link:'https://neloremra.github.io/IATF-MRA/',interno:'iatf/index.html',
+   telas:[['dashboard','Dashboard'],['animals','Matrizes'],['iatf','IATF'],['stock','Estoque - Sêmen'],['acasal','Acasalamentos'],['fiv','FIV'],['embrioes','Embriões'],['deleted','Exclusões'],['settings','Configurações']]},
   {id:'custos',nome:'Custos Safra',desc:'Custos da safra e controle de diesel.',ico:'⛽',cor:'#b39a3b',fundo:'#f8f3df',link:'https://neloremra.github.io/custos-safra/'},
   {id:'contabil',nome:'Contábil MRA',desc:'Balancete e contas da fazenda.',ico:'📊',cor:'#2a78d6',fundo:'#e7f0ff',link:'https://neloremra.github.io/Contabil-MRA/'},
   {id:'gado',nome:'Gado & Caderneta',desc:'Estoque de gado e caderneta digital do dia a dia.',ico:'📒',cor:'#7a52c7',fundo:'#efe8ff',link:'',breve:true},
@@ -122,7 +123,7 @@ firebase.initializeApp(FIREBASE_CONFIG);
 const auth=firebase.auth(), fs=firebase.firestore();
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-let eu=null, perfil=null, ehAdmin=false, links={}, tela='inicio', usuarios=[];
+let eu=null, perfil=null, ehAdmin=false, links={}, usarNovo={}, tela='inicio', usuarios=[];
 
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
 function loginParaEmail(v){v=String(v||'').trim().toLowerCase();return v.includes('@')?v:v+USER_DOMAIN}
@@ -144,7 +145,7 @@ auth.onAuthStateChanged(async u=>{
   ehAdmin=String(u.email||'').toLowerCase()===ADMIN_EMAIL;
   perfil=null;
   try{const d=await fs.collection('users').doc(u.uid).get();perfil=d.exists?d.data():null}catch(e){console.warn(e)}
-  try{const c=await fs.collection('config').doc('apps').get();links=(c.exists&&c.data().links)||{}}catch(e){links={}}
+  try{const c=await fs.collection('config').doc('apps').get();links=(c.exists&&c.data().links)||{};usarNovo=(c.exists&&c.data().usarNovo)||{}}catch(e){links={};usarNovo={}}
   $('#login').classList.add('hidden');$('#app').classList.remove('hidden');
   $('#btnConfig').classList.toggle('hidden',!ehAdmin);
   irPara('inicio');
@@ -170,6 +171,7 @@ function telaInicio(){
 function abrirApp(id){
   const a=APPS.find(x=>x.id===id);if(!a||!podeApp(id))return;
   if(a.breve){toast('Esse app ainda está sendo construído.');return}
+  if(a.interno&&usarNovo[a.id]){location.href=a.interno;return}
   const l=linkApp(a);if(!l){toast('Link desse app não configurado.');return}
   window.open(l,'_blank');
 } window.abrirApp=abrirApp;
@@ -200,12 +202,16 @@ async function telaConfig(){
     ${usuarios.map(u=>`<tr><td><strong>${esc(u.nome||'')}</strong></td><td>${esc(u.usuario||emailParaUsuario(u.email))}</td>
       ${APPS.map(a=>`<td class="c"><input type="checkbox" ${u.apps&&u.apps[a.id]?'checked':''} onchange="mudarPermissao('${u.uid}','${a.id}',this.checked)"></td>`).join('')}
       <td class="c"><span class="pill ${u.ativo===false?'off':'on'}">${u.ativo===false?'Bloqueado':'Ativo'}</span></td>
-      <td style="white-space:nowrap"><button class="mini" onclick="mudarAtivo('${u.uid}',${u.ativo===false})">${u.ativo===false?'Desbloquear':'Bloquear'}</button></td></tr>`).join('')}
+      <td style="white-space:nowrap"><button class="mini" onclick="abrirTelas('${u.uid}')">Telas</button> <button class="mini" onclick="mudarAtivo('${u.uid}',${u.ativo===false})">${u.ativo===false?'Desbloquear':'Bloquear'}</button> <button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirUsuario('${u.uid}')">Excluir</button></td></tr>`).join('')}
     </tbody></table></div>`:'<div class="vazio">Nenhum usuário criado ainda.</div>'}
   </div>
-  <div class="card"><h3>Links dos sistemas atuais</h3>
-    <div class="grid-form">${APPS.filter(a=>!a.breve).map(a=>`<div class="field" style="margin:0"><label>${esc(a.nome)}</label><input class="input lk" data-id="${a.id}" value="${esc(linkApp(a))}"></div>`).join('')}</div>
-    <div style="margin-top:14px"><button class="btn btn-ghost" onclick="salvarLinks()">Salvar links</button></div>
+  <div class="card"><h3>Sistemas</h3>
+    ${APPS.filter(a=>!a.breve).map(a=>`<div class="grid-form" style="margin-bottom:14px;align-items:center">
+      <div class="field" style="margin:0"><label>${esc(a.nome)} — link do sistema antigo</label><input class="input lk" data-id="${a.id}" value="${esc(linkApp(a))}"></div>
+      ${a.interno?`<label class="check" style="align-self:end;padding:11px 12px"><input type="checkbox" ${usarNovo[a.id]?'checked':''} onchange="mudarVersao('${a.id}',this.checked)"> Usar a versão dentro do App</label>
+      <button class="btn btn-ghost" style="align-self:end" onclick="location.href='${a.interno}'">Abrir versão nova</button>`:'<div class="d" style="align-self:end;color:#5d6a62;font-size:12px;padding-bottom:12px">Ainda não trazido pra dentro do App</div>'}
+    </div>`).join('')}
+    <button class="btn btn-ghost" onclick="salvarLinks()">Salvar links</button>
   </div>`;
 }
 async function criarUsuario(){
@@ -234,6 +240,39 @@ async function salvarLinks(){
   const l={};$$('.lk').forEach(i=>l[i.dataset.id]=i.value.trim());
   try{await fs.collection('config').doc('apps').set({links:l},{merge:true});links=l;toast('Links salvos.')}catch(e){toast('Não salvou: '+e.message)}
 } window.salvarLinks=salvarLinks;
+async function mudarVersao(id,on){
+  if(on&&!confirm('Ligar a versão nova pra todo mundo?\n\nConfira antes se os dados já foram copiados pra ela (Configurações do app → Restaurar backup).'))return telaConfig();
+  try{await fs.collection('config').doc('apps').set({usarNovo:{[id]:on}},{merge:true});usarNovo[id]=on;toast(on?'Agora todos abrem a versão nova.':'Voltou a abrir o sistema antigo.')}catch(e){toast('Não salvou: '+e.message)}
+} window.mudarVersao=mudarVersao;
+async function excluirUsuario(uid){
+  const u=usuarios.find(x=>x.uid===uid);if(!u)return;
+  if(!confirm(`Excluir o usuário "${u.usuario}" (${u.nome})?\n\nEle perde todo o acesso na hora. O nome de usuário "${u.usuario}" fica reservado e não pode ser criado de novo.`))return;
+  try{await fs.collection('users').doc(uid).delete();toast('Usuário excluído.');telaConfig()}catch(e){toast('Não excluiu: '+e.message)}
+} window.excluirUsuario=excluirUsuario;
+/* Telas que o usuário vê dentro de cada app (vazio = todas) */
+function abrirTelas(uid){
+  const u=usuarios.find(x=>x.uid===uid);if(!u)return;
+  const comTelas=APPS.filter(a=>a.telas);
+  const m=document.createElement('div');m.id='modalTelas';
+  m.style.cssText='position:fixed;inset:0;background:#0007;display:grid;place-items:center;padding:16px;z-index:40';
+  m.innerHTML=`<div class="card" style="width:min(560px,100%);max-height:90vh;overflow:auto;margin:0">
+    <h3>Telas de ${esc(u.nome||u.usuario)}</h3>
+    ${comTelas.map(a=>{const sel=(u.paginas&&u.paginas[a.id])||[];const todas=!sel.length;return `<div style="margin-bottom:14px"><div style="font-weight:700;margin-bottom:8px">${esc(a.nome)}${u.apps&&u.apps[a.id]?'':' <span class="pill off">sem acesso ao app</span>'}</div>
+      <label class="check" style="margin-bottom:8px;display:inline-flex"><input type="checkbox" class="tl-todas" data-app="${a.id}" ${todas?'checked':''} onchange="$$('.tl[data-app=${a.id}]').forEach(c=>{c.checked=this.checked})"> Todas as telas</label>
+      <div class="checks">${a.telas.map(([k,l])=>`<label class="check"><input type="checkbox" class="tl" data-app="${a.id}" value="${k}" ${todas||sel.includes(k)?'checked':''} onchange="const t=$('.tl-todas[data-app=${a.id}]');t.checked=$$('.tl[data-app=${a.id}]').every(c=>c.checked)"> ${esc(l)}</label>`).join('')}</div></div>`}).join('')}
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px"><button class="btn btn-ghost" onclick="document.getElementById('modalTelas').remove()">Cancelar</button><button class="btn btn-primary" onclick="salvarTelas('${uid}')">Salvar</button></div>
+  </div>`;
+  document.body.appendChild(m);
+} window.abrirTelas=abrirTelas;
+async function salvarTelas(uid){
+  const pag={};
+  for(const a of APPS.filter(a=>a.telas)){
+    const marcadas=$$(`.tl[data-app=${a.id}]`).filter(c=>c.checked).map(c=>c.value);
+    if(!marcadas.length)return toast(`Marque pelo menos uma tela em ${a.nome}.`);
+    pag[a.id]=marcadas.length===a.telas.length?[]:marcadas;
+  }
+  try{await fs.collection('users').doc(uid).update({paginas:pag});document.getElementById('modalTelas').remove();toast('Telas salvas.');telaConfig()}catch(e){toast('Não salvou: '+e.message)}
+} window.salvarTelas=salvarTelas;
 </script>
 </body>
 </html>
