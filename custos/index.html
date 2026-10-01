@@ -266,6 +266,10 @@
     .resumo-kpis .metric{padding:10px 6px;}
     .filtros-resumo > div{max-width:none;}
   }
+
+/* Dentro do App Nelore MRA o login é feito na porta de entrada: a tela de login antiga nunca aparece */
+#loginScreen{display:none!important}
+body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
 </style>
 </head>
 <body class="auth-pending">
