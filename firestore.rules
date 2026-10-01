@@ -35,9 +35,25 @@ service cloud.firestore {
       allow read, write: if podeApp('custos') && (doc == 'diesel' || custosCompleto());
     }
 
+    // Caderneta: todos com acesso leem e lançam; só quem lançou (ou o admin) altera/apaga.
+    function donoOuAdmin() { return ehAdmin() || resource.data.criadoPorUid == request.auth.uid; }
+    match /apps/caderneta/lancamentos/{id} {
+      allow read: if podeApp('caderneta');
+      allow create: if podeApp('caderneta') && request.resource.data.criadoPorUid == request.auth.uid;
+      allow update, delete: if podeApp('caderneta') && donoOuAdmin();
+    }
+    match /apps/caderneta/fotos/{id} {
+      allow read: if podeApp('caderneta');
+      allow create: if podeApp('caderneta') && request.resource.data.criadoPorUid == request.auth.uid;
+      allow update, delete: if podeApp('caderneta') && donoOuAdmin();
+    }
+    match /apps/caderneta/config/{doc} {
+      allow read, write: if podeApp('caderneta');
+    }
+
     // Dados de cada app ficam em /apps/<app>/... e só quem tem permissão naquele app acessa.
     match /apps/{app}/{resto=**} {
-      allow read, write: if app != 'custos' && podeApp(app);
+      allow read, write: if app != 'custos' && app != 'caderneta' && podeApp(app);
     }
 
     // Todo o resto: bloqueado.

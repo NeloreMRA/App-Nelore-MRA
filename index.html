@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#153e2c">
 <title>App Nelore MRA</title>
 <link rel="icon" href="logo.webp">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -110,22 +112,26 @@ const ADMIN_EMAIL='mandrade.gado@terra.com.br';
 // Funcionário entra só com "usuário"; por baixo vira um e-mail interno (nunca recebe e-mail nenhum).
 const USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
 
-// Apps do portal. "link" = abre o sistema atual; sem link = feito aqui dentro (em breve).
+// Apps do portal: cada um é uma pasta deste repositório (ex: iatf/index.html).
 const APPS=[
-  {id:'iatf',nome:'IATF MRA',desc:'Matrizes, IATF, estoque de sêmen, FIV e embriões.',ico:'🐄',cor:'#1f6a49',fundo:'#eef6f1',link:'https://neloremra.github.io/IATF-MRA/',interno:'iatf/index.html',
+  {id:'iatf',nome:'IATF MRA',desc:'Matrizes, IATF, estoque de sêmen, FIV e embriões.',ico:'🐄',cor:'#1f6a49',fundo:'#eef6f1',interno:'iatf/index.html',
    telas:[['dashboard','Dashboard'],['animals','Matrizes'],['iatf','IATF'],['stock','Estoque - Sêmen'],['acasal','Acasalamentos'],['fiv','FIV'],['embrioes','Embriões'],['deleted','Exclusões'],['settings','Configurações']]},
-  {id:'custos',nome:'Custos Safra',desc:'Custos da safra e controle de diesel.',ico:'⛽',cor:'#b39a3b',fundo:'#f8f3df',link:'https://neloremra.github.io/custos-safra/',interno:'custos/index.html',
+  {id:'custos',nome:'Custos Safra',desc:'Custos da safra e controle de diesel.',ico:'⛽',cor:'#b39a3b',fundo:'#f8f3df',interno:'custos/index.html',
    telas:[['dashboard','Dashboard'],['colheita','Colheita'],['adiantamentos','Adiantamentos'],['vendas','Silos e Vendas'],['cadastros','Cadastros'],['safras','Cadastro de Safra'],['diesel-controle','Controle Diesel'],['diesel-estoque','Estoque Diesel'],['diesel-resumo','Resumo Diesel']]},
-  {id:'contabil',nome:'Contábil MRA',desc:'Balancete e contas da fazenda.',ico:'📊',cor:'#2a78d6',fundo:'#e7f0ff',link:'https://neloremra.github.io/Contabil-MRA/',interno:'contabil/index.html',
+  {id:'contabil',nome:'Contábil MRA',desc:'Balancete e contas da fazenda.',ico:'📊',cor:'#2a78d6',fundo:'#e7f0ff',interno:'contabil/index.html',
    telas:[['upload','Upload de arquivo'],['cadastro','Cadastro de grupos'],['dre','Movimentações (DRE)'],['busca','Busca'],['sem-centro','Sem centro']]},
-  {id:'gado',nome:'Gado & Caderneta',desc:'Estoque de gado e caderneta digital do dia a dia.',ico:'📒',cor:'#7a52c7',fundo:'#efe8ff',link:'',breve:true},
+  {id:'caderneta',nome:'Caderneta',desc:'Anotações do dia a dia na fazenda, divididas por mês. Funciona sem internet.',ico:'📒',cor:'#7a52c7',fundo:'#efe8ff',interno:'caderneta/index.html'},
+  {id:'estoque',nome:'Estoque Gado',desc:'Planilha geral do rebanho por pasto e categoria.',ico:'🐂',cor:'#1b9e8f',fundo:'#e3f4f4',interno:'estoque/index.html'},
 ];
 
 firebase.initializeApp(FIREBASE_CONFIG);
 const auth=firebase.auth(), fs=firebase.firestore();
+// Guarda os dados no aparelho (abre e lança sem internet; envia quando voltar)
+fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-let eu=null, perfil=null, ehAdmin=false, links={}, usarNovo={}, tela='inicio', usuarios=[];
+let eu=null, perfil=null, ehAdmin=false, tela='inicio', usuarios=[];
 
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
 function loginParaEmail(v){v=String(v||'').trim().toLowerCase();return v.includes('@')?v:v+USER_DOMAIN}
@@ -147,14 +153,12 @@ auth.onAuthStateChanged(async u=>{
   ehAdmin=String(u.email||'').toLowerCase()===ADMIN_EMAIL;
   perfil=null;
   try{const d=await fs.collection('users').doc(u.uid).get();perfil=d.exists?d.data():null}catch(e){console.warn(e)}
-  try{const c=await fs.collection('config').doc('apps').get();links=(c.exists&&c.data().links)||{};usarNovo=(c.exists&&c.data().usarNovo)||{}}catch(e){links={};usarNovo={}}
   $('#login').classList.add('hidden');$('#app').classList.remove('hidden');
   $('#btnConfig').classList.toggle('hidden',!ehAdmin);
   irPara('inicio');
 });
 
 function podeApp(id){return ehAdmin||(perfil&&perfil.ativo!==false&&perfil.apps&&perfil.apps[id]===true)}
-function linkApp(a){return (links[a.id]||a.link||'').trim()}
 function irPara(t){tela=t;$('#btnInicio').classList.toggle('hidden',t==='inicio');if(t==='config')telaConfig();else telaInicio()} window.irPara=irPara;
 
 /* ---------- INÍCIO: escolha do app ---------- */
@@ -167,18 +171,15 @@ function telaInicio(){
   const meus=APPS.filter(a=>podeApp(a.id));
   $('#conteudo').innerHTML=`<h2>Escolha o app</h2>${meus.length?`<div class="apps">${meus.map(a=>`
     <button class="app" style="--cor:${a.cor};--fundo-ico:${a.fundo}" onclick="abrirApp('${a.id}')">
-      <div class="ico">${a.ico}</div><div class="n">${esc(a.nome)}</div><div class="d">${esc(a.desc)}</div>${a.breve?'<span class="tag">Em breve</span>':''}
+      <div class="ico">${a.ico}</div><div class="n">${esc(a.nome)}</div><div class="d">${esc(a.desc)}</div>
     </button>`).join('')}</div>`:`<div class="vazio">Nenhum app liberado pra você ainda. Fale com o administrador.</div>`}`;
 }
 function abrirApp(id){
   const a=APPS.find(x=>x.id===id);if(!a||!podeApp(id))return;
-  if(a.breve){toast('Esse app ainda está sendo construído.');return}
-  if(a.interno&&usarNovo[a.id]){location.href=a.interno;return}
-  const l=linkApp(a);if(!l){toast('Link desse app não configurado.');return}
-  window.open(l,'_blank');
+  location.href=a.interno;
 } window.abrirApp=abrirApp;
 
-/* ---------- CONFIGURAÇÕES (só admin): usuários, permissões e links ---------- */
+/* ---------- CONFIGURAÇÕES (só admin): usuários e permissões ---------- */
 async function carregarUsuarios(){
   const snap=await fs.collection('users').get();
   usuarios=snap.docs.map(d=>({uid:d.id,...d.data()})).sort((a,b)=>String(a.nome||a.usuario).localeCompare(String(b.nome||b.usuario),'pt-BR'));
@@ -206,14 +207,6 @@ async function telaConfig(){
       <td class="c"><span class="pill ${u.ativo===false?'off':'on'}">${u.ativo===false?'Bloqueado':'Ativo'}</span></td>
       <td style="white-space:nowrap"><button class="mini" onclick="abrirTelas('${u.uid}')">Telas</button> <button class="mini" onclick="mudarAtivo('${u.uid}',${u.ativo===false})">${u.ativo===false?'Desbloquear':'Bloquear'}</button> <button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirUsuario('${u.uid}')">Excluir</button></td></tr>`).join('')}
     </tbody></table></div>`:'<div class="vazio">Nenhum usuário criado ainda.</div>'}
-  </div>
-  <div class="card"><h3>Sistemas</h3>
-    ${APPS.filter(a=>!a.breve).map(a=>`<div class="grid-form" style="margin-bottom:14px;align-items:center">
-      <div class="field" style="margin:0"><label>${esc(a.nome)} — link do sistema antigo</label><input class="input lk" data-id="${a.id}" value="${esc(linkApp(a))}"></div>
-      ${a.interno?`<label class="check" style="align-self:end;padding:11px 12px"><input type="checkbox" ${usarNovo[a.id]?'checked':''} onchange="mudarVersao('${a.id}',this.checked)"> Usar a versão dentro do App</label>
-      <button class="btn btn-ghost" style="align-self:end" onclick="location.href='${a.interno}'">Abrir versão nova</button>`:'<div class="d" style="align-self:end;color:#5d6a62;font-size:12px;padding-bottom:12px">Ainda não trazido pra dentro do App</div>'}
-    </div>`).join('')}
-    <button class="btn btn-ghost" onclick="salvarLinks()">Salvar links</button>
   </div>`;
 }
 async function criarUsuario(){
@@ -238,14 +231,7 @@ async function mudarPermissao(uid,app,on){
 async function mudarAtivo(uid,ativo){
   try{await fs.collection('users').doc(uid).update({ativo});toast(ativo?'Usuário desbloqueado.':'Usuário bloqueado.');telaConfig()}catch(e){toast('Não salvou: '+e.message)}
 } window.mudarAtivo=mudarAtivo;
-async function salvarLinks(){
-  const l={};$$('.lk').forEach(i=>l[i.dataset.id]=i.value.trim());
-  try{await fs.collection('config').doc('apps').set({links:l},{merge:true});links=l;toast('Links salvos.')}catch(e){toast('Não salvou: '+e.message)}
-} window.salvarLinks=salvarLinks;
-async function mudarVersao(id,on){
-  if(on&&!confirm('Ligar a versão nova pra todo mundo?\n\nConfira antes se os dados já foram copiados pra ela (Configurações do app → Restaurar backup).'))return telaConfig();
-  try{await fs.collection('config').doc('apps').set({usarNovo:{[id]:on}},{merge:true});usarNovo[id]=on;toast(on?'Agora todos abrem a versão nova.':'Voltou a abrir o sistema antigo.')}catch(e){toast('Não salvou: '+e.message)}
-} window.mudarVersao=mudarVersao;
+
 async function excluirUsuario(uid){
   const u=usuarios.find(x=>x.uid===uid);if(!u)return;
   if(!confirm(`Excluir o usuário "${u.usuario}" (${u.nome})?\n\nEle perde todo o acesso na hora. O nome de usuário "${u.usuario}" fica reservado e não pode ser criado de novo.`))return;
