@@ -25,9 +25,19 @@ service cloud.firestore {
       allow write: if ehAdmin();
     }
 
+    // Custos: quem só tem telas de Diesel acessa SÓ o diesel (nunca os custos da safra).
+    function custosCompleto() {
+      return ehAdmin() || !('paginas' in perfil()) || !('custos' in perfil().paginas)
+        || perfil().paginas.custos.size() == 0
+        || perfil().paginas.custos.hasAny(['dashboard','colheita','adiantamentos','vendas','cadastros','safras']);
+    }
+    match /apps/custos/dados/{doc} {
+      allow read, write: if podeApp('custos') && (doc == 'diesel' || custosCompleto());
+    }
+
     // Dados de cada app ficam em /apps/<app>/... e só quem tem permissão naquele app acessa.
     match /apps/{app}/{resto=**} {
-      allow read, write: if podeApp(app);
+      allow read, write: if app != 'custos' && podeApp(app);
     }
 
     // Todo o resto: bloqueado.
