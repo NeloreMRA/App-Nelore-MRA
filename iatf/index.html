@@ -176,6 +176,10 @@ body.authenticated #loginScreen{display:none}
 .logout-btn{margin:10px 12px 0;border:1px solid #ffffff2a;background:transparent;color:#dce9e2;border-radius:7px;padding:7px 9px;cursor:pointer;font-size:12px}
 .logout-btn:hover{background:#24583f;color:#fff}
 
+
+/* Dentro do App Nelore MRA o login é feito na porta de entrada: a tela de login antiga nunca aparece */
+#loginScreen{display:none!important}
+body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
 </style>
 </head>
 <body class="auth-pending">
