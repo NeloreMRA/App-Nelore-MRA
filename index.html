@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#153e2c">
+<title>App Nelore MRA</title>
+<link rel="icon" href="logo.webp">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root{--verde:#1f6a49;--verde-esc:#153e2c;--ouro:#b39a3b;--fundo:#f5f7f5;--borda:#e1e7e2;--texto:#17211c;--suave:#5d6a62;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--texto);background:var(--fundo)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:var(--fundo)}
+button{font:inherit}
+.hidden{display:none!important}
+/* Login */
+#login{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(160deg,#123526 0%,#1f6a49 100%)}
+.login-card{width:min(380px,100%);background:#fff;border-radius:18px;padding:30px 26px;box-shadow:0 12px 40px #0004;text-align:center}
+.login-card img{width:120px;height:120px;border-radius:50%;margin:-90px auto 10px;display:block;box-shadow:0 0 0 6px #fff,0 6px 20px #0003;background:#fff}
+.login-card h1{font-size:21px;margin:6px 0 2px}.login-card p{margin:0 0 20px;color:var(--suave);font-size:13px}
+.field{display:flex;flex-direction:column;gap:6px;text-align:left;margin-bottom:13px}.field label{font-size:12px;color:var(--suave);font-weight:650}
+.input{width:100%;border:1px solid #d7ded9;border-radius:9px;padding:11px 12px;font:inherit;font-size:15px;color:var(--texto);background:#fff;outline:none}
+.input:focus{border-color:#72a386;box-shadow:0 0 0 3px #72a38622}
+.btn{border:0;border-radius:9px;padding:11px 16px;font-weight:700;cursor:pointer}
+.btn-primary{background:var(--verde);color:#fff}.btn-primary:hover{background:#185b3e}.btn-primary:disabled{opacity:.6;cursor:wait}
+.btn-ghost{background:#fff;border:1px solid #d9dfda;color:#334139}.btn-ghost:hover{background:#f3f6f4}
+.btn-danger{background:#fff;border:1px solid #e7bbb5;color:#a33627}
+.msg-erro{min-height:18px;color:#a33627;font-size:13px;margin-top:10px}
+/* Topo */
+.topo{background:linear-gradient(135deg,#123526 0%,#1f6a49 100%);color:#fff;position:relative}
+.topo:after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--ouro)}
+.topo-in{max-width:1100px;margin:0 auto;padding:16px 20px 20px;display:flex;align-items:center;gap:14px}
+.topo img{width:58px;height:58px;border-radius:50%;box-shadow:0 0 0 3px #ffffff30;flex:0 0 58px}
+.topo .t{font-size:19px;font-weight:800}.topo .s{font-size:12px;opacity:.8;margin-top:2px}
+.topo .acoes{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.topo .acoes button{background:#ffffff1a;color:#fff;border:1px solid #ffffff40;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:600}
+.topo .acoes button:hover{background:#ffffff30}
+main{max-width:1100px;margin:0 auto;padding:24px 20px 40px}
+h2{font-size:16px;margin:0 0 14px;color:var(--verde-esc);display:flex;align-items:center;gap:10px}
+h2:before{content:"";width:5px;height:20px;border-radius:3px;background:var(--verde)}
+/* Apps */
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.app{background:#fff;border:1px solid var(--borda);border-radius:16px;padding:20px;cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:10px;border-top:5px solid var(--cor,var(--verde));transition:transform .12s,box-shadow .12s;color:var(--texto)}
+.app:hover{transform:translateY(-2px);box-shadow:0 8px 22px #153e2c1c}
+.app .ico{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;background:var(--fundo-ico,#eef6f1)}
+.app .n{font-size:17px;font-weight:800}.app .d{font-size:13px;color:var(--suave);line-height:1.4}
+.app .tag{align-self:flex-start;font-size:11px;font-weight:700;border-radius:99px;padding:3px 9px;background:#fff0da;color:#8a5919}
+.vazio{background:#fff;border:1px dashed #c9d4cc;border-radius:14px;padding:28px;text-align:center;color:var(--suave)}
+/* Configurações */
+.card{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:18px;margin-bottom:16px}
+.card h3{margin:0 0 12px;font-size:15px}
+.grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.check{display:flex;align-items:center;gap:6px;border:1px solid #d9dfda;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer;user-select:none;background:#fff}
+.check input{width:16px;height:16px;margin:0}
+.tabela-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:left;font-size:11px;color:var(--suave);text-transform:uppercase;letter-spacing:.03em;padding:8px;border-bottom:1px solid var(--borda);white-space:nowrap}
+td{padding:9px 8px;border-bottom:1px solid #f0f2f0;vertical-align:middle}
+td.c,th.c{text-align:center}
+td input[type=checkbox]{width:18px;height:18px;cursor:pointer}
+.pill{font-size:11px;font-weight:700;border-radius:99px;padding:2px 8px}.pill.on{background:#e5f5eb;color:#216440}.pill.off{background:#fde7e5;color:#9b3127}
+.mini{border:1px solid #d9dfda;background:#fff;border-radius:7px;padding:5px 9px;cursor:pointer;font-size:12px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#17211c;color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;box-shadow:0 6px 18px #0004;z-index:50}
+@media(max-width:600px){.topo .s{display:none}.topo .acoes button{padding:7px 9px;font-size:12px}main{padding:18px 14px 30px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="login" class="hidden">
+  <form class="login-card" id="loginForm" autocomplete="on">
+    <img src="logo.webp" alt="Nelore MRA">
+    <h1>App Nelore MRA</h1>
+    <p>Fazenda Paraíso</p>
+    <div class="field"><label for="lgUser">Usuário ou e-mail</label><input id="lgUser" class="input" autocomplete="username" autocapitalize="none" required></div>
+    <div class="field"><label for="lgPass">Senha</label><input id="lgPass" class="input" type="password" autocomplete="current-password" required></div>
+    <button class="btn btn-primary" id="lgBtn" style="width:100%">Entrar</button>
+    <div class="msg-erro" id="lgErro"></div>
+  </form>
+</section>
+
+<!-- APP -->
+<section id="app" class="hidden">
+  <header class="topo"><div class="topo-in">
+    <img src="logo.webp" alt="Nelore MRA">
+    <div><div class="t">App Nelore MRA</div><div class="s" id="ola"></div></div>
+    <div class="acoes"><button id="btnInicio" class="hidden" onclick="irPara('inicio')">← Início</button><button id="btnConfig" class="hidden" onclick="irPara('config')">⚙ Configurações</button><button onclick="sair()">Sair</button></div>
+  </div></header>
+  <main id="conteudo"></main>
+</section>
+
+<script>
+/* ============================================================================
+   APP NELORE MRA — portal único: login, escolha do app e Configurações (admin).
+   Fase 1: IATF, Custos e Contábil abrem os sistemas atuais (cada um com seu
+   Firebase, intocados). Gado & Caderneta será feito aqui dentro.
+   ========================================================================== */
+const FIREBASE_CONFIG={
+  apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',
+  authDomain:'app-nelore-mra.firebaseapp.com',
+  projectId:'app-nelore-mra',
+  storageBucket:'app-nelore-mra.firebasestorage.app',
+  messagingSenderId:'1043343802346',
+  appId:'1:1043343802346:web:219f5d73748271a85dfc93'
+};
+const ADMIN_EMAIL='mandrade.gado@terra.com.br';
+// Funcionário entra só com "usuário"; por baixo vira um e-mail interno (nunca recebe e-mail nenhum).
+const USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
+
+// Apps do portal. "link" = abre o sistema atual; sem link = feito aqui dentro (em breve).
+const APPS=[
+  {id:'iatf',nome:'IATF MRA',desc:'Matrizes, IATF, estoque de sêmen, FIV e embriões.',ico:'🐄',cor:'#1f6a49',fundo:'#eef6f1',link:'https://neloremra.github.io/IATF-MRA/'},
+  {id:'custos',nome:'Custos Safra',desc:'Custos da safra e controle de diesel.',ico:'⛽',cor:'#b39a3b',fundo:'#f8f3df',link:'https://neloremra.github.io/custos-safra/'},
+  {id:'contabil',nome:'Contábil MRA',desc:'Balancete e contas da fazenda.',ico:'📊',cor:'#2a78d6',fundo:'#e7f0ff',link:'https://neloremra.github.io/Contabil-MRA/'},
+  {id:'gado',nome:'Gado & Caderneta',desc:'Estoque de gado e caderneta digital do dia a dia.',ico:'📒',cor:'#7a52c7',fundo:'#efe8ff',link:'',breve:true},
+];
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const auth=firebase.auth(), fs=firebase.firestore();
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+let eu=null, perfil=null, ehAdmin=false, links={}, tela='inicio', usuarios=[];
+
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+function loginParaEmail(v){v=String(v||'').trim().toLowerCase();return v.includes('@')?v:v+USER_DOMAIN}
+function emailParaUsuario(e){e=String(e||'');return e.endsWith(USER_DOMAIN)?e.slice(0,-USER_DOMAIN.length):e}
+function erroAuth(c){return ({'auth/invalid-credential':'Usuário ou senha incorretos.','auth/wrong-password':'Usuário ou senha incorretos.','auth/user-not-found':'Usuário ou senha incorretos.','auth/invalid-email':'Usuário inválido.','auth/too-many-requests':'Muitas tentativas. Aguarde um pouco.','auth/network-request-failed':'Sem conexão com a internet.','auth/email-already-in-use':'Esse usuário já existe.','auth/weak-password':'A senha precisa ter pelo menos 6 caracteres.'})[c]||'Não foi possível concluir. Tente de novo.'}
+
+/* ---------- LOGIN ---------- */
+$('#loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();$('#lgErro').textContent='';$('#lgBtn').disabled=true;$('#lgBtn').textContent='Entrando...';
+  try{await auth.signInWithEmailAndPassword(loginParaEmail($('#lgUser').value),$('#lgPass').value);$('#lgPass').value=''}
+  catch(ex){$('#lgErro').textContent=erroAuth(ex.code)}
+  finally{$('#lgBtn').disabled=false;$('#lgBtn').textContent='Entrar'}
+});
+function sair(){auth.signOut()} window.sair=sair;
+
+auth.onAuthStateChanged(async u=>{
+  eu=u;
+  if(!u){$('#app').classList.add('hidden');$('#login').classList.remove('hidden');return}
+  ehAdmin=String(u.email||'').toLowerCase()===ADMIN_EMAIL;
+  perfil=null;
+  try{const d=await fs.collection('users').doc(u.uid).get();perfil=d.exists?d.data():null}catch(e){console.warn(e)}
+  try{const c=await fs.collection('config').doc('apps').get();links=(c.exists&&c.data().links)||{}}catch(e){links={}}
+  $('#login').classList.add('hidden');$('#app').classList.remove('hidden');
+  $('#btnConfig').classList.toggle('hidden',!ehAdmin);
+  irPara('inicio');
+});
+
+function podeApp(id){return ehAdmin||(perfil&&perfil.ativo!==false&&perfil.apps&&perfil.apps[id]===true)}
+function linkApp(a){return (links[a.id]||a.link||'').trim()}
+function irPara(t){tela=t;$('#btnInicio').classList.toggle('hidden',t==='inicio');if(t==='config')telaConfig();else telaInicio()} window.irPara=irPara;
+
+/* ---------- INÍCIO: escolha do app ---------- */
+function telaInicio(){
+  const nome=ehAdmin?'Administrador':(perfil&&perfil.nome)||emailParaUsuario(eu.email);
+  $('#ola').textContent='Olá, '+nome;
+  if(!ehAdmin&&(!perfil||perfil.ativo===false)){
+    $('#conteudo').innerHTML=`<div class="vazio"><strong>${perfil?'Seu acesso está bloqueado.':'Seu acesso ainda não foi liberado.'}</strong><br>Fale com o administrador.</div>`;return;
+  }
+  const meus=APPS.filter(a=>podeApp(a.id));
+  $('#conteudo').innerHTML=`<h2>Escolha o app</h2>${meus.length?`<div class="apps">${meus.map(a=>`
+    <button class="app" style="--cor:${a.cor};--fundo-ico:${a.fundo}" onclick="abrirApp('${a.id}')">
+      <div class="ico">${a.ico}</div><div class="n">${esc(a.nome)}</div><div class="d">${esc(a.desc)}</div>${a.breve?'<span class="tag">Em breve</span>':''}
+    </button>`).join('')}</div>`:`<div class="vazio">Nenhum app liberado pra você ainda. Fale com o administrador.</div>`}`;
+}
+function abrirApp(id){
+  const a=APPS.find(x=>x.id===id);if(!a||!podeApp(id))return;
+  if(a.breve){toast('Esse app ainda está sendo construído.');return}
+  const l=linkApp(a);if(!l){toast('Link desse app não configurado.');return}
+  window.open(l,'_blank');
+} window.abrirApp=abrirApp;
+
+/* ---------- CONFIGURAÇÕES (só admin): usuários, permissões e links ---------- */
+async function carregarUsuarios(){
+  const snap=await fs.collection('users').get();
+  usuarios=snap.docs.map(d=>({uid:d.id,...d.data()})).sort((a,b)=>String(a.nome||a.usuario).localeCompare(String(b.nome||b.usuario),'pt-BR'));
+}
+async function telaConfig(){
+  if(!ehAdmin){irPara('inicio');return}
+  $('#conteudo').innerHTML='<div class="vazio">Carregando...</div>';
+  try{await carregarUsuarios()}catch(e){$('#conteudo').innerHTML=`<div class="vazio">Não consegui ler os usuários. Confira se as regras do Firestore foram publicadas.<br><small>${esc(e.message)}</small></div>`;return}
+  const chk=(cls,id,on)=>`<label class="check"><input type="checkbox" class="${cls}" value="${id}" ${on?'checked':''}> ${esc(APPS.find(a=>a.id===id).nome)}</label>`;
+  $('#conteudo').innerHTML=`
+  <h2>Configurações</h2>
+  <div class="card"><h3>Novo usuário</h3>
+    <div class="grid-form">
+      <div class="field" style="margin:0"><label>Nome</label><input id="nuNome" class="input" placeholder="ex: João da Silva"></div>
+      <div class="field" style="margin:0"><label>Usuário (pra entrar)</label><input id="nuUser" class="input" placeholder="ex: joao" autocapitalize="none"></div>
+      <div class="field" style="margin:0"><label>Senha (mín. 6)</label><input id="nuPass" class="input" placeholder="ex: 123456"></div>
+    </div>
+    <div class="field" style="margin:14px 0 0"><label>Pode acessar</label><div class="checks">${APPS.map(a=>chk('nu-app',a.id,false)).join('')}</div></div>
+    <div style="margin-top:14px"><button class="btn btn-primary" id="nuBtn" onclick="criarUsuario()">+ Criar usuário</button></div>
+  </div>
+  <div class="card"><h3>Usuários e permissões</h3>
+    ${usuarios.length?`<div class="tabela-wrap"><table><thead><tr><th>Nome</th><th>Usuário</th>${APPS.map(a=>`<th class="c">${esc(a.nome)}</th>`).join('')}<th class="c">Situação</th><th></th></tr></thead><tbody>
+    ${usuarios.map(u=>`<tr><td><strong>${esc(u.nome||'')}</strong></td><td>${esc(u.usuario||emailParaUsuario(u.email))}</td>
+      ${APPS.map(a=>`<td class="c"><input type="checkbox" ${u.apps&&u.apps[a.id]?'checked':''} onchange="mudarPermissao('${u.uid}','${a.id}',this.checked)"></td>`).join('')}
+      <td class="c"><span class="pill ${u.ativo===false?'off':'on'}">${u.ativo===false?'Bloqueado':'Ativo'}</span></td>
+      <td style="white-space:nowrap"><button class="mini" onclick="mudarAtivo('${u.uid}',${u.ativo===false})">${u.ativo===false?'Desbloquear':'Bloquear'}</button></td></tr>`).join('')}
+    </tbody></table></div>`:'<div class="vazio">Nenhum usuário criado ainda.</div>'}
+  </div>
+  <div class="card"><h3>Links dos sistemas atuais</h3>
+    <div class="grid-form">${APPS.filter(a=>!a.breve).map(a=>`<div class="field" style="margin:0"><label>${esc(a.nome)}</label><input class="input lk" data-id="${a.id}" value="${esc(linkApp(a))}"></div>`).join('')}</div>
+    <div style="margin-top:14px"><button class="btn btn-ghost" onclick="salvarLinks()">Salvar links</button></div>
+  </div>`;
+}
+async function criarUsuario(){
+  const nome=$('#nuNome').value.trim(),usuario=$('#nuUser').value.trim().toLowerCase(),senha=$('#nuPass').value;
+  if(!nome||!usuario||!senha)return toast('Preencha nome, usuário e senha.');
+  if(!/^[a-z0-9._-]{2,30}$/.test(usuario))return toast('Usuário: só letras sem acento, números, ponto ou traço (sem espaço).');
+  if(senha.length<6)return toast('A senha precisa ter pelo menos 6 caracteres.');
+  const apps={};APPS.forEach(a=>apps[a.id]=false);$$('.nu-app:checked').forEach(c=>apps[c.value]=true);
+  const btn=$('#nuBtn');btn.disabled=true;btn.textContent='Criando...';
+  // Cria o login numa "segunda conexão", pra não deslogar o administrador
+  const sec=firebase.apps.find(a=>a.name==='criador')||firebase.initializeApp(FIREBASE_CONFIG,'criador');
+  try{
+    const cred=await sec.auth().createUserWithEmailAndPassword(usuario+USER_DOMAIN,senha);
+    await fs.collection('users').doc(cred.user.uid).set({nome,usuario,email:usuario+USER_DOMAIN,apps,ativo:true,criadoEm:firebase.firestore.FieldValue.serverTimestamp(),criadoPor:eu.email});
+    await sec.auth().signOut();
+    toast(`Usuário "${usuario}" criado.`);telaConfig();
+  }catch(ex){toast(erroAuth(ex.code)||ex.message);btn.disabled=false;btn.textContent='+ Criar usuário'}
+} window.criarUsuario=criarUsuario;
+async function mudarPermissao(uid,app,on){
+  try{await fs.collection('users').doc(uid).update({['apps.'+app]:on});toast('Permissão salva.')}catch(e){toast('Não salvou: '+e.message);telaConfig()}
+} window.mudarPermissao=mudarPermissao;
+async function mudarAtivo(uid,ativo){
+  try{await fs.collection('users').doc(uid).update({ativo});toast(ativo?'Usuário desbloqueado.':'Usuário bloqueado.');telaConfig()}catch(e){toast('Não salvou: '+e.message)}
+} window.mudarAtivo=mudarAtivo;
+async function salvarLinks(){
+  const l={};$$('.lk').forEach(i=>l[i.dataset.id]=i.value.trim());
+  try{await fs.collection('config').doc('apps').set({links:l},{merge:true});links=l;toast('Links salvos.')}catch(e){toast('Não salvou: '+e.message)}
+} window.salvarLinks=salvarLinks;
+</script>
+</body>
+</html>

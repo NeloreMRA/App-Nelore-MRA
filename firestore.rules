@@ -1,0 +1,38 @@
+rules_version = '2';
+
+// Regras do App Nelore MRA — colar em Firebase > Firestore Database > Regras > Publicar.
+// Ninguém lê nada sem login. Só o administrador cria usuários e muda permissões.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function logado() { return request.auth != null; }
+    function ehAdmin() { return logado() && request.auth.token.email == 'mandrade.gado@terra.com.br'; }
+    function perfil() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function ativo() {
+      return logado() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && perfil().ativo == true;
+    }
+    function podeApp(app) { return ehAdmin() || (ativo() && perfil().apps[app] == true); }
+
+    // Usuários e permissões: cada um lê o próprio; só o admin cria/edita.
+    match /users/{uid} {
+      allow read: if ehAdmin() || (logado() && request.auth.uid == uid);
+      allow write: if ehAdmin();
+    }
+
+    // Configurações gerais (links dos apps etc.)
+    match /config/{doc} {
+      allow read: if ehAdmin() || ativo();
+      allow write: if ehAdmin();
+    }
+
+    // Dados de cada app ficam em /apps/<app>/... e só quem tem permissão naquele app acessa.
+    match /apps/{app}/{resto=**} {
+      allow read, write: if podeApp(app);
+    }
+
+    // Todo o resto: bloqueado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
