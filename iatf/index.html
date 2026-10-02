@@ -179,10 +179,14 @@ body.authenticated #loginScreen{display:none}
 
 /* Dentro do App Nelore MRA o login é feito na porta de entrada: a tela de login antiga nunca aparece */
 #loginScreen{display:none!important}
+/* barra do App em cima (34px) */
+.app,.sidebar,main{height:calc(100vh - 34px)!important}
+@media(max-width:600px){.sidebar{height:auto!important}}
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
 </style>
 </head>
 <body class="auth-pending">
+<script src="../barra-app.js" data-app="IATF"></script>
 <div id="loginScreen">
   <form id="loginForm" class="login-card" autocomplete="on">
     <div class="login-brand"><div class="logo">MRA</div><div><strong>IATF MRA</strong><span>Gestão reprodutiva</span></div></div>
@@ -209,7 +213,6 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
     <button data-page="settings" class="nav">⚙ <span>Configurações</span></button>
   </nav>
   <div class="side-season"><label>Estação</label><select id="seasonHeader"></select></div>
-  <button class="logout-btn" type="button" onclick="location.href='../index.html'">← App Nelore MRA</button>
   <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
   <div class="sidebar-foot"><span class="dot" id="syncDot"></span><span id="saveStatus">Conectando...</span></div>
 </aside>

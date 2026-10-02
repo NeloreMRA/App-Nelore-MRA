@@ -269,10 +269,12 @@
 
 /* Dentro do App Nelore MRA o login é feito na porta de entrada: a tela de login antiga nunca aparece */
 #loginScreen{display:none!important}
+body{flex-wrap:wrap;align-content:flex-start}
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
 </style>
 </head>
 <body class="auth-pending">
+<script src="../barra-app.js" data-app="Custos Safra"></script>
 <div id="loginScreen">
   <form id="loginForm" class="login-card" autocomplete="on">
     <h2>🌱 Custos Safra</h2>
@@ -302,7 +304,6 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
   <button class="navbtn" data-page="diesel-resumo">📈 Resumo Diesel</button>
   <div class="nav-sep admin-only"></div>
   <button class="side-tool admin-only" type="button" onclick="exportBackupCompleto()">💾 Backup completo (Excel)</button>
-  <button class="side-tool" type="button" onclick="location.href='../index.html'">← App Nelore MRA</button>
   <button id="logoutBtn" class="side-tool logout-btn" type="button">Sair</button>
 </aside>
 <main id="main"></main>

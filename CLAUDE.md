@@ -27,3 +27,4 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 ## Fluxo de trabalho
 - Testar no navegador antes de enviar; abrir PR e fazer o merge no `main` direto (autorizado pelo dono).
 - Responder em português simples (usuário não é programador). Telas enxutas, sem textos longos.
+- `barra-app.js` — barra igual em todos os apps ("← 🏠 App Nelore MRA › Nome do app"), incluída logo depois do `<body>` de cada app. Não colocar outro botão de voltar dentro dos apps.
