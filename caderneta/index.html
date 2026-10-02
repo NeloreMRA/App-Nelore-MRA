@@ -133,11 +133,13 @@ textarea.input{min-height:86px;resize:vertical}
   .folha-pe{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
 }
 @media(min-width:861px){.topo .so-cel{display:none}}
+.topo-in>.voltar-app{margin:0 4px 0 0;align-self:center}
+@media(max-width:600px){.topo-in>img{display:none}}
 @media print{.topo,.lateral,.faixa,.fab,.offline,.busca,.cab .novo,.so-cel-l,tr.rapido{display:none!important}.tabd{display:block!important;max-height:none;overflow:visible;border:0}.pag{display:block;padding:0}.lista{border:0}.dia{position:static}.reg{break-inside:avoid}}
 </style>
 </head>
 <body>
-<script src="../barra-app.js" data-app="Caderneta"></script>
+<script src="../barra-app.js" data-alvo=".topo-in"></script>
 <header class="topo"><div class="topo-in">
   <img src="../logo.webp" alt="Nelore MRA">
   <div><div class="t">Caderneta</div><div class="s" id="quem"></div></div>

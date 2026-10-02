@@ -269,12 +269,12 @@
 
 /* Dentro do App Nelore MRA o login é feito na porta de entrada: a tela de login antiga nunca aparece */
 #loginScreen{display:none!important}
-body{flex-wrap:wrap;align-content:flex-start}
+@media(max-width:760px){aside>.voltar-app{margin:0;order:-1}}
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
 </style>
 </head>
 <body class="auth-pending">
-<script src="../barra-app.js" data-app="Custos Safra"></script>
+<script src="../barra-app.js" data-alvo="aside"></script>
 <div id="loginScreen">
   <form id="loginForm" class="login-card" autocomplete="on">
     <h2>🌱 Custos Safra</h2>
