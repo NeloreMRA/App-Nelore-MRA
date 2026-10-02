@@ -119,11 +119,13 @@ tfoot td{background:#eef3ef;font-weight:800;padding:11px 10px}
   .folha-pe{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
 }
 @media(min-width:861px){.topo .so-cel{display:none}}
+.topo-in>.voltar-app{margin:0 4px 0 0;align-self:center}
+@media(max-width:600px){.topo-in>img{display:none}}
 @media print{.topo,.barra,.fab,.offline,.xbtn,.lista-cel,.fbtn,.aviso button,.barra-soma,.filtro-cel{display:none!important}.card.tabela{display:block!important}.cel{border:0}}
 </style>
 </head>
 <body>
-<script src="../barra-app.js" data-app="Estoque Gado"></script>
+<script src="../barra-app.js" data-alvo=".topo-in"></script>
 <header class="topo"><div class="topo-in">
   <img src="../logo.webp" alt="Nelore MRA">
   <div><div class="t">Estoque Gado</div><div class="s" id="quem"></div></div>
