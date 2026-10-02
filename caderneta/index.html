@@ -70,8 +70,8 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .reg .dir{text-align:right;font-size:11px;color:var(--muito-suave);white-space:nowrap;display:flex;align-items:center;gap:6px}
 .reg .mini-foto{width:32px;height:32px;border-radius:6px;object-fit:cover;background:#eef1ef}
 /* tabela do computador (igual planilha) */
-.tabd{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:auto;max-height:calc(100vh - 170px)}
-.tabd table{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px;table-layout:fixed}
+.tabd{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:auto;max-height:calc(100vh - 210px)}
+.tabd table{border-collapse:separate;border-spacing:0;width:100%;min-width:980px;font-size:13.5px;table-layout:fixed}
 .tabd th{position:sticky;top:0;z-index:2;background:#f3f5f3;color:var(--suave);font-size:11px;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:7px 8px;border-bottom:1px solid var(--borda);border-right:1px solid #e8ebe9;white-space:nowrap}
 .tabd td{padding:0 8px;height:32px;border-bottom:1px solid #edf0ee;border-right:1px solid #f0f2f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tabd tbody tr{cursor:pointer}.tabd tbody tr:hover td{background:#f5faf7}
@@ -81,7 +81,12 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .xdel{border:0;background:none;border-radius:6px;padding:3px 6px;font-size:14px;opacity:.45}.xdel:hover{opacity:1;background:#fbeeec}.tabd .n{text-align:right}
 .tabd .por{color:var(--muito-suave);font-size:12px}
 .tabd tr.rapido td{position:sticky;top:31px;z-index:1;background:#f6faf7;padding:4px;height:auto;border-bottom:2px solid #cfe0d5;overflow:visible}
-.tabd .rapido input,.tabd .rapido select{width:100%;border:1px solid #d7ded9;border-radius:6px;padding:6px 7px;font-size:13.5px;background:#fff;outline:none;min-width:0}
+/* tira a setinha que o navegador põe nos campos com lista de sugestões */
+input[list]::-webkit-calendar-picker-indicator{display:none!important;opacity:0}
+.tabd .rs{position:absolute;top:0;right:-4px;width:8px;height:100%;cursor:col-resize;z-index:3}
+.tabd .rs:hover{background:#72a38644}
+.tabd tr.rapido td{padding:6px 5px!important}
+.tabd .rapido input,.tabd .rapido select{width:100%;border:1px solid #d7ded9;border-radius:7px;padding:7px 9px;font-size:13.5px;background:#fff;outline:none;min-width:0}
 .tabd .rapido input:focus,.tabd .rapido select:focus{border-color:#72a386;box-shadow:0 0 0 2px #72a38633}
 .tabd .rapido button{width:100%;border:0;border-radius:6px;background:var(--verde);color:#fff;font-weight:800;padding:7px 0;font-size:13px}
 .pend{color:#a0681a;font-weight:700}
@@ -132,12 +137,12 @@ textarea.input{min-height:86px;resize:vertical}
 </style>
 </head>
 <body>
+<script src="../barra-app.js" data-app="Caderneta"></script>
 <header class="topo"><div class="topo-in">
   <img src="../logo.webp" alt="Nelore MRA">
   <div><div class="t">Caderneta</div><div class="s" id="quem"></div></div>
   <div class="acoes">
     <button class="icobtn so-cel" onclick="abrirMenu(event)" aria-label="Mais opções">⋯</button>
-    <button class="icobtn" onclick="location.href='../index.html'">← App</button>
   </div>
 </div></header>
 
@@ -156,8 +161,8 @@ textarea.input{min-height:86px;resize:vertical}
       <button class="btn btn-primary novo" onclick="abrirForm()">+ Novo lançamento</button>
     </div>
     <div class="faixa" id="filtrosH" style="margin-bottom:12px"></div>
-    <div class="tabd" id="tabd"><table><colgroup><col style="width:132px"><col style="width:225px"><col style="width:112px"><col style="width:130px"><col style="width:64px"><col><col style="width:44px"><col style="width:120px"><col style="width:44px"></colgroup>
-      <thead><tr><th>Data</th><th>Acontecimento</th><th>RGD</th><th>Local</th><th class="n">Cab.</th><th>Observação</th><th class="c">📷</th><th>Por</th><th></th></tr>
+    <div class="tabd" id="tabd"><table><colgroup><col style="width:12%"><col style="width:19%"><col style="width:9%"><col style="width:14%"><col style="width:6%"><col style="width:24%"><col style="width:4%"><col style="width:9%"><col style="width:3%"></colgroup>
+      <thead><tr class="cabcol"><th>Data</th><th>Acontecimento</th><th>RGD</th><th>Local</th><th class="n">Cab.</th><th>Observação</th><th class="c">📷</th><th>Por</th><th></th></tr>
       <tr class="rapido"><td><input type="date" id="rData"></td><td><select id="rTipo"></select></td><td><input id="rRgd" placeholder="RGD" autocapitalize="characters"></td>
         <td><input id="rLocal" list="dlLocais" placeholder="Local"></td><td><input id="rQtd" inputmode="numeric" placeholder="Cab."></td><td><input id="rObs" placeholder="Observação"></td>
         <td colspan="3"><button onclick="lancarRapido()" title="Lançar (Enter)">+ Lançar</button></td></tr></thead>
@@ -343,6 +348,25 @@ function salvar(id,outro){
   if(dados.mes!==mes)irMes(dados.mes);
   if(outro)abrirForm(null,{data:dados.data,acontecimento:dados.acontecimento,local:dados.local});
 }
+/* ---------- largura das colunas: arrastar a borda do título (duplo clique volta ao padrão) ---------- */
+const LARG_KEY='app-nelore-mra-caderneta-larguras';
+function aplicarLarguras(){
+  const cols=[...document.querySelectorAll('#tabd col')],tb=$('#tabd table');let l=null;
+  try{l=JSON.parse(localStorage.getItem(LARG_KEY)||'null')}catch(e){}
+  if(l&&l.length===cols.length){cols.forEach((c,i)=>c.style.width=l[i]+'px');tb.style.width=l.reduce((a,b)=>a+b,0)+'px';tb.style.minWidth='0'}
+}
+function prepararLarguras(){
+  document.querySelectorAll('#tabd tr.cabcol th').forEach((th,i,todos)=>{if(i===todos.length-1)return;th.style.position='sticky';const h=document.createElement('span');h.className='rs';h.title='Arraste pra mudar a largura (duplo clique volta ao padrão)';th.appendChild(h);
+    h.addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();
+      const ths=[...document.querySelectorAll('#tabd tr.cabcol th')],ws=ths.map(t=>t.offsetWidth),x0=e.clientX,w0=ws[i],cols=[...document.querySelectorAll('#tabd col')],tb=$('#tabd table');
+      const mv=ev=>{ws[i]=Math.max(40,w0+ev.clientX-x0);cols.forEach((c,k)=>c.style.width=ws[k]+'px');tb.style.width=ws.reduce((a,b)=>a+b,0)+'px';tb.style.minWidth='0'};
+      const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);try{localStorage.setItem(LARG_KEY,JSON.stringify(ws))}catch(e){}};
+      document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up)});
+    h.addEventListener('dblclick',()=>{try{localStorage.removeItem(LARG_KEY)}catch(e){}location.reload()})});
+  aplicarLarguras();
+}
+prepararLarguras();
+
 /* ---------- linha de lançamento rápido (computador) ---------- */
 function prepararRapido(){
   $('#rTipo').innerHTML='<option value="">— escolha —</option>'+TIPOS.map(t=>`<option>${esc(t[0])}</option>`).join('');
