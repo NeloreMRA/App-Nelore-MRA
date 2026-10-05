@@ -1821,13 +1821,13 @@ const DIESEL_PADRAO = {
   areas: ["Lavoura","Pecuária","Fazenda","Outros"],
   estacoes: ["Lavoura - Milho 25/26"],
 };
-const DIESEL_LISTAS = [['maquinas','Máquinas','Nova máquina'],['areas','Áreas','Nova área']];
+const DIESEL_LISTAS = [['maquinas','Máquinas','Nova máquina'],['areas','Áreas','Nova área'],['estacoes','Estações','Nova estação']];
 let diesel = {maquinas:[...DIESEL_PADRAO.maquinas], areas:[...DIESEL_PADRAO.areas], estacoes:[...DIESEL_PADRAO.estacoes], lancamentos:[], estoque:[]};
 let dieselRef = null, dieselUnsub = null, dieselPronto = false;
 const dieselTimers = {}, dieselPendentes = new Set();
 let dieselConfigAberto = false;
 const mesAtualISO = ()=>hojeISO().slice(0,7);
-let dieselFiltro = {mes: null}; // null = mês atual; '' = todos os meses
+let dieselFiltro = {mes: null, estacao:''}; // mes: null = mês atual, '' = todos os meses
 
 function paginaDiesel(p){ return String(p||'').startsWith('diesel-'); }
 function hojeISO(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
@@ -1982,7 +1982,7 @@ function buildDieselControleCfg(){
     caption:'Lance cada abastecimento de máquina. As linhas abaixo podem ser corrigidas direto na tabela; clique no ▾ do cabeçalho para filtrar.',
     rows: diesel.lancamentos, exportName:'controle_diesel', exportFileName:`Controle_Diesel_${hojeISO()}.xlsx`,
     computeDerived: ()=>({}), semLinhaEmBranco: true,
-    larguras: {data:135, maquina:170, litros:110, servico:320, area:130},
+    larguras: {data:135, maquina:170, litros:110, servico:320, area:130, estacao:160},
     totais: ['litros'],
     formTitle:'Novo lançamento', formButton:'Salvar lançamento',
     columns: [
@@ -1991,9 +1991,11 @@ function buildDieselControleCfg(){
       {key:'litros', label:'Qtd Litros', type:'number', unit:'L', brDecimal:true},
       {key:'servico', label:'Serviço Realizado', type:'text'},
       {key:'area', label:'Área', type:'select', optionsFn: r=>opcoesDiesel('areas', r, 'area')},
+      // a estação começa vazia: quem lança escolhe (não vem pronta)
+      {key:'estacao', label:'Estação', type:'select', optionsFn: r=>opcoesDiesel('estacoes', r, 'estacao'), formDefault: ()=>''},
     ],
-    newRow: ()=>({id:novoIdDiesel('l'), data:hojeISO(), maquina:'', litros:'', servico:'', area:'', criadoEm:Date.now(), criadoPor:usuarioAtual()}),
-    validate: r=> !r.data ? 'Informe a data.' : !r.maquina ? 'Escolha a máquina.' : !(Number(r.litros)>0) ? 'Informe a quantidade de litros.' : !r.area ? 'Escolha a área.' : '',
+    newRow: ()=>({id:novoIdDiesel('l'), data:hojeISO(), maquina:'', litros:'', servico:'', area:'', estacao:'', criadoEm:Date.now(), criadoPor:usuarioAtual()}),
+    validate: r=> !r.data ? 'Informe a data.' : !r.maquina ? 'Escolha a máquina.' : !(Number(r.litros)>0) ? 'Informe a quantidade de litros.' : !r.area ? 'Escolha a área.' : !r.estacao ? 'Escolha a estação.' : '',
     prepareRow: r=>{ r.id = novoIdDiesel('l'); r.criadoEm = Date.now(); r.criadoPor = usuarioAtual(); },
     onRowChange: (r, imediato)=>salvarLinhaDiesel('lancamentos', r, imediato),
     onRowDelete: r=>excluirLinhaDiesel('lancamentos', r),
@@ -2002,7 +2004,8 @@ function buildDieselControleCfg(){
 function mesFiltroDiesel(){ return dieselFiltro.mes===null ? mesAtualISO() : dieselFiltro.mes; }
 function dieselLancamentosFiltrados(){
   const m = mesFiltroDiesel();
-  return diesel.lancamentos.filter(l=> !m || String(l.data||'').slice(0,7)===m);
+  const e = dieselFiltro.estacao;
+  return diesel.lancamentos.filter(l=> (!m || String(l.data||'').slice(0,7)===m) && (!e || l.estacao===e));
 }
 const MESES_DIESEL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 function nomeMesDiesel(m){ const [a,n] = m.split('-').map(Number); return `${MESES_DIESEL[n-1]} de ${a}`; }
@@ -2017,7 +2020,7 @@ function agruparDiesel(lancs, chave){
   const total = lancs.reduce((s,l)=>s+Number(l.litros||0),0);
   return Object.values(m).map(r=>({...r, pct: total ? r.litros/total : 0})).sort((a,b)=>b.litros-a.litros);
 }
-function descricaoFiltroDiesel(){ const m = mesFiltroDiesel(); return m ? nomeMesDiesel(m) : 'Todos os meses'; }
+function descricaoFiltroDiesel(){ const m = mesFiltroDiesel(); return (m ? nomeMesDiesel(m) : 'Todos os meses') + ' · Estação: ' + (dieselFiltro.estacao || 'todas'); }
 function setFiltroDiesel(campo, valor){ dieselFiltro[campo] = valor; render(); }
 
 function tabelaResumoDiesel(chave, titulo, rotulo, linhas){
@@ -2071,7 +2074,7 @@ function pageDieselControle(){
       </div>
     </div>`;
   cfg.formHtml = `
-    <div class="toolbar no-print"><button class="secondary" type="button" onclick="toggleDieselConfig()">⚙️ ${dieselConfigAberto?'Fechar cadastros':'Cadastrar máquinas e áreas'}</button></div>
+    <div class="toolbar no-print"><button class="secondary" type="button" onclick="toggleDieselConfig()">⚙️ ${dieselConfigAberto?'Fechar cadastros':'Cadastrar máquinas, áreas e estações'}</button></div>
     ${dieselConfigAberto ? config : ''}
     <div class="no-print">${renderAddForm(cfg)}</div>`;
   cfg.metricsHtml = `<div class="metric" style="display:inline-block; min-width:170px; margin-bottom:12px;">
@@ -2251,6 +2254,7 @@ function pageDieselResumo(){
   const total = lancs.reduce((s,l)=>s+Number(l.litros||0),0);
   const media = lancs.length ? total/lancs.length : 0;
   const mesSel = mesFiltroDiesel();
+  const estacoes = [...new Set([...diesel.estacoes, ...diesel.lancamentos.map(l=>l.estacao).filter(Boolean)])];
   const meses = [...new Set([mesAtualISO(), ...diesel.lancamentos.map(l=>String(l.data||'').slice(0,7)).filter(m=>/^\d{4}-\d{2}$/.test(m))])].sort().reverse();
   return `
     <div class="toolbar no-print" style="justify-content:flex-end;">
@@ -2262,6 +2266,7 @@ function pageDieselResumo(){
     <div class="panel no-print">
       <div class="filtros-resumo">
         <div><label>Mês</label><select onchange="setFiltroDiesel('mes', this.value)"><option value="" ${!mesSel?'selected':''}>Todos os meses</option>${meses.map(m=>`<option value="${m}" ${m===mesSel?'selected':''}>${nomeMesDiesel(m)}</option>`).join('')}</select></div>
+        <div><label>Estação</label><select onchange="setFiltroDiesel('estacao', this.value)"><option value="">Todas</option>${estacoes.map(e=>`<option value="${esc(e)}" ${e===dieselFiltro.estacao?'selected':''}>${esc(e)}</option>`).join('')}</select></div>
       </div>
     </div>
     <div class="resumo-kpis">
@@ -2272,6 +2277,7 @@ function pageDieselResumo(){
     <div class="resumo-grid">
       ${tabelaResumoDiesel('area', '🌾 Por Área', 'Área', agruparDiesel(lancs,'area'))}
       ${tabelaResumoDiesel('maquina', '🚜 Por Máquina', 'Máquina', agruparDiesel(lancs,'maquina'))}
+      ${tabelaResumoDiesel('estacao', '📅 Por Estação', 'Estação', agruparDiesel(lancs,'estacao'))}
     </div>
   `;
 }
@@ -2289,7 +2295,7 @@ function addLinhaTotal(ws, valores){
   });
 }
 async function addResumoDieselSheets(wb, lancs, nomeAba){
-  for(const [chave, rotulo, titulo] of [['area','Área','Por Área'],['maquina','Máquina','Por Máquina']]){
+  for(const [chave, rotulo, titulo] of [['area','Área','Por Área'],['maquina','Máquina','Por Máquina'],['estacao','Estação','Por Estação']]){
     const linhas = agruparDiesel(lancs, chave);
     const ws = await addSheetForTable(wb, nomeAba(titulo), COLS_RESUMO(rotulo), linhas, ()=>({}));
     ws.getColumn(1).width = 28;

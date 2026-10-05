@@ -8,7 +8,7 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - `firestore.rules` — regras de segurança; precisam ser coladas e publicadas no console do Firebase (Firestore > Regras) sempre que mudarem.
 - `logo.webp` — marca Nelore MRA.
 - `iatf/index.html` — IATF dentro do App (cópia do repositório IATF-MRA adaptada: Firebase novo, dados em `apps/iatf`, login do portal, telas por usuário em `users/{uid}.paginas.iatf`). Guardas do navegador com prefixo `app-nelore-mra-` pra não misturar com o IATF antigo (mesmo site github.io).
-- `custos/index.html` — Custos Safra dentro do App (dados em `apps/custos/dados/{estado-atual,diesel}`; quem só tem telas de Diesel é bloqueado pelas regras de ler os custos da safra). Diesel não tem estação (tirada do Controle e do Estoque; dados antigos com `estacao` ficam guardados). "Dashboard Diesel" filtra por mês.
+- `custos/index.html` — Custos Safra dentro do App (dados em `apps/custos/dados/{estado-atual,diesel}`; quem só tem telas de Diesel é bloqueado pelas regras de ler os custos da safra). Diesel: no Controle a Estação é obrigatória mas começa VAZIA (o dono não quer que venha pronta); o Estoque Diesel não tem estação. "Dashboard Diesel" filtra por mês e estação.
 - `contabil/index.html` — Contábil dentro do App (dados em `apps/contabil/dados/{config,banco,caixa}` e `apps/contabil/partes/*`; IndexedDB `app_nelore_mra_contabil_db`).
 
 ## Regras do projeto
@@ -28,3 +28,4 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - Testar no navegador antes de enviar; abrir PR e fazer o merge no `main` direto (autorizado pelo dono).
 - Responder em português simples (usuário não é programador). Telas enxutas, sem textos longos.
 - `barra-app.js` — botão pequeno "← App Nelore MRA" igual em todos os apps, no topo do menu lateral (IATF/Custos/Contábil) ou à esquerda do cabeçalho (Caderneta/Estoque); `data-alvo` diz onde entra. O dono NÃO quer barra larga no topo (perde espaço). Não colocar outro botão de voltar dentro dos apps.
+- Tela inicial tem o botão "🔄 Atualizar": apaga o cache do service worker e recarrega (pra pegar versão nova). Ao mudar telas, subir a versão do CACHE em `sw.js`.
