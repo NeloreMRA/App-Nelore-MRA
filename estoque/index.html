@@ -16,112 +16,108 @@
 :root{--verde:#1f6a49;--verde-esc:#153e2c;--verde-claro:#eef6f1;--ouro:#b39a3b;--fundo:#f4f6f4;--borda:#e3e8e4;--linha:#eef1ef;--texto:#17211c;--suave:#5d6a62;--muito-suave:#8a958d;
   font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--texto);background:var(--fundo)}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;min-height:100vh;background:var(--fundo)}
-button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .hidden{display:none!important}
 .topo{background:var(--verde-esc);color:#fff;position:sticky;top:0;z-index:10;padding-top:env(safe-area-inset-top)}
-.topo-in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.topo-in{max-width:1500px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
 .topo img{width:34px;height:34px;border-radius:50%}
 .topo .t{font-size:16px;font-weight:800;line-height:1.1}.topo .s{font-size:11.5px;opacity:.75}
 .topo .acoes{margin-left:auto;display:flex;gap:6px}
 .icobtn{background:#ffffff14;color:#fff;border:1px solid #ffffff30;border-radius:9px;height:36px;padding:0 11px;font-size:13px;font-weight:600;white-space:nowrap}
-main{max-width:1180px;margin:0 auto;padding:20px 16px 120px}
+.topo-in>.voltar-app{margin:0 4px 0 0;align-self:center}
+main{max-width:1500px;margin:0 auto;padding:18px 24px 120px}
 .offline{background:#fff3d6;border:1px solid #ecd28f;color:#6b4f12;border-radius:10px;padding:9px 12px;font-size:13px;margin-bottom:12px}
-/* números do topo */
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.kpi{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:12px 14px}
-.kpi .l{font-size:12px;color:var(--suave);font-weight:600;display:flex;align-items:center;gap:6px}.kpi .l i{width:8px;height:8px;border-radius:50%;background:var(--k)}
-.kpi .v{font-size:26px;font-weight:800;margin-top:4px}
-.cats{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
-.cat{background:#fff;border:1px solid var(--borda);border-radius:99px;padding:6px 12px;font-size:13px;white-space:nowrap;cursor:pointer}.cat b{margin-left:4px}
-.cat:hover{border-color:#9fbfab}.cat.on{background:var(--verde);border-color:var(--verde);color:#fff}
-.thf{display:flex;align-items:center;justify-content:space-between;gap:6px}
-th.n .thf{justify-content:flex-end}
-.fbtn{border:0;background:none;color:var(--muito-suave);font-size:11px;padding:2px 6px;border-radius:5px}.fbtn:hover{background:#e6ece8}.fbtn.on{color:var(--verde);background:var(--verde-claro);font-weight:800}
-.fpainel{position:fixed;z-index:40;background:#fff;border:1px solid var(--borda);border-radius:12px;box-shadow:0 10px 30px #0003;padding:10px;font-size:13.5px}
-.fp-ord{display:flex;gap:6px;margin-bottom:8px}.fp-ord .btn{flex:1;padding:6px;font-size:12.5px}
-.fp-busca{font-size:14px!important;padding:7px 10px!important;margin-bottom:6px}
-.fp-lista{max-height:200px;overflow:auto;border:1px solid var(--linha);border-radius:8px;padding:4px 8px;margin:4px 0 8px}
-.fp-it{display:flex;gap:7px;align-items:center;padding:4px 0;cursor:pointer}
-.fp-acoes{display:flex;gap:6px;justify-content:flex-end}.fp-acoes .btn{padding:7px 12px;font-size:13px}
-.aviso{display:inline-flex;gap:10px;align-items:center;background:#fff6e0;border:1px solid #f0d9a8;color:#6b4f12;border-radius:10px;padding:7px 12px;font-size:13.5px;margin-bottom:10px}
-.aviso button{border:1px solid #e3c98a;background:#fff;border-radius:7px;padding:4px 9px;font-size:12.5px;font-weight:700;color:#6b4f12}
+/* abas */
+.abas{display:flex;gap:4px;background:#e7ece8;border-radius:11px;padding:4px;width:max-content;max-width:100%;margin-bottom:14px}
+.aba{border:0;background:none;border-radius:8px;padding:8px 16px;font-size:14px;font-weight:700;color:var(--suave);white-space:nowrap}
+.aba.on{background:#fff;color:var(--verde-esc);box-shadow:0 1px 3px #0002}
+/* barra de filtro */
+.barra-f{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid var(--borda);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.barra-f .campo{display:flex;flex-direction:column;gap:4px}.barra-f label{font-size:11.5px;font-weight:700;color:var(--suave)}
+.barra-f select{border:1px solid #d7ded9;border-radius:9px;padding:8px 10px;font-size:14.5px;background:#fff;min-width:230px;outline:none}
+.barra-f .acoes-f{margin-left:auto;display:flex;gap:6px}
+.btn{border:0;border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px}
+.btn-primary{background:var(--verde);color:#fff}.btn-ghost{background:#fff;border:1px solid var(--borda);color:#334139}.btn-danger{background:#fff;border:1px solid #e7bbb5;color:#a33627}
+.barra-f .acoes-f .btn{padding:8px 12px;font-size:13.5px}
+.aviso{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#fff6e0;border:1px solid #f0d9a8;color:#6b4f12;border-radius:12px;padding:11px 14px;font-size:14px;margin-bottom:12px}
+.aviso .btn{padding:7px 12px;font-size:13.5px}
+.contador{color:var(--muito-suave);font-size:12.5px;margin:0 0 6px 2px}.contador b{color:var(--texto)}
+/* tabela */
+.tabd{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:auto}
+.tabd table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px;font-size:14px;table-layout:fixed}
+.tabd th{background:#f3f5f3;color:var(--suave);font-size:11px;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:8px;border-bottom:1px solid var(--borda);border-right:1px solid #e8ebe9;white-space:nowrap}
+.tabd td{padding:2px 4px;height:36px;border-bottom:1px solid #edf0ee;border-right:1px solid #f0f2f1}
+.tabd .n{text-align:right}.tabd th.n{text-align:right}
+.cel{width:100%;border:1px solid transparent;border-radius:6px;padding:7px 6px;background:transparent;outline:none;min-width:0}
+.cel:hover{border-color:#dce3de}.cel:focus{border-color:#72a386;background:#fff;box-shadow:0 0 0 2px #72a38622}
+.cel.num{text-align:right}
+td.tot{font-weight:800;text-align:right;padding-right:10px}
+td.tot.neg{color:#b0473a}
+.tabd tr.rapido td{background:#f6faf7;padding:6px 4px;border-bottom:2px solid #cfe0d5}
+.tabd .rapido input{width:100%;border:1px solid #d7ded9;border-radius:7px;padding:7px 8px;font-size:14px;background:#fff;outline:none;min-width:0}
+.tabd .rapido input.num{text-align:right}
+.tabd .rapido input:focus{border-color:#72a386;box-shadow:0 0 0 2px #72a38633}
+.tabd .rapido .lancar{width:100%;border:0;border-radius:7px;background:var(--verde);color:#fff;font-weight:800;padding:8px 0;font-size:13px}
+tfoot td{background:#eef3ef;font-weight:800;padding:10px 10px}
+.xdel{border:0;background:none;border-radius:6px;padding:3px 6px;font-size:14px;opacity:.45}.xdel:hover{opacity:1;background:#fbeeec}
 td.csel{background:#dcebe2!important;box-shadow:inset 0 0 0 1px #72a386}
-td.csel .cel{background:transparent}
 .barra-soma{display:none;position:fixed;right:18px;bottom:18px;background:#17211c;color:#fff;border-radius:10px;padding:9px 14px;font-size:13.5px;gap:16px;z-index:25;box-shadow:0 6px 20px #0004}
 .barra-soma.ativa{display:flex}.barra-soma b{color:#9fe0b8}
-.filtro-cel{display:none;gap:8px;margin-bottom:12px}.filtro-cel .input{font-size:14.5px;padding:9px 10px}
-/* barra */
-.barra{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0 12px}
-.barra h2{margin:0;font-size:17px;margin-right:auto}
-.btn{border:0;border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px}
-.btn-primary{background:var(--verde);color:#fff}.btn-ghost{background:#fff;border:1px solid var(--borda);color:#334139}.btn-ouro{background:var(--ouro);color:#fff}.btn-danger{background:#fff;border:1px solid #e7bbb5;color:#a33627}
-/* tabela (computador) */
-.card{background:#fff;border:1px solid var(--borda);border-radius:14px;overflow:hidden}
-table{border-collapse:collapse;width:100%;font-size:14px}
-th{background:#f8faf8;color:var(--suave);font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:10px;border-bottom:1px solid var(--borda);text-align:left;white-space:nowrap}
-td{border-bottom:1px solid var(--linha);padding:3px 6px;vertical-align:middle}
-td.n,th.n{text-align:right}
-.cel{width:100%;border:1px solid transparent;border-radius:7px;padding:8px;background:transparent;min-width:70px}
-.cel:hover{border-color:#dce3de}.cel:focus{outline:none;border-color:#72a386;background:#fff}
-.cel.num{text-align:right;width:84px;min-width:60px}
-.tot{font-weight:800;text-align:right;padding-right:12px}
-.grupo td{background:#f6faf7;font-weight:800;color:var(--verde-esc);padding:9px 12px;font-size:13.5px}
-tfoot td{background:#eef3ef;font-weight:800;padding:11px 10px}
-.quando{font-size:11.5px;color:var(--muito-suave);white-space:nowrap;line-height:1.3}
-.xbtn{border:0;background:none;color:#b0473a;font-size:18px;padding:4px 8px;border-radius:6px}.xbtn:hover{background:#fbeeec}
-/* lista (celular) */
-.lista-cel{display:none}
-.pasto{background:#fff;border:1px solid var(--borda);border-radius:14px;margin-bottom:12px;overflow:hidden}
-.pasto-cab{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:#f6faf7;border-bottom:1px solid var(--linha);font-weight:800;color:var(--verde-esc)}
-.pasto-cab span{font-size:13px;color:var(--suave);font-weight:700}
-.lin{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--linha);cursor:pointer}
-.lin:last-child{border-bottom:0}
-.lin .c{flex:1;min-width:0}.lin .c b{font-size:15px}.lin .c small{display:block;color:var(--suave);font-size:12.5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.lin .mf{font-size:12.5px;color:var(--suave);text-align:right;white-space:nowrap}
-.lin .tt{font-size:18px;font-weight:800;min-width:42px;text-align:right}
-.vazio{padding:34px 20px;text-align:center;color:var(--suave);line-height:1.5}
+.vazio{padding:30px 20px;text-align:center;color:var(--suave);line-height:1.5}
+/* celular */
+.lista{display:none}
+.card-c{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.card-c .nm{flex:1;min-width:0}.card-c .nm b{font-size:15px}.card-c .nm small{display:block;color:var(--suave);font-size:12.5px;margin-top:3px}
+.card-c .tt{font-size:22px;font-weight:800}
 .fab{display:none;position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));background:var(--verde);color:#fff;border:0;border-radius:16px;padding:15px 20px;font-size:16px;font-weight:800;box-shadow:0 8px 24px #153e2c55;z-index:8}
+/* dashboard */
+.kpis{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:12px 14px}
+.kpi .l{font-size:12px;color:var(--suave);font-weight:600}.kpi .v{font-size:24px;font-weight:800;margin-top:4px}
+.kpi.hero{background:var(--verde-esc);border-color:var(--verde-esc);color:#fff}.kpi.hero .l{color:#cfe0d5}
+.kpi .s{font-size:11.5px;color:var(--muito-suave);margin-top:2px}.kpi.hero .s{color:#cfe0d5}
+.dgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.dcard{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:14px 16px}
+.dcard h3{margin:0 0 10px;font-size:15px}
+.dt{width:100%;border-collapse:collapse;font-size:13.5px}
+.dt th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--suave);padding:7px 6px;border-bottom:1px solid var(--borda)}
+.dt td{padding:7px 6px;border-bottom:1px solid var(--linha)}.dt .n{text-align:right;white-space:nowrap}
+.dt tr.on td{background:var(--verde-claro);font-weight:700}
+.dt tr.clic{cursor:pointer}.dt tr.clic:hover td{background:#f5faf7}
+.barra{height:8px;background:#edf1ee;border-radius:4px;overflow:hidden;min-width:60px}
+.barra i{display:block;height:100%;background:var(--verde);border-radius:0 4px 4px 0}
+.mais{color:#1f6a49;font-weight:700}.menos{color:#b0473a;font-weight:700}
 /* janelas */
 .modal{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;padding:20px;z-index:30}
 .folha{background:#fff;width:min(560px,100%);max-height:92vh;display:flex;flex-direction:column;border-radius:16px;overflow:hidden}
-.folha.larga{width:min(860px,100%)}
 .folha-cab{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--linha)}.folha-cab h2{margin:0;font-size:17px}
 .folha-cab .x{margin-left:auto;border:0;background:#f1f4f2;width:34px;height:34px;border-radius:50%;font-size:18px}
 .folha-corpo{padding:16px 18px;overflow:auto}
 .folha-pe{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--linha);background:#fafbfa}.folha-pe .esq{margin-right:auto}
-.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}.field label{font-size:12.5px;color:var(--suave);font-weight:700}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}.field label{font-size:12.5px;color:var(--suave);font-weight:700}
 .input{width:100%;border:1px solid #d7ded9;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;outline:none}
-.input:focus{border-color:#72a386;box-shadow:0 0 0 3px #72a38622}
 .duas{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .passo{display:flex;align-items:center;border:1px solid #d7ded9;border-radius:10px;overflow:hidden}
-.passo button{border:0;background:#f1f4f2;width:46px;height:46px;font-size:20px;font-weight:700;color:var(--verde-esc)}
-.passo input{border:0;text-align:center;font-size:18px;font-weight:700;width:100%;min-width:0;outline:none;height:46px}
-.menu{position:absolute;right:16px;top:54px;background:#fff;color:var(--texto);border:1px solid var(--borda);border-radius:12px;box-shadow:0 10px 30px #0003;padding:6px;z-index:20;min-width:200px}
+.passo button{border:0;background:#f1f4f2;width:44px;height:44px;font-size:20px;font-weight:700;color:var(--verde-esc)}
+.passo input{border:0;text-align:center;font-size:18px;font-weight:700;width:100%;min-width:0;outline:none;height:44px}
+.menu{position:absolute;right:16px;top:54px;background:#fff;color:var(--texto);border:1px solid var(--borda);border-radius:12px;box-shadow:0 10px 30px #0003;padding:6px;z-index:20;min-width:190px}
 .menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:11px 12px;border-radius:8px;font-size:14.5px}.menu button:hover{background:#f3f6f4}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#17211c;color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;z-index:50;max-width:90vw;text-align:center}
-.hist td{padding:9px 10px}
-.h-dia{font-size:11.5px;font-weight:800;color:var(--suave);text-transform:uppercase;letter-spacing:.04em;padding:12px 0 4px;border-bottom:1px solid var(--linha)}
-.h-it{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--linha);font-size:14px;align-items:flex-start}
-.h-hora{color:var(--muito-suave);font-size:12.5px;min-width:40px;padding-top:1px}.h-txt{flex:1;min-width:0;line-height:1.45}.h-txt div{color:#334139;font-size:13.5px}
-.h-por{color:var(--muito-suave);font-size:12px;white-space:nowrap}
-.h-tag{font-size:11px;font-weight:800;border-radius:5px;padding:1px 6px}.h-tag.novo{background:#e3f3e8;color:#1f6a49}.h-tag.exc{background:#fbeeec;color:#a33627}
-.mais{color:#1f6a49;font-weight:700}.menos{color:#b0473a;font-weight:700}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.dgrid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:860px){
   main{padding:12px 16px 110px}
-  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.kpi{padding:10px 12px}.kpi .v{font-size:22px}
-  .cats{flex-wrap:nowrap;overflow-x:auto;margin:10px -16px 0;padding:0 16px;scrollbar-width:none}.cats::-webkit-scrollbar{display:none}
-  .barra .desk,.card.tabela{display:none}
-  .lista-cel{display:block}
-  .filtro-cel{display:grid;grid-template-columns:1fr 1fr}
-  .fab{display:block}
-  .modal{padding:0;align-items:flex-end}
-  .folha,.folha.larga{width:100%;max-height:96vh;border-radius:18px 18px 0 0}
+  .tabd,.so-desk{display:none!important}
+  .lista{display:block}.fab{display:block}
+  .abas{width:100%}.aba{flex:1;padding:9px 6px}
+  .barra-f .campo{flex:1 1 100%}.barra-f select{min-width:0;width:100%}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.kpi .v{font-size:20px}.kpi.hero{grid-column:1/-1}
+  .modal{padding:0;align-items:flex-end}.folha{width:100%;max-height:96vh;border-radius:18px 18px 0 0}
   .folha-pe{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .dt .esc-cel{display:none}
 }
-@media(min-width:861px){.topo .so-cel{display:none}}
-.topo-in>.voltar-app{margin:0 4px 0 0;align-self:center}
 @media(max-width:600px){.topo-in>img{display:none}}
-@media print{.topo,.barra,.fab,.offline,.xbtn,.lista-cel,.fbtn,.aviso button,.barra-soma,.filtro-cel{display:none!important}.card.tabela{display:block!important}.cel{border:0}}
+@media(min-width:861px){.topo .so-cel{display:none}}
+@media print{.topo,.barra-f,.abas,.fab,.aviso,.xdel,.lista,tr.rapido,.barra-soma{display:none!important}.tabd{display:block!important;border:0}.cel{border:0}}
 </style>
 </head>
 <body>
@@ -129,49 +125,57 @@ tfoot td{background:#eef3ef;font-weight:800;padding:11px 10px}
 <header class="topo"><div class="topo-in">
   <img src="../logo.webp" alt="Nelore MRA">
   <div><div class="t">Estoque Gado</div><div class="s" id="quem"></div></div>
-  <div class="acoes">
-    <button class="icobtn so-cel" onclick="abrirMenu(event)" aria-label="Mais opções">⋯</button>
-  </div>
+  <div class="acoes"><button class="icobtn so-cel" onclick="abrirMenu(event)" aria-label="Mais opções">⋯</button></div>
 </div></header>
 <main>
-  <div id="offline" class="offline hidden">📵 Sem internet. Pode editar normal: fica guardado e envia sozinho quando a internet voltar.</div>
-  <div class="kpis" id="kpis"></div>
-  <div class="cats" id="cats"></div>
-  <div class="barra">
-    <h2>Rebanho por pasto</h2>
-    <button class="btn btn-primary desk" onclick="novaLinha()">+ Linha</button>
-    <button class="btn btn-ghost desk" onclick="exportar(linhas,'estoque_gado_atual')">⬇ Excel</button>
-    <button class="btn btn-ghost desk" onclick="window.print()">🖨 Imprimir</button>
-    <button class="btn btn-ghost desk" onclick="abrirHistorico()">🕘 Mudanças</button>
+  <div id="offline" class="offline hidden">📵 Sem internet. Pode lançar normal: fica guardado e envia sozinho quando a internet voltar.</div>
+  <div class="abas">
+    <button class="aba" data-aba="estoque" onclick="irAba('estoque')">📋 Estoque do mês</button>
+    <button class="aba" data-aba="dash" onclick="irAba('dash')">📊 Dashboard</button>
   </div>
-  <div id="avisoFiltro"></div>
-  <div class="filtro-cel" id="filtroCel"></div>
-  <div class="card tabela" id="tabela"><div class="vazio">Carregando...</div></div>
-  <div class="lista-cel" id="listaCel"></div>
+  <div class="barra-f">
+    <div class="campo"><label>Mês</label><select id="selMes" onchange="mes=this.value;desenhar()"></select></div>
+    <div class="acoes-f so-desk"><button class="btn btn-ghost" onclick="exportar()">⬇ Excel</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div>
+  </div>
+  <div id="aviso"></div>
+  <section id="telaEstoque">
+    <div class="contador" id="contador"></div>
+    <div class="tabd" id="tabd"></div>
+    <div class="lista" id="lista"></div>
+  </section>
+  <section id="telaDash" class="hidden"></section>
 </main>
-<button class="fab" onclick="editarLinha()">+ Adicionar</button>
+<button class="fab" id="fab" onclick="editarLinha()">+ Adicionar</button>
 <div class="barra-soma" id="barraSoma"></div>
-<datalist id="dlCategorias"></datalist><datalist id="dlLocais"></datalist>
+<datalist id="dlClass"></datalist>
 
 <script>
-/* ESTOQUE GADO — planilha geral do rebanho: uma linha por pasto + categoria (apps/estoque/linhas).
-   Computador: edita direto na tabela. Celular: lista por pasto, toca na linha pra editar.
-   "🕘 Mudanças": toda alteração fica anotada sozinha em apps/estoque/historico (quem, quando, de → para). */
+/* ESTOQUE GADO — uma tabela por mês (apps/estoque/mensal, campo mes = AAAA-MM).
+   Cada linha: Classificação, Qtd Inicial, Entrada, Saída, Morte, Abate, Observação. Total = inicial + entrada − saída − morte − abate.
+   Mês novo: "Puxar" copia as classificações do mês anterior com o Total virando a Qtd Inicial (as zeradas não vão). */
 const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDomain:'app-nelore-mra.firebaseapp.com',projectId:'app-nelore-mra',storageBucket:'app-nelore-mra.firebasestorage.app',messagingSenderId:'1043343802346',appId:'1:1043343802346:web:219f5d73748271a85dfc93'};
 const ADMIN_EMAIL='mandrade.gado@terra.com.br', USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
-const CATEGORIAS=['Vacas','Novilhas','Bezerros','Bezerras','Garrotes','Touros','Bois','Matrizes','Receptoras','Doadoras'];
 firebase.initializeApp(FIREBASE_CONFIG);
 const fs=firebase.firestore();
 fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
-const base=fs.collection('apps').doc('estoque');
-const colLinhas=base.collection('linhas'), colHist=base.collection('historico');
+const colM=fs.collection('apps').doc('estoque').collection('mensal');
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-const num=v=>{const n=Number(String(v??'').replace(',','.'));return Number.isFinite(n)?n:0};
+const num=v=>{const n=Number(String(v??'').trim().replace(/\./g,'').replace(',','.'));return Number.isFinite(n)?n:0};
 const fmt=n=>Number(n||0).toLocaleString('pt-BR');
-let eu=null, meuNome='', linhas=[];
+const sinal=n=>(n>0?'+':'')+fmt(n);
+const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const nomeMes=m=>{const [a,n]=m.split('-').map(Number);return `${MESES[n-1]} de ${a}`};
+const curto=m=>{const [a,n]=m.split('-').map(Number);return `${MESES[n-1].slice(0,3)}/${String(a).slice(2)}`};
+const hojeMes=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`};
+const somaMes=(m,k)=>{const [a,n]=m.split('-').map(Number);const d=new Date(a,n-1+k,1);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`};
+const CAMPOS=['inicial','entrada','saida','morte','abate'];
+const total=l=>num(l.inicial)+num(l.entrada)-num(l.saida)-num(l.morte)-num(l.abate);
+const chave=s=>String(s||'').trim().toLowerCase();
+let eu=null, meuNome='', todos=[], mes=hojeMes(), aba='estoque';
+try{if(localStorage.getItem('app-nelore-mra-estoque-aba')==='dash')aba='dash'}catch(e){}
 
-function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+function toast(t){document.querySelectorAll('.toast').forEach(x=>x.remove());const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
 function statusRede(){$('#offline').classList.toggle('hidden',navigator.onLine)}
 addEventListener('online',statusRede);addEventListener('offline',statusRede);statusRede();
 
@@ -183,241 +187,218 @@ firebase.auth().onAuthStateChanged(async u=>{
   if(!ehAdmin&&(!perfil||perfil.ativo===false||!(perfil.apps&&perfil.apps.estoque))){alert('Você não tem acesso ao Estoque Gado. Fale com o administrador.');location.href='../index.html';return}
   meuNome=ehAdmin?'Administrador':((perfil&&(perfil.nome||perfil.usuario))||String(u.email).replace(USER_DOMAIN,''));
   $('#quem').textContent=meuNome;
-  colLinhas.onSnapshot(snap=>{
-    linhas=snap.docs.map(d=>({id:d.id,...d.data()}));
-    if(digitando()){resumo();redesenharDepois=true}else desenhar();
-  },e=>{$('#tabela').innerHTML=$('#listaCel').innerHTML=`<div class="vazio">Não consegui carregar.<br><small>${esc(e.message)}</small></div>`});
+  irAba(aba);
+  colM.onSnapshot(snap=>{
+    todos=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(digitando()){redesenharDepois=true;atualizarTotais()}else desenhar();
+  },e=>{$('#tabd').innerHTML=$('#lista').innerHTML=`<div class="vazio">Não consegui carregar.<br><small>${esc(e.message)}</small></div>`});
 });
 
-// Enquanto alguém digita numa célula a tabela não se reorganiza (senão o cursor pula);
-// reorganiza quando a pessoa sai da tabela.
-let redesenharDepois=false, ultimaEdicao=0;
-const digitando=()=>!!(document.activeElement&&document.activeElement.classList.contains('cel'))||Date.now()-ultimaEdicao<800;
-document.addEventListener('focusout',e=>{if(e.relatedTarget&&e.relatedTarget.classList&&e.relatedTarget.classList.contains('cel'))return;setTimeout(function tenta(){if(!redesenharDepois)return;if(digitando()){setTimeout(tenta,400);return}redesenharDepois=false;desenhar()},150)});
-const ordenadas=ls=>ls.slice().sort((a,b)=>String(a.local||'~').localeCompare(String(b.local||'~'),'pt-BR',{numeric:true})||String(a.categoria||'').localeCompare(String(b.categoria||''),'pt-BR')||String(a.criadoEm||'').localeCompare(String(b.criadoEm||'')));
-function totais(ls){const t={m:0,f:0,cat:{},loc:{}};ls.forEach(l=>{const m=num(l.machos),f=num(l.femeas);t.m+=m;t.f+=f;const c=l.categoria||'(sem categoria)';t.cat[c]=(t.cat[c]||0)+m+f;const p=l.local||'(sem local)';t.loc[p]=(t.loc[p]||0)+m+f});return t}
-function resumo(){
-  const t=totais(linhas);
-  const k=(l,v,c)=>`<div class="kpi" style="--k:${c}"><div class="l"><i></i>${l}</div><div class="v">${v}</div></div>`;
-  $('#kpis').innerHTML=k('Total de cabeças',fmt(t.m+t.f),'#1f6a49')+k('Machos',fmt(t.m),'#2a78d6')+k('Fêmeas',fmt(t.f),'#d2559a')+k('Pastos',Object.keys(t.loc).filter(x=>x!=='(sem local)').length,'#b39a3b');
-  const fc=filtros.categoria&&filtros.categoria.length===1?filtros.categoria[0]:'';
-  $('#cats').innerHTML=Object.entries(t.cat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>{const cv=c==='(sem categoria)'?'(vazio)':c;return `<button class="cat ${fc===cv?'on':''}" onclick='filtroRapido("categoria",${esc(JSON.stringify(fc===cv?'':cv))})' title="Filtrar por ${esc(c)}">${esc(c)}<b>${fmt(v)}</b></button>`}).join('');
-  $('#dlCategorias').innerHTML=[...new Set([...CATEGORIAS,...linhas.map(l=>l.categoria).filter(Boolean)])].map(c=>`<option value="${esc(c)}">`).join('');
-  $('#dlLocais').innerHTML=[...new Set(linhas.map(l=>l.local).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join('');
-  document.querySelectorAll('tr[data-id]').forEach(tr=>{const l=linhas.find(x=>x.id===tr.dataset.id);if(l){const c=tr.querySelector('.tot');if(c)c.textContent=fmt(num(l.machos)+num(l.femeas))}});
-  const ft=$('#ftM');if(ft){const tf=totais(filtradas());ft.textContent=fmt(tf.m);$('#ftF').textContent=fmt(tf.f);$('#ftT').textContent=fmt(tf.m+tf.f)}
+/* ---------- abas, mês ---------- */
+function irAba(a){
+  aba=a;try{localStorage.setItem('app-nelore-mra-estoque-aba',a)}catch(e){}
+  document.querySelectorAll('.aba').forEach(b=>b.classList.toggle('on',b.dataset.aba===a));
+  $('#telaEstoque').classList.toggle('hidden',a!=='estoque');$('#telaDash').classList.toggle('hidden',a!=='dash');
+  $('#fab').classList.toggle('hidden',a!=='estoque');
+  desenhar();
 }
-/* ---------- filtros (estilo Excel, igual Custos Safra) ---------- */
-const COLS=[{k:'local',n:'Local / pasto'},{k:'categoria',n:'Categoria'},{k:'machos',n:'Machos',num:1},{k:'femeas',n:'Fêmeas',num:1},{k:'total',n:'Total',num:1},{k:'obs',n:'Observação'}];
-let filtros={},ordem=null; // filtros: {campo:[valores]}, ordem: {k,dir}
-try{const f=JSON.parse(localStorage.getItem('estoque_filtros')||'{}');filtros=f.filtros||{};ordem=f.ordem||null}catch(e){}
-const guardarFiltros=()=>{try{localStorage.setItem('estoque_filtros',JSON.stringify({filtros,ordem}))}catch(e){}};
-const valCampo=(l,k)=>k==='total'?num(l.machos)+num(l.femeas):(k==='machos'||k==='femeas')?num(l[k]):(l[k]||'');
-const txtCampo=(l,k)=>{const v=valCampo(l,k);return v===''?'(vazio)':typeof v==='number'?fmt(v):String(v)};
-function filtradas(exceto){return linhas.filter(l=>Object.entries(filtros).every(([k,vs])=>k===exceto||!vs||vs.includes(txtCampo(l,k))))}
-const temFiltro=()=>Object.values(filtros).some(Boolean);
-function visiveis(){
-  let ls=filtradas();
-  if(ordem){const c=COLS.find(x=>x.k===ordem.k);ls=ls.slice().sort((a,b)=>{const va=valCampo(a,ordem.k),vb=valCampo(b,ordem.k);return (c.num?va-vb:String(va).localeCompare(String(vb),'pt-BR',{numeric:true}))*ordem.dir})}
-  else ls=ordenadas(ls);
-  return ls;
+const mesesComDados=()=>[...new Set(todos.map(l=>l.mes).filter(m=>/^\d{4}-\d{2}$/.test(m||'')))].sort();
+const linhasDo=m=>todos.filter(l=>l.mes===m).sort((a,b)=>(a.ordem||0)-(b.ordem||0)||String(a.criadoEm||'').localeCompare(String(b.criadoEm||'')));
+const mesAnteriorComDados=m=>mesesComDados().filter(x=>x<m).pop()||null;
+function montarMeses(){
+  const ms=mesesComDados(),ult=[...ms,hojeMes()].sort().pop(),prox=somaMes(ult,1);
+  const lista=[...new Set([prox,hojeMes(),mes,...ms])].sort().reverse();
+  $('#selMes').innerHTML=lista.map(m=>`<option value="${m}">${nomeMes(m)}${m===prox&&!ms.includes(m)?' — abrir próximo mês':''}</option>`).join('');
+  $('#selMes').value=mes;
 }
-function th(k,n,cls){const on=filtros[k]||(ordem&&ordem.k===k);const seta=ordem&&ordem.k===k?(ordem.dir>0?' ▲':' ▼'):'';
-  return `<th class="${cls||''}"><div class="thf"><span>${n}${seta}</span><button class="fbtn ${on?'on':''}" onclick="abrirFiltro(event,'${k}')" title="Filtrar / ordenar">▾</button></div></th>`}
-function fecharFiltro(){const p=$('.fpainel');if(p)p.remove()}
-function abrirFiltro(ev,k){
-  ev.stopPropagation();const aberto=$('.fpainel');if(aberto&&aberto.dataset.k===k){fecharFiltro();return}fecharFiltro();
-  const vals=[...new Set(filtradas(k).map(l=>txtCampo(l,k)))].sort((a,b)=>{const c=COLS.find(x=>x.k===k);return c.num?num(String(a).replace(/\./g,''))-num(String(b).replace(/\./g,'')):a.localeCompare(b,'pt-BR',{numeric:true})});
-  const ativo=filtros[k];
-  const p=document.createElement('div');p.className='fpainel';p.dataset.k=k;p.onclick=e=>e.stopPropagation();
-  p.innerHTML=`<div class="fp-ord"><button class="btn btn-ghost" onclick="ordenar('${k}',1)">A→Z ▲</button><button class="btn btn-ghost" onclick="ordenar('${k}',-1)">Z→A ▼</button></div>
-    <input class="input fp-busca" placeholder="Buscar...">
-    <label class="fp-it"><input type="checkbox" class="fp-todos" ${!ativo?'checked':''}> <b>Selecionar tudo</b></label>
-    <div class="fp-lista">${vals.map(v=>`<label class="fp-it"><input type="checkbox" class="fp-cb" value="${esc(v)}" ${!ativo||ativo.includes(v)?'checked':''}> ${esc(v)}</label>`).join('')}</div>
-    <div class="fp-acoes"><button class="btn btn-ghost" onclick="limparFiltro('${k}')">Limpar</button><button class="btn btn-primary" onclick="aplicarFiltro('${k}')">OK</button></div>`;
-  document.body.appendChild(p);
-  const r=ev.currentTarget.getBoundingClientRect(),w=Math.min(250,innerWidth-16);p.style.width=w+'px';
-  p.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+'px';let top=r.bottom+6;p.style.top=top+'px';
-  if(top+p.offsetHeight>innerHeight-8)p.style.top=Math.max(8,r.top-p.offsetHeight-6)+'px';
-  p.querySelector('.fp-busca').oninput=e=>{const q=e.target.value.toLowerCase();p.querySelectorAll('.fp-lista .fp-it').forEach(l=>l.style.display=l.textContent.toLowerCase().includes(q)?'':'none')};
-  p.querySelector('.fp-todos').onchange=e=>p.querySelectorAll('.fp-cb').forEach(c=>{if(c.parentElement.style.display!=='none')c.checked=e.target.checked});
-}
-document.addEventListener('click',fecharFiltro);
-function aplicarFiltro(k){const p=$('.fpainel');const todos=[...p.querySelectorAll('.fp-cb')],marcados=todos.filter(c=>c.checked).map(c=>c.value);
-  filtros[k]=marcados.length===todos.length?null:marcados;guardarFiltros();fecharFiltro();desenhar()}
-function limparFiltro(k){filtros[k]=null;if(ordem&&ordem.k===k)ordem=null;guardarFiltros();fecharFiltro();desenhar()}
-function limparTudo(){filtros={};ordem=null;guardarFiltros();desenhar()}
-function ordenar(k,dir){ordem={k,dir};guardarFiltros();fecharFiltro();desenhar()}
-// celular: filtro rápido por pasto e categoria
-function filtroRapido(k,v){filtros[k]=v?[v]:null;guardarFiltros();desenhar()}
 
-/* ---------- seleção de células com soma (arrastar, Shift+clique, Ctrl+clique) ---------- */
+/* ---------- aviso de puxar / atualizar Qtd Inicial ---------- */
+function desenharAviso(){
+  const el=$('#aviso'),ls=linhasDo(mes),ant=mesAnteriorComDados(mes);
+  if(!ant){el.innerHTML='';return}
+  const prev=linhasDo(ant).filter(l=>total(l)!==0);
+  if(!ls.length){
+    el.innerHTML=`<div class="aviso"><span>📅 <b>${nomeMes(mes)}</b> ainda não foi aberto.</span>
+      ${prev.length?`<button class="btn btn-primary" onclick="puxar()">Puxar de ${nomeMes(ant)}</button><span style="font-size:12.5px">traz ${prev.length} classificaç${prev.length===1?'ão':'ões'} com o Total como Qtd Inicial (as zeradas ficam de fora)</span>`:'<span style="font-size:13px">O mês anterior terminou com tudo zerado. Comece pela linha verde.</span>'}</div>`;
+    return;
+  }
+  // mês anterior mudou depois que este mês foi aberto?
+  const atual={};ls.forEach(l=>atual[chave(l.classificacao)]=l);
+  const difs=prev.filter(p=>{const a=atual[chave(p.classificacao)];return !a||num(a.inicial)!==total(p)})
+    .concat(ls.filter(l=>{const p=linhasDo(ant).find(x=>chave(x.classificacao)===chave(l.classificacao));return p&&total(p)===0&&num(l.inicial)!==0}));
+  el.innerHTML=difs.length?`<div class="aviso"><span>⚠️ O total de <b>${nomeMes(ant)}</b> mudou depois que ${nomeMes(mes)} foi aberto (${difs.length} classificaç${difs.length===1?'ão':'ões'}).</span>
+    <button class="btn btn-ghost" onclick="atualizarIniciais()">Atualizar Qtd Inicial</button></div>`:'';
+}
+const carimbo=()=>({atualizadoEm:firebase.firestore.FieldValue.serverTimestamp(),atualizadoPor:meuNome});
+function novaDoc(d){const r=colM.doc();const linha={mes,classificacao:'',inicial:0,entrada:0,saida:0,morte:0,abate:0,obs:'',ordem:Date.now(),criadoEm:new Date().toISOString(),...d};
+  r.set({...linha,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));if(!todos.some(x=>x.id===r.id))todos.push({id:r.id,...linha});return r}
+function puxar(){
+  const ant=mesAnteriorComDados(mes);if(!ant||linhasDo(mes).length)return;
+  const prev=linhasDo(ant).filter(l=>total(l)!==0);
+  prev.forEach((l,k)=>novaDoc({classificacao:l.classificacao||'',inicial:total(l),ordem:k+1}));
+  toast(`${prev.length} classificaç${prev.length===1?'ão puxada':'ões puxadas'} de ${nomeMes(ant)}.`);desenhar();
+}
+function atualizarIniciais(){
+  const ant=mesAnteriorComDados(mes);if(!ant)return;
+  const ls=linhasDo(mes),prev=linhasDo(ant);let n=0;
+  prev.forEach(p=>{const a=ls.find(l=>chave(l.classificacao)===chave(p.classificacao));const t=total(p);
+    if(a){if(num(a.inicial)!==t){colM.doc(a.id).update({inicial:t,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));a.inicial=t;n++}}
+    else if(t!==0){novaDoc({classificacao:p.classificacao,inicial:t,ordem:(p.ordem||0)});n++}});
+  toast(`Qtd Inicial atualizada (${n}).`);desenhar();
+}
+
+/* ---------- tabela (computador) ---------- */
+let redesenharDepois=false,ultimaEdicao=0;
+const digitando=()=>!!(document.activeElement&&document.activeElement.classList.contains('cel'))||Date.now()-ultimaEdicao<700;
+document.addEventListener('focusout',e=>{if(e.relatedTarget&&e.relatedTarget.classList&&e.relatedTarget.classList.contains('cel'))return;
+  setTimeout(function tenta(){if(!redesenharDepois)return;if(digitando()){setTimeout(tenta,400);return}redesenharDepois=false;desenhar()},150)});
+function desenhar(){
+  montarMeses();desenharAviso();
+  if(aba==='dash'){desenharDash();return}
+  limparSel();
+  const ls=linhasDo(mes);
+  const t=CAMPOS.reduce((o,k)=>(o[k]=ls.reduce((s,l)=>s+num(l[k]),0),o),{});t.total=ls.reduce((s,l)=>s+total(l),0);
+  $('#contador').innerHTML=ls.length?`<b>${ls.length}</b> classificaç${ls.length===1?'ão':'ões'} · <b>${fmt(t.total)}</b> cabeças no fim do mês`:'';
+  $('#dlClass').innerHTML=[...new Set(todos.map(l=>l.classificacao).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join('');
+  const cel=(l,k)=>`<td class="n sx"><input class="cel num" inputmode="numeric" value="${num(l[k])||''}" placeholder="0" onchange="editar('${l.id}','${k}',this.value)"></td>`;
+  const corpo=ls.map(l=>{const tt=total(l);return `<tr data-id="${l.id}">
+    <td class="sx"><input class="cel" list="dlClass" value="${esc(l.classificacao)}" placeholder="Classificação" onchange="editar('${l.id}','classificacao',this.value)"></td>
+    ${CAMPOS.map(k=>cel(l,k)).join('')}<td class="tot sx ${tt<0?'neg':''}">${fmt(tt)}</td>
+    <td class="sx"><input class="cel" value="${esc(l.obs)}" placeholder="—" onchange="editar('${l.id}','obs',this.value)"></td>
+    <td style="text-align:center"><button class="xdel" title="Excluir" onclick="apagar('${l.id}')">🗑</button></td></tr>`}).join('')
+    ||`<tr><td colspan="9" class="vazio">Nenhuma classificação em ${nomeMes(mes).toLowerCase()}. Use a linha verde pra adicionar.</td></tr>`;
+  const ativo=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('tr.rapido')?document.activeElement.id:null;
+  const guardado=ativo?[...document.querySelectorAll('tr.rapido input')].map(i=>[i.id,i.value]):null;
+  $('#tabd').innerHTML=`<table><colgroup><col style="width:20%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:21%"><col style="width:5%"></colgroup>
+    <thead><tr><th>Classificação</th><th class="n">Qtd Inicial</th><th class="n">Entrada</th><th class="n">Saída</th><th class="n">Morte</th><th class="n">Abate</th><th class="n">Total</th><th>Observação</th><th></th></tr>
+    <tr class="rapido"><td><input id="nC" list="dlClass" placeholder="Classificação"></td>${CAMPOS.map(k=>`<td><input id="n_${k}" class="num" inputmode="numeric" placeholder="0"></td>`).join('')}
+      <td></td><td><input id="nObs" placeholder="Observação"></td><td><button class="lancar" onclick="lancarRapido()" title="Adicionar (Enter)">+</button></td></tr></thead>
+    <tbody>${corpo}</tbody>
+    <tfoot><tr><td>TOTAL</td>${CAMPOS.map(k=>`<td class="n" id="ft_${k}">${fmt(t[k])}</td>`).join('')}<td class="n" id="ft_total">${fmt(t.total)}</td><td colspan="2"></td></tr></tfoot></table>`;
+  document.querySelectorAll('tr.rapido input').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarRapido()}}));
+  if(guardado){guardado.forEach(([id,v])=>{const i=document.getElementById(id);if(i)i.value=v});const a=document.getElementById(ativo);if(a)a.focus()}
+  // celular
+  $('#lista').innerHTML=ls.length?ls.map(l=>{const tt=total(l);return `<div class="card-c" onclick="editarLinha('${l.id}')"><div class="nm"><b>${esc(l.classificacao||'(sem nome)')}</b>
+      <small>Inicial ${fmt(num(l.inicial))} · Entrada ${fmt(num(l.entrada))} · Saída ${fmt(num(l.saida))} · Morte ${fmt(num(l.morte))} · Abate ${fmt(num(l.abate))}${l.obs?' · '+esc(l.obs):''}</small></div>
+      <div class="tt ${tt<0?'menos':''}">${fmt(tt)}</div></div>`}).join('')+`<div class="contador" style="text-align:right;margin-top:8px">Total do mês: <b>${fmt(t.total)}</b> cabeças</div>`
+    :`<div class="card-c" style="cursor:default"><div class="vazio" style="padding:14px;width:100%">Nenhuma classificação em ${nomeMes(mes).toLowerCase()}.<br>Toque em <b>+ Adicionar</b>.</div></div>`;
+}
+function atualizarTotais(){
+  // enquanto digita, só atualiza os números calculados (não redesenha a tabela)
+  const ls=linhasDo(mes);
+  document.querySelectorAll('#tabd tr[data-id]').forEach(tr=>{const l=ls.find(x=>x.id===tr.dataset.id);if(l){const c=tr.querySelector('.tot');c.textContent=fmt(total(l));c.classList.toggle('neg',total(l)<0)}});
+  CAMPOS.forEach(k=>{const c=$('#ft_'+k);if(c)c.textContent=fmt(ls.reduce((s,l)=>s+num(l[k]),0))});
+  const c=$('#ft_total');if(c)c.textContent=fmt(ls.reduce((s,l)=>s+total(l),0));
+}
+function lancarRapido(){
+  const c=$('#nC').value.trim();if(!c){toast('Escreva a classificação.');$('#nC').focus();return}
+  const d={classificacao:c,obs:$('#nObs').value.trim()};CAMPOS.forEach(k=>d[k]=num($('#n_'+k).value));
+  novaDoc(d);document.querySelectorAll('tr.rapido input').forEach(i=>i.value='');
+  desenhar();$('#nC').focus();
+}
+function editar(id,campo,valor){
+  ultimaEdicao=Date.now();
+  const v=campo==='classificacao'||campo==='obs'?String(valor).trim():num(valor);
+  const l=todos.find(x=>x.id===id);if(l)l[campo]=v;
+  colM.doc(id).update({[campo]:v,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
+  atualizarTotais();
+}
+function apagar(id){const l=todos.find(x=>x.id===id);if(!confirm(`Excluir "${l&&l.classificacao||'esta linha'}" de ${nomeMes(mes)}?`))return;
+  colM.doc(id).delete().catch(e=>toast('Não excluiu: '+e.message));todos=todos.filter(x=>x.id!==id);fecharJanela();desenhar()}
+
+/* ---------- soma das células marcadas (arrastar, Shift+clique, Ctrl+clique) ---------- */
 const selX={anc:null,cels:new Set(),arr:false};
-const grade=()=>[...document.querySelectorAll('#tabela tbody tr[data-id]')].map(tr=>[...tr.querySelectorAll('td.sx')]);
+const grade=()=>[...document.querySelectorAll('#tabd tbody tr[data-id]')].map(tr=>[...tr.querySelectorAll('td.sx')]);
 const posX=td=>{const g=grade();for(let r=0;r<g.length;r++){const c=g[r].indexOf(td);if(c>-1)return{r,c}}return null};
 function limparSel(){selX.cels.forEach(td=>td.classList.remove('csel'));selX.cels.clear();selX.anc=null;selX.arr=false;barraSoma()}
 function marcarSel(a,b){selX.cels.forEach(td=>td.classList.remove('csel'));selX.cels.clear();const g=grade();
   for(let r=Math.min(a.r,b.r);r<=Math.max(a.r,b.r);r++)for(let c=Math.min(a.c,b.c);c<=Math.max(a.c,b.c);c++)if(g[r]&&g[r][c]){g[r][c].classList.add('csel');selX.cels.add(g[r][c])}barraSoma()}
-function valTd(td){const i=td.querySelector('input');const v=i?i.value:td.textContent;const s=String(v).trim().replace(/\./g,'').replace(',','.');return s!==''&&Number.isFinite(Number(s))?Number(s):null}
-function barraSoma(){
-  const b=$('#barraSoma');const cels=[...selX.cels].filter(td=>td.isConnected);
-  if(cels.length<2){b.classList.remove('ativa');return}
-  const ns=cels.map(valTd).filter(v=>v!==null),soma=ns.reduce((a,x)=>a+x,0),cont=cels.filter(td=>{const i=td.querySelector('input');return String(i?i.value:td.textContent).trim()!==''}).length;
-  b.innerHTML=(ns.length?`<span>Média: <b>${(soma/ns.length).toLocaleString('pt-BR',{maximumFractionDigits:2})}</b></span>`:'')+`<span>Contagem: <b>${cont}</b></span>`+(ns.length?`<span>Soma: <b>${fmt(soma)}</b></span>`:'');
-  b.classList.add('ativa');
-}
-document.addEventListener('mousedown',e=>{
-  if(e.button!==0)return;const td=e.target.closest('#tabela tbody td.sx');
-  if(!td){if(selX.cels.size&&!e.target.closest('#barraSoma'))limparSel();return}
-  const pos=posX(td);if(!pos)return;
+function valTd(td){const i=td.querySelector('input');const s=String(i?i.value:td.textContent).trim().replace(/\./g,'').replace(',','.');return s!==''&&Number.isFinite(Number(s))?Number(s):null}
+function barraSoma(){const b=$('#barraSoma'),cels=[...selX.cels].filter(td=>td.isConnected);if(cels.length<2){b.classList.remove('ativa');return}
+  const ns=cels.map(valTd).filter(v=>v!==null),soma=ns.reduce((a,x)=>a+x,0);
+  b.innerHTML=(ns.length?`<span>Média: <b>${(soma/ns.length).toLocaleString('pt-BR',{maximumFractionDigits:2})}</b></span>`:'')+`<span>Contagem: <b>${cels.length}</b></span>`+(ns.length?`<span>Soma: <b>${fmt(soma)}</b></span>`:'');b.classList.add('ativa')}
+document.addEventListener('mousedown',e=>{if(e.button!==0)return;const td=e.target.closest('#tabd tbody td.sx');
+  if(!td){if(selX.cels.size)limparSel();return}const pos=posX(td);if(!pos)return;
   if(e.shiftKey&&selX.anc){e.preventDefault();marcarSel(selX.anc,pos);return}
   if(e.ctrlKey||e.metaKey){e.preventDefault();if(selX.cels.has(td)){selX.cels.delete(td);td.classList.remove('csel')}else{selX.cels.add(td);td.classList.add('csel')}if(!selX.anc)selX.anc=pos;barraSoma();return}
-  limparSel();selX.anc=pos;selX.arr=true;selX.cels.add(td);td.classList.add('csel');
-});
-document.addEventListener('mouseover',e=>{
-  if(!selX.arr)return;const td=e.target.closest('#tabela tbody td.sx');if(!td)return;const pos=posX(td);if(!pos)return;
-  if(pos.r===selX.anc.r&&pos.c===selX.anc.c&&selX.cels.size<=1)return;
-  if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
-  const s=getSelection&&getSelection();if(s)s.removeAllRanges();marcarSel(selX.anc,pos);
-});
+  limparSel();selX.anc=pos;selX.arr=true;selX.cels.add(td);td.classList.add('csel')});
+document.addEventListener('mouseover',e=>{if(!selX.arr)return;const td=e.target.closest('#tabd tbody td.sx');if(!td)return;const pos=posX(td);if(!pos)return;
+  if(pos.r===selX.anc.r&&pos.c===selX.anc.c&&selX.cels.size<=1)return;if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+  const s=getSelection&&getSelection();if(s)s.removeAllRanges();marcarSel(selX.anc,pos)});
 document.addEventListener('mouseup',()=>{selX.arr=false});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&selX.cels.size)limparSel()});
 
-function desenhar(){
-  resumo();limparSel();
-  const vazio='<div class="vazio">Nenhuma linha ainda.<br>Adicione cada pasto com a categoria e a quantidade de machos e fêmeas.</div>';
-  if(!linhas.length){$('#tabela').innerHTML=vazio;$('#listaCel').innerHTML=`<div class="card">${vazio}</div>`;$('#avisoFiltro').innerHTML='';$('#filtroCel').innerHTML='';return}
-  const ls=visiveis();const t=totais(ls);const agrupar=!ordem;
-  // aviso de filtro
-  $('#avisoFiltro').innerHTML=temFiltro()||ordem?`<div class="aviso"><span>🔎 ${temFiltro()?`Filtrado: <b>${fmt(t.m+t.f)}</b> cabeças em ${ls.length} linha${ls.length===1?'':'s'}`:'Ordenado'}</span><button onclick="limparTudo()">Limpar filtros</button></div>`:'';
-  // computador: tabela editável
-  let html='',loc=null;
-  ls.forEach(l=>{
-    const p=l.local||'(sem local)';
-    if(agrupar&&p!==loc){loc=p;html+=`<tr class="grupo"><td colspan="4">📍 ${esc(p)}</td><td class="n">${fmt(t.loc[p])}</td><td colspan="3"></td></tr>`}
-    const quando=l.atualizadoEmLocal?new Date(l.atualizadoEmLocal).toLocaleDateString('pt-BR'):'';
-    html+=`<tr data-id="${l.id}">
-      <td class="sx"><input class="cel" list="dlLocais" value="${esc(l.local)}" placeholder="Pasto" onchange="editar('${l.id}','local',this.value)"></td>
-      <td class="sx"><input class="cel" style="min-width:120px" list="dlCategorias" value="${esc(l.categoria)}" placeholder="Categoria" onchange="editar('${l.id}','categoria',this.value)"></td>
-      <td class="n sx"><input class="cel num" inputmode="numeric" value="${l.machos??''}" onchange="editar('${l.id}','machos',this.value)"></td>
-      <td class="n sx"><input class="cel num" inputmode="numeric" value="${l.femeas??''}" onchange="editar('${l.id}','femeas',this.value)"></td>
-      <td class="tot sx">${fmt(num(l.machos)+num(l.femeas))}</td>
-      <td class="sx"><input class="cel" style="min-width:160px" value="${esc(l.obs)}" placeholder="—" onchange="editar('${l.id}','obs',this.value)"></td>
-      <td class="quando">${quando}<br>${esc(l.atualizadoPor||'')}</td>
-      <td><button class="xbtn" title="Excluir linha" onclick="apagar('${l.id}')">×</button></td></tr>`;
-  });
-  if(!ls.length)html=`<tr><td colspan="8" class="vazio">Nenhuma linha com esse filtro.</td></tr>`;
-  $('#tabela').innerHTML=`<table><thead><tr>${COLS.map(c=>th(c.k,c.n,c.num?'n':'')).join('')}<th>Atualizado</th><th></th></tr></thead>
-    <tbody>${html}</tbody><tfoot><tr><td colspan="2">${temFiltro()?'TOTAL DO FILTRO':'TOTAL'}</td><td class="n" id="ftM">${fmt(t.m)}</td><td class="n" id="ftF">${fmt(t.f)}</td><td class="n" id="ftT">${fmt(t.m+t.f)}</td><td colspan="3"></td></tr></tfoot></table>`;
-  // celular: filtro rápido + lista por pasto
-  const pastos=[...new Set(linhas.map(l=>l.local||'(sem local)'))].sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true}));
-  const cats=[...new Set(linhas.map(l=>l.categoria||'(vazio)'))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
-  const fp=filtros.local&&filtros.local.length===1?filtros.local[0]:'',fc=filtros.categoria&&filtros.categoria.length===1?filtros.categoria[0]:'';
-  $('#filtroCel').innerHTML=`<select class="input" onchange="filtroRapido('local',this.value)"><option value="">Todos os pastos</option>${pastos.map(p=>`<option ${p===fp?'selected':''}>${esc(p)}</option>`).join('')}</select>
-    <select class="input" onchange="filtroRapido('categoria',this.value)"><option value="">Todas as categorias</option>${cats.map(c=>`<option ${c===fc?'selected':''}>${esc(c)}</option>`).join('')}</select>`;
-  const grupos={};ls.forEach(l=>{(grupos[l.local||'(sem local)']=grupos[l.local||'(sem local)']||[]).push(l)});
-  $('#listaCel').innerHTML=(ls.length?'':'<div class="card"><div class="vazio">Nenhuma linha com esse filtro.</div></div>')+Object.entries(grupos).map(([p,ls2])=>`<div class="pasto"><div class="pasto-cab">📍 ${esc(p)}<span>${fmt(t.loc[p])} cab.</span></div>
-    ${ls2.map(l=>`<div class="lin" onclick="editarLinha('${l.id}')"><div class="c"><b>${esc(l.categoria||'Sem categoria')}</b>${l.obs?`<small>${esc(l.obs)}</small>`:''}</div>
-      <div class="mf">♂ ${fmt(num(l.machos))}<br>♀ ${fmt(num(l.femeas))}</div><div class="tt">${fmt(num(l.machos)+num(l.femeas))}</div></div>`).join('')}</div>`).join('');
-}
-const carimbo=()=>({atualizadoEm:firebase.firestore.FieldValue.serverTimestamp(),atualizadoEmLocal:new Date().toISOString(),atualizadoPor:meuNome});
-/* ---------- histórico automático: cada mudança fica anotada (apps/estoque/historico) ---------- */
-const NOMES_CAMPO={local:'Pasto',categoria:'Categoria',machos:'Machos',femeas:'Fêmeas',obs:'Observação'};
-function anotar(l,acao,mud){
-  colHist.add({em:new Date().toISOString(),por:meuNome,acao,local:(l&&l.local)||'',categoria:(l&&l.categoria)||'',mud:mud||[]}).catch(()=>{});
-}
-function novaLinha(){
-  const ref=colLinhas.doc();
-  ref.set({local:'',categoria:'',machos:'',femeas:'',obs:'',criadoEm:new Date().toISOString(),...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
-  // mostra a linha nova na hora e já põe o cursor nela
-  if(!linhas.some(l=>l.id===ref.id))linhas.push({id:ref.id,local:'',categoria:'',machos:'',femeas:'',obs:''});
-  redesenharDepois=false;ultimaEdicao=0;desenhar();
-  const tr=document.querySelector(`tr[data-id="${ref.id}"]`);if(tr){tr.scrollIntoView({block:'nearest'});tr.querySelector('.cel').focus()}
-}
-function editar(id,campo,valor){
-  ultimaEdicao=Date.now();
-  valor=String(valor).trim();
-  if((campo==='machos'||campo==='femeas')&&valor!==''&&!Number.isFinite(Number(valor.replace(',','.')))){toast('Digite só número.');desenhar();return}
-  const l=linhas.find(x=>x.id===id)||{};const antes=String(l[campo]??'').trim();
-  colLinhas.doc(id).update({[campo]:valor,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
-  if(antes!==valor)anotar(campo==='local'||campo==='categoria'?{...l,[campo]:valor}:l,'mudou',[{c:campo,de:antes,para:valor}]);
-  if(campo==='local'||campo==='categoria')redesenharDepois=true;
-}
-function apagar(id){if(!confirm('Excluir esta linha do estoque?'))return;const l=linhas.find(x=>x.id===id);
-  if(l&&(l.local||l.categoria||num(l.machos)||num(l.femeas)))anotar(l,'excluiu',[{c:'machos',de:String(num(l.machos)),para:''},{c:'femeas',de:String(num(l.femeas)),para:''}]);
-  colLinhas.doc(id).delete().catch(e=>toast('Não excluiu: '+e.message));fecharJanela()}
-
-/* ---------- formulário do celular ---------- */
+/* ---------- formulário (celular) ---------- */
 function fecharJanela(){const m=$('#janela');if(m)m.remove()}
-function passo(id,d){const i=$('#'+id);i.value=Math.max(0,num(i.value)+d)}
+function passo(id,d){const i=$('#'+id);i.value=Math.max(0,num(i.value)+d);totalForm()}
+function totalForm(){const el=$('#eTot');if(el)el.textContent=fmt(total({inicial:$('#e_inicial').value,entrada:$('#e_entrada').value,saida:$('#e_saida').value,morte:$('#e_morte').value,abate:$('#e_abate').value}))}
 function editarLinha(id){
-  const l=id?linhas.find(x=>x.id===id):null;
+  const l=id?todos.find(x=>x.id===id):null;
   const m=document.createElement('div');m.className='modal';m.id='janela';m.onclick=e=>{if(e.target===m)m.remove()};
-  m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>${l?'Editar':'Adicionar ao estoque'}</h2><button class="x" onclick="fecharJanela()">×</button></div>
+  const st=(k,n)=>`<div class="field"><label>${n}</label><div class="passo"><button type="button" onclick="passo('e_${k}',-1)">−</button><input id="e_${k}" inputmode="numeric" value="${l?num(l[k]):0}" oninput="totalForm()"><button type="button" onclick="passo('e_${k}',1)">+</button></div></div>`;
+  m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>${l?'Editar':'Adicionar'} · ${curto(mes)}</h2><button class="x" onclick="fecharJanela()">×</button></div>
     <div class="folha-corpo">
-      <div class="field"><label>Local / pasto</label><input id="eLocal" class="input" list="dlLocais" value="${esc(l?l.local:'')}" placeholder="Ex: Pasto Aroeira"></div>
-      <div class="field"><label>Categoria</label><input id="eCat" class="input" list="dlCategorias" value="${esc(l?l.categoria:'')}" placeholder="Ex: Vacas"></div>
-      <div class="duas">
-        <div class="field"><label>Machos</label><div class="passo"><button type="button" onclick="passo('eM',-1)">−</button><input id="eM" inputmode="numeric" value="${l?num(l.machos):0}"><button type="button" onclick="passo('eM',1)">+</button></div></div>
-        <div class="field"><label>Fêmeas</label><div class="passo"><button type="button" onclick="passo('eF',-1)">−</button><input id="eF" inputmode="numeric" value="${l?num(l.femeas):0}"><button type="button" onclick="passo('eF',1)">+</button></div></div>
-      </div>
-      <div class="field" style="margin-bottom:0"><label>Observação</label><input id="eObs" class="input" value="${esc(l?l.obs:'')}" placeholder="opcional"></div>
+      <div class="field"><label>Classificação</label><input id="eC" class="input" list="dlClass" value="${esc(l?l.classificacao:'')}" placeholder="Ex: Vacas paridas"></div>
+      <div class="duas">${st('inicial','Qtd Inicial')}${st('entrada','Entrada')}</div>
+      <div class="duas">${st('saida','Saída')}${st('morte','Morte')}</div>
+      <div class="duas">${st('abate','Abate')}<div class="field"><label>Total</label><div style="font-size:26px;font-weight:800;padding:4px 2px" id="eTot"></div></div></div>
+      <div class="field" style="margin-bottom:0"><label>Observação</label><input id="eObs" class="input" value="${esc(l?l.obs:'')}"></div>
     </div>
     <div class="folha-pe">${l?`<button class="btn btn-danger esq" onclick="apagar('${l.id}')">Excluir</button>`:'<span class="esq"></span>'}<button class="btn btn-ghost" onclick="fecharJanela()">Cancelar</button><button class="btn btn-primary" onclick="salvarLinha(${l?`'${l.id}'`:''})">Salvar</button></div></div>`;
-  document.body.appendChild(m);
+  document.body.appendChild(m);totalForm();
 }
 function salvarLinha(id){
-  const d={local:$('#eLocal').value.trim(),categoria:$('#eCat').value.trim(),machos:String(num($('#eM').value)),femeas:String(num($('#eF').value)),obs:$('#eObs').value.trim()};
-  if(!d.local&&!d.categoria){toast('Informe pelo menos o pasto ou a categoria.');return}
-  if(id){const l=linhas.find(x=>x.id===id)||{};
-    const mud=Object.keys(NOMES_CAMPO).map(c=>({c,de:String(l[c]??'').trim(),para:d[c]})).filter(x=>(x.c==='machos'||x.c==='femeas')?num(x.de)!==num(x.para):x.de!==x.para);
-    colLinhas.doc(id).update({...d,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
-    if(mud.length)anotar(d,'mudou',mud)}
-  else{colLinhas.add({...d,criadoEm:new Date().toISOString(),...carimbo()}).catch(e=>toast('Não salvou: '+e.message));
-    anotar(d,'criou',[{c:'machos',de:'',para:d.machos},{c:'femeas',de:'',para:d.femeas}])}
-  fecharJanela();toast(navigator.onLine?'Salvo.':'Guardado no aparelho. Envia quando a internet voltar.');
+  const d={classificacao:$('#eC').value.trim(),obs:$('#eObs').value.trim()};CAMPOS.forEach(k=>d[k]=num($('#e_'+k).value));
+  if(!d.classificacao){toast('Escreva a classificação.');return}
+  if(id){colM.doc(id).update({...d,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));const l=todos.find(x=>x.id===id);if(l)Object.assign(l,d)}
+  else novaDoc(d);
+  fecharJanela();toast(navigator.onLine?'Salvo.':'Guardado no aparelho. Envia quando a internet voltar.');desenhar();
 }
 function abrirMenu(ev){
   ev.stopPropagation();const old=$('.menu');if(old){old.remove();return}
   const m=document.createElement('div');m.className='menu';
-  m.innerHTML=`<button onclick="abrirHistorico()">🕘 Mudanças</button><button onclick="exportar(linhas,'estoque_gado_atual')">⬇ Excel</button><button onclick="window.print()">🖨 Imprimir</button>`;
+  m.innerHTML=`<button onclick="exportar()">⬇ Excel do mês</button><button onclick="window.print()">🖨 Imprimir</button>`;
   document.body.appendChild(m);setTimeout(()=>document.addEventListener('click',()=>m.remove(),{once:true}),0);
 }
 
-/* ---------- tela de mudanças ---------- */
-let histDocs=[],histPasto='';
-async function abrirHistorico(){
-  try{histDocs=(await colHist.orderBy('em','desc').limit(500).get()).docs.map(d=>d.data())}catch(e){toast('Não consegui abrir: '+e.message);return}
-  histPasto='';
-  const m=document.createElement('div');m.className='modal';m.id='janela';m.onclick=e=>{if(e.target===m)m.remove()};
-  m.innerHTML=`<div class="folha larga"><div class="folha-cab"><h2>🕘 Mudanças no estoque</h2><button class="x" onclick="fecharJanela()">×</button></div>
-    <div class="folha-corpo"><select class="input" style="margin-bottom:12px" onchange="histPasto=this.value;desenharHist()"><option value="">Todos os pastos</option>${[...new Set(histDocs.map(h=>h.local).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR',{numeric:true})).map(p=>`<option>${esc(p)}</option>`).join('')}</select>
-    <div id="histLista"></div></div></div>`;
-  document.body.appendChild(m);desenharHist();
+/* ---------- dashboard ---------- */
+function resumoMes(m){const ls=linhasDo(m);const r={mes:m,n:ls.length,total:0};CAMPOS.forEach(k=>r[k]=ls.reduce((s,l)=>s+num(l[k]),0));r.total=ls.reduce((s,l)=>s+total(l),0);return r}
+function desenharDash(){
+  const r=resumoMes(mes),ls=linhasDo(mes);
+  if(!ls.length){$('#telaDash').innerHTML=`<div class="dcard"><div class="vazio">Sem dados em ${nomeMes(mes).toLowerCase()}.</div></div>`+evolucaoHtml();return}
+  const varia=r.total-r.inicial,base=r.inicial+r.entrada,mort=base?r.morte/base:0;
+  const kpi=(l,v,s,cls)=>`<div class="kpi ${cls||''}"><div class="l">${l}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:''}</div>`;
+  const maxF=Math.max(1,...ls.map(total));
+  const porClass=ls.slice().sort((a,b)=>total(b)-total(a)).map(l=>{const tt=total(l),d=tt-num(l.inicial);return `<tr><td>${esc(l.classificacao||'(sem nome)')}</td>
+    <td class="n esc-cel">${fmt(num(l.inicial))}</td><td class="n"><b>${fmt(tt)}</b></td><td class="n ${d>0?'mais':d<0?'menos':''}">${d?sinal(d):'—'}</td>
+    <td style="width:28%" class="esc-cel"><div class="barra" title="${esc(l.classificacao)}: ${fmt(tt)} cabeças (${r.total?Math.round(tt/r.total*100):0}%)"><i style="width:${Math.max(0,tt)/maxF*100}%"></i></div></td></tr>`}).join('');
+  $('#telaDash').innerHTML=`<div class="kpis">
+      ${kpi('Total no fim do mês',fmt(r.total),`${varia?sinal(varia)+' no mês':'sem variação'}`,'hero')}
+      ${kpi('Qtd Inicial',fmt(r.inicial))}${kpi('Entradas',fmt(r.entrada))}${kpi('Saídas',fmt(r.saida))}
+      ${kpi('Mortes',fmt(r.morte),`${(mort*100).toLocaleString('pt-BR',{maximumFractionDigits:1})}% de mortalidade`)}${kpi('Abates',fmt(r.abate))}
+      ${kpi('Classificações',fmt(r.n))}
+    </div>
+    <div class="dgrid">
+      <div class="dcard"><h3>Por classificação · ${curto(mes)}</h3><table class="dt"><thead><tr><th>Classificação</th><th class="n esc-cel">Inicial</th><th class="n">Total</th><th class="n">Variação</th><th class="esc-cel">Participação</th></tr></thead><tbody>${porClass}</tbody>
+        <tfoot><tr><td><b>TOTAL</b></td><td class="n esc-cel"><b>${fmt(r.inicial)}</b></td><td class="n"><b>${fmt(r.total)}</b></td><td class="n ${varia>0?'mais':varia<0?'menos':''}">${varia?sinal(varia):'—'}</td><td class="esc-cel"></td></tr></tfoot></table></div>
+      ${evolucaoHtml()}
+    </div>`;
 }
-function desenharHist(){
-  const ls=histDocs.filter(h=>!histPasto||h.local===histPasto);
-  if(!ls.length){$('#histLista').innerHTML='<div class="vazio">Nenhuma mudança anotada ainda.<br>A partir de agora, tudo que mudar no estoque aparece aqui sozinho.</div>';return}
-  const quant=x=>x===''?'—':fmt(num(x));
-  let html='',dia='';
-  ls.forEach(h=>{
-    const d=new Date(h.em),ds=d.toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
-    if(ds!==dia){dia=ds;html+=`<div class="h-dia">${ds}</div>`}
-    const oq=h.acao==='criou'?'<span class="h-tag novo">novo</span>':h.acao==='excluiu'?'<span class="h-tag exc">excluído</span>':'';
-    const det=(h.mud||[]).filter(x=>!(h.acao!=='mudou'&&num(x.de)===0&&num(x.para)===0)).map(x=>{
-      const n=NOMES_CAMPO[x.c]||x.c;
-      if(x.c==='machos'||x.c==='femeas'){const dif=num(x.para)-num(x.de);return h.acao==='mudou'?`${n}: ${quant(x.de)} → <b>${quant(x.para)}</b> <span class="${dif>0?'mais':'menos'}">(${dif>0?'+':''}${fmt(dif)})</span>`:`${n}: <b>${quant(h.acao==='excluiu'?x.de:x.para)}</b>`}
-      return `${n}: ${esc(x.de||'—')} → <b>${esc(x.para||'—')}</b>`}).join(' · ');
-    html+=`<div class="h-it"><div class="h-hora">${d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div><div class="h-txt"><b>${esc(h.local||'(sem pasto)')}</b> · ${esc(h.categoria||'sem categoria')} ${oq}<div>${det}</div></div><div class="h-por">${esc(h.por||'')}</div></div>`;
-  });
-  $('#histLista').innerHTML=html;
+function evolucaoHtml(){
+  const ms=mesesComDados();if(!ms.length)return '';
+  const rs=ms.map(resumoMes),maxT=Math.max(1,...rs.map(x=>x.total));
+  return `<div class="dcard"><h3>Evolução mês a mês</h3><div style="overflow-x:auto"><table class="dt"><thead><tr><th>Mês</th><th class="n">Inicial</th><th class="n">Entr.</th><th class="n">Saída</th><th class="n">Morte</th><th class="n">Abate</th><th class="n">Total</th><th class="esc-cel"></th></tr></thead><tbody>
+    ${rs.map(x=>`<tr class="clic ${x.mes===mes?'on':''}" onclick="mes='${x.mes}';desenhar()" title="Ver ${nomeMes(x.mes)}"><td>${curto(x.mes)}</td><td class="n">${fmt(x.inicial)}</td><td class="n">${fmt(x.entrada)}</td><td class="n">${fmt(x.saida)}</td><td class="n">${fmt(x.morte)}</td><td class="n">${fmt(x.abate)}</td><td class="n"><b>${fmt(x.total)}</b></td>
+      <td style="width:22%" class="esc-cel"><div class="barra" title="${nomeMes(x.mes)}: ${fmt(x.total)} cabeças"><i style="width:${Math.max(0,x.total)/maxT*100}%"></i></div></td></tr>`).join('')}</tbody></table></div></div>`;
 }
-function exportar(ls,nome){
+
+/* ---------- Excel (planilha simples) ---------- */
+function exportar(){
   if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
-  if(!ls||!ls.length){toast('Nada pra exportar.');return}
-  const rows=ordenadas(ls).map(l=>({LOCAL:l.local||'',CATEGORIA:l.categoria||'',MACHOS:num(l.machos),FEMEAS:num(l.femeas),TOTAL:num(l.machos)+num(l.femeas),OBSERVACAO:l.obs||''}));
-  const ws=XLSX.utils.json_to_sheet(rows);ws['!cols']=[{wch:22},{wch:16},{wch:9},{wch:9},{wch:9},{wch:40}];
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Estoque');XLSX.writeFile(wb,nome+'.xlsx');
+  const ls=linhasDo(mes);if(!ls.length){toast('Nada pra exportar neste mês.');return}
+  const ws=XLSX.utils.json_to_sheet(ls.map(l=>({CLASSIFICACAO:l.classificacao||'',QTD_INICIAL:num(l.inicial),ENTRADA:num(l.entrada),SAIDA:num(l.saida),MORTE:num(l.morte),ABATE:num(l.abate),TOTAL:total(l),OBSERVACAO:l.obs||''})));
+  ws['!cols']=[{wch:24},{wch:11},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:36}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Estoque '+mes);XLSX.writeFile(wb,`estoque_gado_${mes}.xlsx`);
 }
 if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
 </script>
