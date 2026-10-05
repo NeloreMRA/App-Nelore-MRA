@@ -100,6 +100,8 @@ input[list]::-webkit-calendar-picker-indicator{display:none!important;opacity:0}
 .minis{display:flex;gap:4px}.minis img{width:30px;height:30px;border-radius:5px;object-fit:cover;background:#eef1ef;cursor:zoom-in}
 .xdel{border:0;background:none;border-radius:6px;padding:3px 6px;font-size:14px;opacity:.45}.xdel:hover{opacity:1;background:#fbeeec}
 .pend{color:#a0681a;font-weight:700}
+.sit{display:inline-block;font-size:12px;font-weight:800;border-radius:5px;padding:1px 8px;background:#f1f4f2;color:#4a5850}
+.sit-0{background:#e3f3e8;color:#1f6a49}.sit-1{background:#e4eefb;color:#235fa8}.sit-2{background:#fbeeec;color:#a33627}.sit-3{background:#f3ebe1;color:#7a4a1c}
 /* lista do celular */
 .lista{display:none;background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:hidden}
 .reg{display:flex;gap:10px;padding:9px 12px;border-bottom:1px solid var(--linha);cursor:pointer;align-items:center}
@@ -194,6 +196,9 @@ textarea.input{min-height:96px;resize:vertical}
 const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDomain:'app-nelore-mra.firebaseapp.com',projectId:'app-nelore-mra',storageBucket:'app-nelore-mra.firebasestorage.app',messagingSenderId:'1043343802346',appId:'1:1043343802346:web:219f5d73748271a85dfc93'};
 const ADMIN_EMAIL='mandrade.gado@terra.com.br', USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
 const OBS_LISTA=['Natimorto','Morte','Gêmeos'];
+const SITUACOES=['Entrada','Saída','Morte','Abate','Outros'];
+const sitHtml=x=>x?`<span class="sit sit-${SITUACOES.indexOf(x)}">${esc(x)}</span>`:'';
+const obsGeral=i=>i.obs??i.acontecimento??''; // lançamentos antigos tinham "acontecimento"
 firebase.initializeApp(FIREBASE_CONFIG);
 const fs=firebase.firestore();
 fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
@@ -232,7 +237,7 @@ firebase.auth().onAuthStateChanged(async u=>{
 function irAba(a){
   aba=a;try{localStorage.setItem('app-nelore-mra-caderneta-aba',a)}catch(e){}
   document.querySelectorAll('.aba').forEach(b=>b.classList.toggle('on',b.dataset.aba===a));
-  $('#busca').placeholder=a==='nasc'?'Buscar RGD, receptora, pelagem...':'Buscar no acontecimento...';
+  $('#busca').placeholder=a==='nasc'?'Buscar RGD, receptora, pelagem...':'Buscar RGD, situação, observação...';
   $('#rotMes').textContent=a==='nasc'?'Mês do nascimento':'Mês do lançamento';
   fecharFiltro();montarTabela();ouvirAba();
 }
@@ -255,7 +260,7 @@ function montarMeses(){
 // [título, largura %, alinhamento, campo do filtro]
 const COLS={
   nasc:[['RGD Mãe',13,'','rgdMae'],['N° Receptora',11,'','receptora'],['Sexo',7,'c','sexo'],['Data Nasc.',12,'','data'],['Peso (kg)',9,'n','peso'],['Pelagem',13,'','pelagem'],['Observação',20,'','obs'],['Por',10,'','por'],['',5]],
-  geral:[['Data',12,'','data'],['Acontecimento',52,'','acontecimento'],['Fotos',20],['Por',12,'','por'],['',4]]
+  geral:[['Data Lançamento',12,'','data'],['RGD',11,'','rgd'],['Situação',11,'','situacao'],['Observação',34,'','obs'],['Fotos',16],['Por',11,'','por'],['',5]]
 };
 const LARG_KEY=()=>'app-nelore-mra-caderneta-larguras-'+aba;
 function montarTabela(){
@@ -265,11 +270,12 @@ function montarTabela(){
       <td><select id="rSexo"><option value="">—</option><option>M</option><option>F</option></select></td><td><input type="date" id="rData"></td>
       <td><input id="rPeso" inputmode="decimal" placeholder="kg"></td><td><input id="rPel" list="dlPelagem" placeholder="Pelagem"></td>
       <td><input id="rObs" list="dlObs" placeholder="Natimorto, Morte, Gêmeos ou escreva"></td><td colspan="2"><button class="lancar" onclick="lancarRapido()">+ Lançar</button></td>`
-    :`<td><input type="date" id="rData"></td><td><input id="rAcont" placeholder="O que aconteceu? (Enter lança)"></td>
+    :`<td><input type="date" id="rData"></td><td><input id="rRgd" placeholder="RGD" autocapitalize="characters"></td>
+      <td><select id="rSit"><option value="">—</option>${SITUACOES.map(x=>`<option>${x}</option>`).join('')}</select></td><td><input id="rObsG" placeholder="Observação (Enter lança)"></td>
       <td><button class="bfoto" id="rFotoBtn" onclick="$('#rArq').click()">📷 Foto</button></td><td colspan="2"><button class="lancar" onclick="lancarRapido()">+ Lançar</button></td>`;
   $('#tabd').innerHTML=`<table><colgroup>${cols.map(c=>`<col style="width:${c[1]}%">`).join('')}</colgroup>
     <thead><tr class="cabcol">${cols.map(c=>`<th class="${c[2]||''}">${c[3]?`<div class="thf"><span>${c[0]}</span><button class="fbtn" data-k="${c[3]}" onclick="abrirFiltro(event,'${c[3]}')" title="Filtrar / ordenar">▾</button></div>`:c[0]}</th>`).join('')}</tr><tr class="rapido">${rapido}</tr></thead><tbody id="corpoD"></tbody></table>`;
-  $('#rData').value=aba==='geral'?hoje():'';fotosR=[];
+  $('#rData').value='';fotosR=[];
   $('#tabd').querySelectorAll('.rapido input,.rapido select').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarRapido()}}));
   prepararLarguras();
 }
@@ -290,10 +296,10 @@ function prepararLarguras(){
 }
 
 /* ---------- lista ---------- */
-const textoBusca=i=>aba==='nasc'?[i.rgdMae,i.receptora,i.sexo,i.pelagem,i.obs,i.peso,i.criadoPorNome].join(' '):[i.acontecimento,i.criadoPorNome].join(' ');
+const textoBusca=i=>aba==='nasc'?[i.rgdMae,i.receptora,i.sexo,i.pelagem,i.obs,i.peso,i.criadoPorNome].join(' '):[i.rgd,i.situacao,obsGeral(i),i.criadoPorNome].join(' ');
 /* filtros da tabela (estilo Excel, igual Custos) */
 const filtrosCol={nasc:{},geral:{}},ordemCol={nasc:null,geral:null};
-const valCampo=(i,k)=>k==='data'?(i.data||''):k==='por'?(i.criadoPorNome||''):k==='peso'?(numBR(i.peso)??''):(i[k]||'');
+const valCampo=(i,k)=>k==='data'?(i.data||''):k==='por'?(i.criadoPorNome||''):k==='peso'?(numBR(i.peso)??''):k==='obs'&&aba==='geral'?obsGeral(i):(i[k]||'');
 const txtCampo=(i,k)=>{const v=valCampo(i,k);return v===''?'(vazio)':k==='data'?fmtData(v):k==='peso'?String(v).replace('.',','):String(v)};
 const temFiltroCol=()=>Object.values(filtrosCol[aba]).some(Boolean);
 function filtradas(exceto){const f=filtrosCol[aba],q=$('#busca').value.trim().toLowerCase();
@@ -356,9 +362,9 @@ function desenhar(){
         <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${del(i)}</div></div>`}).join('');
   }else{
     $('#corpoD').innerHTML=v.map(i=>`<tr onclick="abrirForm('${i.id}')"><td>${fmtData(i.data)} <span class="por">${diaSem(i.data)}</span></td>
-      <td class="quebra">${esc(i.acontecimento||'')}</td><td><div class="minis">${minisHtml(i)}</div></td><td class="por">${por(i)}</td><td class="c">${del(i)}</td></tr>`).join('');
+      <td>${esc(i.rgd||'')}</td><td>${sitHtml(i.situacao)}</td><td class="quebra">${esc(obsGeral(i))}</td><td><div class="minis">${minisHtml(i)}</div></td><td class="por">${por(i)}</td><td class="c">${del(i)}</td></tr>`).join('');
     $('#lista').innerHTML=v.map(i=>{const f=(i.fotos||[])[0];
-      return `<div class="reg" onclick="abrirForm('${i.id}')"><div class="corpo"><div class="l1 duas">${esc(i.acontecimento||'(sem texto)')}</div><div class="l2">${fmtData(i.data).slice(0,5)} ${diaSem(i.data)} · ${esc(i.criadoPorNome||'')}${(i.fotos||[]).length>1?` · 📷 ${i.fotos.length}`:''}</div></div>
+      return `<div class="reg" onclick="abrirForm('${i.id}')"><div class="corpo"><div class="l1">${sitHtml(i.situacao)} ${i.rgd?`<b>${esc(i.rgd)}</b>`:''}</div>${obsGeral(i)?`<div class="l2" style="white-space:normal">${esc(obsGeral(i))}</div>`:''}<div class="l2">${fmtData(i.data).slice(0,5)} ${diaSem(i.data)} · ${esc(i.criadoPorNome||'')}${(i.fotos||[]).length>1?` · 📷 ${i.fotos.length}`:''}</div></div>
         <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${f?(miniFotos[f]?`<img class="mini-foto" src="${miniFotos[f]}" alt="">`:'📷'):''}${del(i)}</div></div>`}).join('');
     carregarMinis(v);
   }
@@ -397,10 +403,10 @@ function lancarRapido(){
     const ref=col.doc();ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));guardarPelagem(dados.pelagem);
     ['rMae','rRec','rData','rPeso','rPel','rObs'].forEach(id=>$('#'+id).value='');$('#rSexo').value='';$('#rMae').focus();
   }else{
-    const ac=$('#rAcont').value.trim();if(!ac&&!fotosR.length){toast('Escreva o que aconteceu.');$('#rAcont').focus();return}
-    const ref=col.doc();dados={data,mes:data.slice(0,7),acontecimento:ac};dados.fotos=gravarFotos(fotosR,ref.id,dados.mes);
+    const sit=$('#rSit').value;if(!sit){toast('Escolha a situação.');$('#rSit').focus();return}
+    const ref=col.doc();dados={data,mes:data.slice(0,7),rgd:$('#rRgd').value.trim().toUpperCase(),situacao:sit,obs:$('#rObsG').value.trim()};dados.fotos=gravarFotos(fotosR,ref.id,dados.mes);
     ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));
-    $('#rAcont').value='';fotosR=[];fotosRapido([]);$('#rAcont').focus();
+    ['rData','rRgd','rObsG'].forEach(id=>$('#'+id).value='');$('#rSit').value='';fotosR=[];fotosRapido([]);$('#rData').focus();
   }
   avisoSalvo();
   if(mes&&dados.mes!==mes){mes=dados.mes;desenhar()}
@@ -424,8 +430,10 @@ function abrirForm(id,base){
       <div class="field"><label>Pelagem</label><input id="fPel" ${ro} class="input" list="dlPelagem" value="${v('pelagem')}"></div></div>
       <div class="field" style="margin-bottom:0"><label>Observação</label><input id="fObs" ${ro} class="input" list="dlObs" value="${v('obs')}" placeholder="Natimorto, Morte, Gêmeos ou escreva"></div>`;
   }else{
-    corpo=`<div class="field"><label>Data *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):esc(b.data||hoje())}"></div>
-      <div class="field"><label>Acontecimento</label><textarea id="fAcont" ${ro} class="input" placeholder="O que aconteceu?">${v('acontecimento')}</textarea></div>
+    corpo=`<div class="duas"><div class="field"><label>Data Lançamento *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):''}"></div>
+      <div class="field"><label>RGD</label><input id="fRgd" ${ro} class="input" value="${v('rgd')}" autocapitalize="characters"></div></div>
+      <div class="field"><label>Situação *</label><select id="fSit" ${ro} class="input"><option value="">—</option>${SITUACOES.map(x=>`<option ${i&&i.situacao===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div class="field"><label>Observação</label><textarea id="fObsG" ${ro} class="input">${esc(i?obsGeral(i):'')}</textarea></div>
       <div class="field" style="margin-bottom:0"><label>Fotos</label><div class="fotos" id="fFotos"></div>
         <input id="fArq" type="file" accept="image/*" capture="environment" multiple class="hidden" onchange="addFotos(this.files);this.value=''"></div>`;
   }
@@ -444,8 +452,8 @@ function salvar(id,outro){
     if(dados.peso&&numBR(dados.peso)===null){toast('Peso: digite só número.');return}
     guardarPelagem(dados.pelagem);
   }else{
-    dados={data,mes:data.slice(0,7),acontecimento:$('#fAcont').value.trim()};
-    if(!dados.acontecimento&&!fotosForm.length){toast('Escreva o que aconteceu.');return}
+    dados={data,mes:data.slice(0,7),rgd:$('#fRgd').value.trim().toUpperCase(),situacao:$('#fSit').value,obs:$('#fObsG').value.trim()};
+    if(!dados.situacao){toast('Escolha a situação.');return}
   }
   const ref=id?col.doc(id):col.doc();
   if(aba==='geral'){dados.fotos=gravarFotos(fotosForm,ref.id,dados.mes);removidas.forEach(fid=>colFotos.doc(fid).delete().catch(()=>{}))}
@@ -453,7 +461,7 @@ function salvar(id,outro){
   else ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));
   fecharForm();avisoSalvo();
   if(mes&&dados.mes!==mes){mes=dados.mes;desenhar()}
-  if(outro)abrirForm(null,aba==='geral'?{data:dados.data}:{});
+  if(outro)abrirForm(null,{});
 }
 function apagar(id){
   if(!confirm('Excluir este lançamento?'))return;
@@ -486,8 +494,8 @@ function exportarMes(){
     ws=XLSX.utils.json_to_sheet(v.map(i=>({RGD_MAE:i.rgdMae||'',N_RECEPTORA:i.receptora||'',SEXO:i.sexo||'',DATA_NASCIMENTO:fmtData(i.data),PESO_KG:numBR(i.peso)??'',PELAGEM:i.pelagem||'',OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''})));
     ws['!cols']=[{wch:14},{wch:14},{wch:6},{wch:16},{wch:9},{wch:16},{wch:30},{wch:18}];
   }else{
-    ws=XLSX.utils.json_to_sheet(v.map(i=>({DATA:fmtData(i.data),ACONTECIMENTO:i.acontecimento||'',FOTOS:(i.fotos||[]).length||'',LANCADO_POR:i.criadoPorNome||''})));
-    ws['!cols']=[{wch:12},{wch:70},{wch:7},{wch:18}];
+    ws=XLSX.utils.json_to_sheet(v.map(i=>({DATA_LANCAMENTO:fmtData(i.data),RGD:i.rgd||'',SITUACAO:i.situacao||'',OBSERVACAO:obsGeral(i),FOTOS:(i.fotos||[]).length||'',LANCADO_POR:i.criadoPorNome||''})));
+    ws['!cols']=[{wch:14},{wch:14},{wch:10},{wch:60},{wch:7},{wch:18}];
   }
   const nome=aba==='nasc'?'Nascimentos':'Lancamento Geral';
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,nome);XLSX.writeFile(wb,`caderneta_${aba==='nasc'?'nascimentos':'geral'}_${mes||'todos'}.xlsx`);
