@@ -60,7 +60,7 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .fp-lista{max-height:200px;overflow:auto;border:1px solid var(--linha);border-radius:8px;padding:4px 8px;margin:4px 0 8px}
 .fp-it{display:flex;gap:7px;align-items:center;padding:4px 0;cursor:pointer}
 .fp-acoes{display:flex;gap:6px;justify-content:flex-end}.fp-acoes .btn{padding:7px 12px;font-size:13px}
-.cab h1{margin:0;font-size:21px}.cab .qtd{color:var(--suave);font-size:14px}
+.cab{margin:0 0 6px 2px}.cab .qtd{color:var(--muito-suave);font-size:12.5px}
 .cab .qtd b{color:var(--texto)}
 .busca{position:relative;margin-left:auto;flex:0 1 320px;min-width:200px}
 .busca input{width:100%;border:1px solid var(--borda);border-radius:10px;padding:8px 12px 8px 34px;background:#fff;font-size:14.5px;outline:none}
@@ -142,7 +142,6 @@ textarea.input{min-height:96px;resize:vertical}
   .barra-f select{min-width:0;width:100%}.barra-f .campo{flex:1 1 100%}.barra-f .busca{max-width:none;flex-basis:100%}
   .lista{display:block}
   .abas{width:100%}.aba{flex:1;padding:9px 6px}
-  .cab h1{font-size:19px}
   .fab{display:block}
   .modal{padding:0;align-items:flex-end}
   .folha{width:100%;max-height:96vh;border-radius:18px 18px 0 0}
@@ -176,7 +175,7 @@ textarea.input{min-height:96px;resize:vertical}
       <span id="avisoF"></span>
       <div class="acoes-f so-desk"><button class="btn btn-ghost" onclick="exportarMes()">⬇ Excel</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div>
     </div>
-    <div class="cab"><h1 id="titulo">Caderneta</h1><span class="qtd" id="qtd"></span></div>
+    <div class="cab"><span class="qtd" id="qtd"></span></div>
     <div class="tabd" id="tabd"></div>
     <div class="lista" id="lista"><div class="vazio">Carregando...</div></div>
   </section>
@@ -213,7 +212,7 @@ const curtoMes=m=>{const [a,n]=m.split('-').map(Number);return `${MESES[n-1].sli
 let eu=null, ehAdmin=false, meuNome='', mes=hoje().slice(0,7), todos=[], itens=[], parar=null, miniFotos={}, pelagens=[];
 let aba='nasc';try{aba=localStorage.getItem('app-nelore-mra-caderneta-aba')==='geral'?'geral':'nasc'}catch(e){}
 
-function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+function toast(t){document.querySelectorAll('.toast').forEach(x=>x.remove());const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
 function statusRede(){$('#offline').classList.toggle('hidden',navigator.onLine)}
 addEventListener('online',statusRede);addEventListener('offline',statusRede);statusRede();
 
@@ -249,7 +248,7 @@ function ouvirAba(){
 function montarMeses(){
   const ms=[...new Set([hoje().slice(0,7),...(mes?[mes]:[]),...todos.map(i=>i.mes).filter(m=>/^\d{4}-\d{2}$/.test(m||''))])].sort().reverse();
   const cont={};todos.forEach(i=>cont[i.mes]=(cont[i.mes]||0)+1);
-  $('#selMes').innerHTML=`<option value="">Todos os meses (${todos.length})</option>`+ms.map(m=>`<option value="${m}" ${m===mes?'selected':''}>${nomeMes(m)} (${cont[m]||0})</option>`).join('');
+  $('#selMes').innerHTML=`<option value="">Todos os meses</option>`+ms.map(m=>`<option value="${m}" ${m===mes?'selected':''}>${nomeMes(m)}</option>`).join('');
   $('#selMes').value=mes;
 }
 /* ---------- tabela do computador ---------- */
@@ -270,7 +269,7 @@ function montarTabela(){
       <td><button class="bfoto" id="rFotoBtn" onclick="$('#rArq').click()">📷 Foto</button></td><td colspan="2"><button class="lancar" onclick="lancarRapido()">+ Lançar</button></td>`;
   $('#tabd').innerHTML=`<table><colgroup>${cols.map(c=>`<col style="width:${c[1]}%">`).join('')}</colgroup>
     <thead><tr class="cabcol">${cols.map(c=>`<th class="${c[2]||''}">${c[3]?`<div class="thf"><span>${c[0]}</span><button class="fbtn" data-k="${c[3]}" onclick="abrirFiltro(event,'${c[3]}')" title="Filtrar / ordenar">▾</button></div>`:c[0]}</th>`).join('')}</tr><tr class="rapido">${rapido}</tr></thead><tbody id="corpoD"></tbody></table>`;
-  $('#rData').value=hoje();fotosR=[];
+  $('#rData').value=aba==='geral'?hoje():'';fotosR=[];
   $('#tabd').querySelectorAll('.rapido input,.rapido select').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarRapido()}}));
   prepararLarguras();
 }
@@ -335,7 +334,6 @@ function carregarMinis(v){v.forEach(i=>(i.fotos||[]).forEach(f=>{if(!(f in miniF
 function desenhar(){
   itens=todos.filter(i=>i.aba===aba&&(!mes||i.mes===mes));
   montarMeses();
-  $('#titulo').textContent=mes?nomeMes(mes):'Todos os meses';
   const v=visiveis(),nc=COLS[aba].length;
   if(aba==='nasc'){const m=v.filter(i=>i.sexo==='M').length,f=v.filter(i=>i.sexo==='F').length;
     $('#qtd').innerHTML=`<b>${v.length}</b> nascimento${v.length===1?'':'s'}${v.length?` · ${m} M · ${f} F`:''}`}
@@ -389,7 +387,7 @@ let fotosR=[];
 async function fotosRapido(files){for(const f of [...files].slice(0,4-fotosR.length)){try{fotosR.push({id:null,dados:await comprimir(f)})}catch(e){toast('Não consegui ler essa foto.')}}
   const b=$('#rFotoBtn');if(b)b.textContent=fotosR.length?`📷 ${fotosR.length} foto${fotosR.length>1?'s':''} ✓`:'📷 Foto'}
 function lancarRapido(){
-  const data=$('#rData').value;if(!data){toast('Informe a data.');$('#rData').focus();return}
+  const data=$('#rData').value;if(!data){toast(aba==='nasc'?'Informe a data de nascimento.':'Informe a data.');$('#rData').focus();return}
   let dados;
   if(aba==='nasc'){
     dados={data,mes:data.slice(0,7),rgdMae:$('#rMae').value.trim().toUpperCase(),receptora:$('#rRec').value.trim().toUpperCase(),sexo:$('#rSexo').value,
@@ -397,7 +395,7 @@ function lancarRapido(){
     if(!dados.rgdMae&&!dados.receptora&&!dados.sexo&&!dados.peso&&!dados.pelagem&&!dados.obs){toast('Preencha pelo menos um campo.');$('#rMae').focus();return}
     if(dados.peso&&numBR(dados.peso)===null){toast('Peso: digite só número.');$('#rPeso').focus();return}
     const ref=col.doc();ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));guardarPelagem(dados.pelagem);
-    ['rMae','rRec','rPeso','rPel','rObs'].forEach(id=>$('#'+id).value='');$('#rSexo').value='';$('#rMae').focus();
+    ['rMae','rRec','rData','rPeso','rPel','rObs'].forEach(id=>$('#'+id).value='');$('#rSexo').value='';$('#rMae').focus();
   }else{
     const ac=$('#rAcont').value.trim();if(!ac&&!fotosR.length){toast('Escreva o que aconteceu.');$('#rAcont').focus();return}
     const ref=col.doc();dados={data,mes:data.slice(0,7),acontecimento:ac};dados.fotos=gravarFotos(fotosR,ref.id,dados.mes);
@@ -421,7 +419,7 @@ function abrirForm(id,base){
     corpo=`<div class="duas"><div class="field"><label>RGD Mãe</label><input id="fMae" ${ro} class="input" value="${v('rgdMae')}" autocapitalize="characters"></div>
       <div class="field"><label>N° Receptora</label><input id="fRec" ${ro} class="input" value="${v('receptora')}" autocapitalize="characters"></div></div>
       <div class="duas"><div class="field"><label>Sexo</label><div class="seg">${['M','F'].map(x=>`<button type="button" ${ro} class="${x} ${sexoForm===x?'on':''}" onclick="sexoForm=sexoForm==='${x}'?'':'${x}';document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.textContent===sexoForm))">${x}</button>`).join('')}</div></div>
-      <div class="field"><label>Data Nascimento *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):esc(b.data||hoje())}"></div></div>
+      <div class="field"><label>Data Nascimento *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):''}"></div></div>
       <div class="duas"><div class="field"><label>Peso Nascimento (kg)</label><input id="fPeso" ${ro} class="input" inputmode="decimal" value="${v('peso')}"></div>
       <div class="field"><label>Pelagem</label><input id="fPel" ${ro} class="input" list="dlPelagem" value="${v('pelagem')}"></div></div>
       <div class="field" style="margin-bottom:0"><label>Observação</label><input id="fObs" ${ro} class="input" list="dlObs" value="${v('obs')}" placeholder="Natimorto, Morte, Gêmeos ou escreva"></div>`;
@@ -439,7 +437,7 @@ function abrirForm(id,base){
   if(aba==='geral'){desenharFotos();(i&&i.fotos||[]).forEach(fid=>colFotos.doc(fid).get().then(d=>{if(d.exists&&document.getElementById('form')){fotosForm.push({id:fid,dados:d.data().dados});desenharFotos()}}).catch(()=>{}))}
 }
 function salvar(id,outro){
-  const data=$('#fData').value;if(!data){toast('Informe a data.');return}
+  const data=$('#fData').value;if(!data){toast(aba==='nasc'?'Informe a data de nascimento.':'Informe a data.');return}
   let dados;
   if(aba==='nasc'){
     dados={data,mes:data.slice(0,7),rgdMae:$('#fMae').value.trim().toUpperCase(),receptora:$('#fRec').value.trim().toUpperCase(),sexo:sexoForm,peso:$('#fPeso').value.trim(),pelagem:$('#fPel').value.trim(),obs:$('#fObs').value.trim()};
@@ -455,7 +453,7 @@ function salvar(id,outro){
   else ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));
   fecharForm();avisoSalvo();
   if(mes&&dados.mes!==mes){mes=dados.mes;desenhar()}
-  if(outro)abrirForm(null,{data:dados.data,pelagem:dados.pelagem});
+  if(outro)abrirForm(null,aba==='geral'?{data:dados.data}:{});
 }
 function apagar(id){
   if(!confirm('Excluir este lançamento?'))return;
