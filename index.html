@@ -89,7 +89,7 @@ td input[type=checkbox]{width:18px;height:18px;cursor:pointer}
   <header class="topo"><div class="topo-in">
     <img src="logo.webp" alt="Nelore MRA">
     <div><div class="t">App Nelore MRA</div><div class="s" id="ola"></div></div>
-    <div class="acoes"><button id="btnInicio" class="hidden" onclick="irPara('inicio')">← Início</button><button id="btnConfig" class="hidden" onclick="irPara('config')">⚙ Configurações</button><button onclick="sair()">Sair</button></div>
+    <div class="acoes"><button id="btnInicio" class="hidden" onclick="irPara('inicio')">← Início</button><button id="btnConfig" class="hidden" onclick="irPara('config')">⚙ Configurações</button><button onclick="atualizarApp(this)" title="Baixa a versão mais nova do App">🔄 Atualizar</button><button onclick="sair()">Sair</button></div>
   </div></header>
   <main id="conteudo"></main>
 </section>
@@ -120,7 +120,7 @@ const APPS=[
    telas:[['dashboard','Dashboard'],['colheita','Colheita'],['adiantamentos','Adiantamentos'],['vendas','Silos e Vendas'],['cadastros','Cadastros'],['safras','Cadastro de Safra'],['diesel-controle','Controle Diesel'],['diesel-estoque','Estoque Diesel'],['diesel-resumo','Dashboard Diesel']]},
   {id:'contabil',nome:'Contábil MRA',desc:'Balancete e contas da fazenda.',ico:'📊',cor:'#2a78d6',fundo:'#e7f0ff',interno:'contabil/index.html',
    telas:[['upload','Upload de arquivo'],['cadastro','Cadastro de grupos'],['dre','Movimentações (DRE)'],['busca','Busca'],['sem-centro','Sem centro']]},
-  {id:'caderneta',nome:'Caderneta',desc:'Anotações do dia a dia na fazenda, divididas por mês. Funciona sem internet.',ico:'📒',cor:'#7a52c7',fundo:'#efe8ff',interno:'caderneta/index.html'},
+  {id:'caderneta',nome:'Caderneta',desc:'Nascimentos e lançamentos do dia a dia. Funciona sem internet.',ico:'📒',cor:'#7a52c7',fundo:'#efe8ff',interno:'caderneta/index.html'},
   {id:'estoque',nome:'Estoque Gado',desc:'Planilha geral do rebanho por pasto e categoria.',ico:'🐂',cor:'#1b9e8f',fundo:'#e3f4f4',interno:'estoque/index.html'},
 ];
 
@@ -292,6 +292,18 @@ async function salvarTelas(uid){
   }
   try{await fs.collection('users').doc(uid).update({paginas:pag});document.getElementById('modalTelas').remove();toast('Telas salvas.');telaConfig()}catch(e){toast('Não salvou: '+e.message)}
 } window.salvarTelas=salvarTelas;
+</script>
+<script>
+// Botão "Atualizar": apaga as telas guardadas no aparelho e baixa a versão mais nova de todos os apps.
+// (Os dados não são apagados: eles ficam no Firebase.)
+async function atualizarApp(b){
+  if(b){b.disabled=true;b.textContent='Atualizando...'}
+  try{
+    if('serviceWorker' in navigator){for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister()}
+    if(window.caches){for(const k of await caches.keys())await caches.delete(k)}
+  }catch(e){}
+  location.reload();
+}
 </script>
 </body>
 </html>
