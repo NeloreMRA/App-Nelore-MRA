@@ -196,6 +196,9 @@ textarea.input{min-height:96px;resize:vertical}
 const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDomain:'app-nelore-mra.firebaseapp.com',projectId:'app-nelore-mra',storageBucket:'app-nelore-mra.firebasestorage.app',messagingSenderId:'1043343802346',appId:'1:1043343802346:web:219f5d73748271a85dfc93'};
 const ADMIN_EMAIL='mandrade.gado@terra.com.br', USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
 const OBS_LISTA=['Natimorto','Morte','Gêmeos'];
+// Pelagem: lista fixa (guarda a sigla)
+const PELAGENS=[['Br','Branco'],['Cz','Cinza'],['Mn','Manchado'],['Pp','Preto'],['Pv','Vermelho']];
+const opcoesPel=atual=>'<option value="">—</option>'+PELAGENS.map(([s,n])=>`<option value="${s}" ${s===atual?'selected':''}>${s} (${n.toLowerCase()})</option>`).join('')+(atual&&!PELAGENS.some(p=>p[0]===atual)?`<option selected>${esc(atual)}</option>`:'');
 const SITUACOES=['Entrada','Saída','Morte','Abate','Outros'];
 const sitHtml=x=>x?`<span class="sit sit-${SITUACOES.indexOf(x)}">${esc(x)}</span>`:'';
 const obsGeral=i=>i.obs??i.acontecimento??''; // lançamentos antigos tinham "acontecimento"
@@ -268,7 +271,7 @@ function montarTabela(){
   const rapido=aba==='nasc'
     ?`<td><input id="rMae" placeholder="RGD Mãe" autocapitalize="characters"></td><td><input id="rRec" placeholder="Receptora" autocapitalize="characters"></td>
       <td><select id="rSexo"><option value="">—</option><option>M</option><option>F</option></select></td><td><input type="date" id="rData"></td>
-      <td><input id="rPeso" inputmode="decimal" placeholder="kg"></td><td><input id="rPel" list="dlPelagem" placeholder="Pelagem"></td>
+      <td><input id="rPeso" inputmode="decimal" placeholder="kg"></td><td><select id="rPel">${opcoesPel('')}</select></td>
       <td><input id="rObs" list="dlObs" placeholder="Natimorto, Morte, Gêmeos ou escreva"></td><td colspan="2"><button class="lancar" onclick="lancarRapido()">+ Lançar</button></td>`
     :`<td><input type="date" id="rData"></td><td><input id="rRgd" placeholder="RGD" autocapitalize="characters"></td>
       <td><select id="rSit"><option value="">—</option>${SITUACOES.map(x=>`<option>${x}</option>`).join('')}</select></td><td><input id="rObsG" placeholder="Observação (Enter lança)"></td>
@@ -400,8 +403,8 @@ function lancarRapido(){
       peso:$('#rPeso').value.trim(),pelagem:$('#rPel').value.trim(),obs:$('#rObs').value.trim()};
     if(!dados.rgdMae&&!dados.receptora&&!dados.sexo&&!dados.peso&&!dados.pelagem&&!dados.obs){toast('Preencha pelo menos um campo.');$('#rMae').focus();return}
     if(dados.peso&&numBR(dados.peso)===null){toast('Peso: digite só número.');$('#rPeso').focus();return}
-    const ref=col.doc();ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));guardarPelagem(dados.pelagem);
-    ['rMae','rRec','rData','rPeso','rPel','rObs'].forEach(id=>$('#'+id).value='');$('#rSexo').value='';$('#rMae').focus();
+    const ref=col.doc();ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));
+    ['rMae','rRec','rData','rPeso','rObs'].forEach(id=>$('#'+id).value='');$('#rSexo').value='';$('#rPel').value='';$('#rMae').focus();
   }else{
     const sit=$('#rSit').value;if(!sit){toast('Escolha a situação.');$('#rSit').focus();return}
     const ref=col.doc();dados={data,mes:data.slice(0,7),rgd:$('#rRgd').value.trim().toUpperCase(),situacao:sit,obs:$('#rObsG').value.trim()};dados.fotos=gravarFotos(fotosR,ref.id,dados.mes);
@@ -427,7 +430,7 @@ function abrirForm(id,base){
       <div class="duas"><div class="field"><label>Sexo</label><div class="seg">${['M','F'].map(x=>`<button type="button" ${ro} class="${x} ${sexoForm===x?'on':''}" onclick="sexoForm=sexoForm==='${x}'?'':'${x}';document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.textContent===sexoForm))">${x}</button>`).join('')}</div></div>
       <div class="field"><label>Data Nascimento *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):''}"></div></div>
       <div class="duas"><div class="field"><label>Peso Nascimento (kg)</label><input id="fPeso" ${ro} class="input" inputmode="decimal" value="${v('peso')}"></div>
-      <div class="field"><label>Pelagem</label><input id="fPel" ${ro} class="input" list="dlPelagem" value="${v('pelagem')}"></div></div>
+      <div class="field"><label>Pelagem</label><select id="fPel" ${ro} class="input">${opcoesPel(i?i.pelagem||'':'')}</select></div></div>
       <div class="field" style="margin-bottom:0"><label>Observação</label><input id="fObs" ${ro} class="input" list="dlObs" value="${v('obs')}" placeholder="Natimorto, Morte, Gêmeos ou escreva"></div>`;
   }else{
     corpo=`<div class="duas"><div class="field"><label>Data Lançamento *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):''}"></div>
@@ -450,7 +453,6 @@ function salvar(id,outro){
   if(aba==='nasc'){
     dados={data,mes:data.slice(0,7),rgdMae:$('#fMae').value.trim().toUpperCase(),receptora:$('#fRec').value.trim().toUpperCase(),sexo:sexoForm,peso:$('#fPeso').value.trim(),pelagem:$('#fPel').value.trim(),obs:$('#fObs').value.trim()};
     if(dados.peso&&numBR(dados.peso)===null){toast('Peso: digite só número.');return}
-    guardarPelagem(dados.pelagem);
   }else{
     dados={data,mes:data.slice(0,7),rgd:$('#fRgd').value.trim().toUpperCase(),situacao:$('#fSit').value,obs:$('#fObsG').value.trim()};
     if(!dados.situacao){toast('Escolha a situação.');return}
