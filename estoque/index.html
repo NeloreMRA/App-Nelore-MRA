@@ -43,12 +43,26 @@ main{max-width:1500px;margin:0 auto;padding:18px 24px 120px}
 .aviso .btn{padding:7px 12px;font-size:13.5px}
 .contador{color:var(--muito-suave);font-size:12.5px;margin:0 0 6px 2px}.contador b{color:var(--texto)}
 /* tabela */
-.tabd{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:auto}
+.tabd{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:auto;max-height:calc(100vh - 250px)}
+.tabd thead th{position:sticky;top:0;z-index:2}
+.tabd tr.rapido td{position:sticky;top:33px;z-index:1}
+.thf{display:flex;align-items:center;justify-content:space-between;gap:4px}
+th.n .thf{justify-content:flex-end}
+.fbtn{border:0;background:none;color:var(--muito-suave);font-size:11px;padding:1px 5px;border-radius:5px;flex:none}.fbtn:hover{background:#e6ece8}.fbtn.on{color:var(--verde);background:var(--verde-claro);font-weight:800}
+.tabd .rs{position:absolute;top:0;right:-4px;width:8px;height:100%;cursor:col-resize;z-index:3}.tabd .rs:hover{background:#72a38644}
+.fpainel{position:fixed;z-index:40;background:#fff;border:1px solid var(--borda);border-radius:12px;box-shadow:0 10px 30px #0003;padding:10px;font-size:13.5px}
+.fp-ord{display:flex;gap:6px;margin-bottom:8px}.fp-ord .btn{flex:1;padding:6px;font-size:12.5px}
+.fp-busca{width:100%;border:1px solid #d7ded9;border-radius:8px;padding:6px 9px;font-size:13.5px;margin-bottom:6px;outline:none}
+.fp-lista{max-height:200px;overflow:auto;border:1px solid var(--linha);border-radius:8px;padding:4px 8px;margin:4px 0 8px}
+.fp-it{display:flex;gap:7px;align-items:center;padding:4px 0;cursor:pointer}
+.fp-acoes{display:flex;gap:6px;justify-content:flex-end}.fp-acoes .btn{padding:7px 12px;font-size:13px}
+.aviso-f{display:inline-flex;gap:8px;align-items:center;background:#fff6e0;border:1px solid #f0d9a8;color:#6b4f12;border-radius:9px;padding:4px 10px;font-size:12.5px;margin-left:8px}
+.aviso-f button{border:1px solid #e3c98a;background:#fff;border-radius:7px;padding:2px 8px;font-size:12px;font-weight:700;color:#6b4f12}
 .tabd table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px;font-size:14px;table-layout:fixed}
 .tabd th{background:#f3f5f3;color:var(--suave);font-size:11px;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:8px;border-bottom:1px solid var(--borda);border-right:1px solid #e8ebe9;white-space:nowrap}
-.tabd td{padding:2px 4px;height:36px;border-bottom:1px solid #edf0ee;border-right:1px solid #f0f2f1}
+.tabd td{padding:1px 4px;height:34px;border-bottom:1px solid #edf0ee;border-right:1px solid #f0f2f1}
 .tabd .n{text-align:right}.tabd th.n{text-align:right}
-.cel{width:100%;border:1px solid transparent;border-radius:6px;padding:7px 6px;background:transparent;outline:none;min-width:0}
+.cel{width:100%;border:1px solid transparent;border-radius:6px;padding:6px 6px;background:transparent;outline:none;min-width:0}
 .cel:hover{border-color:#dce3de}.cel:focus{border-color:#72a386;background:#fff;box-shadow:0 0 0 2px #72a38622}
 .cel.num{text-align:right}
 td.tot{font-weight:800;text-align:right;padding-right:10px}
@@ -134,7 +148,7 @@ td.csel{background:#dcebe2!important;box-shadow:inset 0 0 0 1px #72a386}
     <button class="aba" data-aba="dash" onclick="irAba('dash')">📊 Dashboard</button>
   </div>
   <div class="barra-f">
-    <div class="campo"><label>Mês</label><select id="selMes" onchange="mes=this.value;desenhar()"></select></div>
+    <div class="campo"><label>Mês</label><select id="selMes" onchange="mes=this.value;filtrosCol={};ordemCol=null;desenhar()"></select></div>
     <div class="acoes-f so-desk"><button class="btn btn-ghost" onclick="exportar()">⬇ Excel</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div>
   </div>
   <div id="aviso"></div>
@@ -247,6 +261,64 @@ function atualizarIniciais(){
   toast(`Qtd Inicial atualizada (${n}).`);desenhar();
 }
 
+/* ---------- filtro ▾ por coluna, ordem, largura (igual às outras tabelas do App) ---------- */
+const COLS=[['classificacao','Classificação',20],['inicial','Qtd Inicial',9,1],['entrada','Entrada',9,1],['saida','Saída',9,1],['morte','Morte',9,1],['abate','Abate',9,1],['total','Total',9,1],['obs','Observação',18]];
+let filtrosCol={},ordemCol=null;
+const valCampo=(l,k)=>k==='total'?total(l):(k==='classificacao'||k==='obs')?(l[k]||''):num(l[k]);
+const txtCampo=(l,k)=>{const v=valCampo(l,k);return v===''?'(vazio)':typeof v==='number'?fmt(v):String(v)};
+const temFiltro=()=>Object.values(filtrosCol).some(Boolean);
+function filtradas(ls,exceto){return ls.filter(l=>Object.entries(filtrosCol).every(([k,vs])=>k===exceto||!vs||vs.includes(txtCampo(l,k))))}
+function visiveis(){let ls=filtradas(linhasDo(mes));
+  if(ordemCol){const o=ordemCol;ls=ls.slice().sort((a,b)=>{const va=valCampo(a,o.k),vb=valCampo(b,o.k);return (typeof va==='number'?va-vb:String(va).localeCompare(String(vb),'pt-BR',{numeric:true}))*o.dir})}
+  return ls}
+function fecharFiltro(){const p=$('.fpainel');if(p)p.remove()}
+document.addEventListener('click',fecharFiltro);
+function abrirFiltro(ev,k){
+  ev.stopPropagation();const aberto=$('.fpainel');if(aberto&&aberto.dataset.k===k){fecharFiltro();return}fecharFiltro();
+  const num1=COLS.find(c=>c[0]===k)[3];
+  const vals=[...new Set(filtradas(linhasDo(mes),k).map(l=>txtCampo(l,k)))].sort((a,b)=>num1?num(a)-num(b):a.localeCompare(b,'pt-BR',{numeric:true}));
+  const ativo=filtrosCol[k];
+  const p=document.createElement('div');p.className='fpainel';p.dataset.k=k;p.onclick=e=>e.stopPropagation();
+  p.innerHTML=`<div class="fp-ord"><button class="btn btn-ghost" onclick="ordenarCol('${k}',1)">A→Z ▲</button><button class="btn btn-ghost" onclick="ordenarCol('${k}',-1)">Z→A ▼</button></div>
+    <input class="fp-busca" placeholder="Buscar...">
+    <label class="fp-it"><input type="checkbox" class="fp-todos" ${!ativo?'checked':''}> <b>Selecionar tudo</b></label>
+    <div class="fp-lista">${vals.map(v=>`<label class="fp-it"><input type="checkbox" class="fp-cb" value="${esc(v)}" ${!ativo||ativo.includes(v)?'checked':''}> ${esc(v)}</label>`).join('')}</div>
+    <div class="fp-acoes"><button class="btn btn-ghost" onclick="limparFiltroCol('${k}')">Limpar</button><button class="btn btn-primary" onclick="aplicarFiltroCol('${k}')">OK</button></div>`;
+  document.body.appendChild(p);
+  const r=ev.currentTarget.getBoundingClientRect(),w=Math.min(250,innerWidth-16);p.style.width=w+'px';
+  p.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+'px';const top=r.bottom+6;p.style.top=top+'px';
+  if(top+p.offsetHeight>innerHeight-8)p.style.top=Math.max(8,r.top-p.offsetHeight-6)+'px';
+  p.querySelector('.fp-busca').oninput=e=>{const q=e.target.value.toLowerCase();p.querySelectorAll('.fp-lista .fp-it').forEach(l=>l.style.display=l.textContent.toLowerCase().includes(q)?'':'none')};
+  p.querySelector('.fp-todos').onchange=e=>p.querySelectorAll('.fp-cb').forEach(c=>{if(c.parentElement.style.display!=='none')c.checked=e.target.checked});
+}
+function aplicarFiltroCol(k){const p=$('.fpainel');const cbs=[...p.querySelectorAll('.fp-cb')],m=cbs.filter(c=>c.checked).map(c=>c.value);filtrosCol[k]=m.length===cbs.length?null:m;fecharFiltro();desenhar()}
+function limparFiltroCol(k){filtrosCol[k]=null;if(ordemCol&&ordemCol.k===k)ordemCol=null;fecharFiltro();desenhar()}
+function ordenarCol(k,dir){ordemCol={k,dir};fecharFiltro();desenhar()}
+function limparTudoCol(){filtrosCol={};ordemCol=null;desenhar()}
+const LARG_KEY='app-nelore-mra-estoque-larguras';
+function prepararLarguras(){
+  const ths=[...document.querySelectorAll('#tabd thead tr:first-child th')],cols=[...document.querySelectorAll('#tabd col')],tb=$('#tabd table');
+  let l=null;try{l=JSON.parse(localStorage.getItem(LARG_KEY)||'null')}catch(e){}
+  if(l&&l.length===cols.length){cols.forEach((c,i)=>c.style.width=l[i]+'px');tb.style.width=l.reduce((a,b)=>a+b,0)+'px';tb.style.minWidth='0'}
+  ths.forEach((th,i)=>{if(i===ths.length-1)return;const h=document.createElement('span');h.className='rs';h.title='Arraste pra mudar a largura (duplo clique volta ao padrão)';th.appendChild(h);
+    h.addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();const ws=ths.map(t=>t.offsetWidth),x0=e.clientX,w0=ws[i];
+      const mv=ev=>{ws[i]=Math.max(40,w0+ev.clientX-x0);cols.forEach((c,k)=>c.style.width=ws[k]+'px');tb.style.width=ws.reduce((a,b)=>a+b,0)+'px';tb.style.minWidth='0'};
+      const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);try{localStorage.setItem(LARG_KEY,JSON.stringify(ws))}catch(e){}};
+      document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up)});
+    h.addEventListener('dblclick',()=>{try{localStorage.removeItem(LARG_KEY)}catch(e){}desenhar()})});
+}
+// teclado igual Excel: Enter desce (Shift+Enter sobe), setas ↑ ↓ mudam de linha; ao entrar na célula o número fica selecionado
+document.addEventListener('keydown',e=>{
+  const el=e.target;if(!el.classList||!el.classList.contains('cel'))return;
+  const ir=e.key==='Enter'?(e.shiftKey?-1:1):e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0;if(!ir)return;
+  e.preventDefault();const td=el.closest('td'),tr=td.parentElement,col=[...tr.children].indexOf(td);
+  const trs=[...document.querySelectorAll('#tabd tbody tr[data-id]')];const alvo=trs[trs.indexOf(tr)+ir];
+  if(el.value!==el.defaultValue)el.dispatchEvent(new Event('change'));
+  if(alvo){const i=alvo.children[col]&&alvo.children[col].querySelector('.cel');if(i){i.focus();i.select()}}
+  else if(ir>0){const q=document.querySelectorAll('tr.rapido input')[col];if(q)q.focus()}
+});
+document.addEventListener('focusin',e=>{if(e.target.classList&&e.target.classList.contains('cel')&&e.target.classList.contains('num'))setTimeout(()=>{try{e.target.select()}catch(x){}},0)});
+
 /* ---------- tabela (computador) ---------- */
 let redesenharDepois=false,ultimaEdicao=0;
 const digitando=()=>!!(document.activeElement&&document.activeElement.classList.contains('cel'))||Date.now()-ultimaEdicao<700;
@@ -256,9 +328,10 @@ function desenhar(){
   montarMeses();desenharAviso();
   if(aba==='dash'){desenharDash();return}
   limparSel();
-  const ls=linhasDo(mes);
+  const todasMes=linhasDo(mes),ls=visiveis();
   const t=CAMPOS.reduce((o,k)=>(o[k]=ls.reduce((s,l)=>s+num(l[k]),0),o),{});t.total=ls.reduce((s,l)=>s+total(l),0);
-  $('#contador').innerHTML=ls.length?`<b>${ls.length}</b> classificaç${ls.length===1?'ão':'ões'} · <b>${fmt(t.total)}</b> cabeças no fim do mês`:'';
+  $('#contador').innerHTML=(todasMes.length?`<b>${ls.length}</b> classificaç${ls.length===1?'ão':'ões'} · <b>${fmt(t.total)}</b> cabeças no fim do mês`:'')
+    +(temFiltro()||ordemCol?`<span class="aviso-f">🔎 ${temFiltro()?'Filtro na tabela':'Ordenado'} <button onclick="limparTudoCol()">Limpar</button></span>`:'');
   $('#dlClass').innerHTML=[...new Set(todos.map(l=>l.classificacao).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join('');
   const cel=(l,k)=>`<td class="n sx"><input class="cel num" inputmode="numeric" value="${num(l[k])||''}" placeholder="0" onchange="editar('${l.id}','${k}',this.value)"></td>`;
   const corpo=ls.map(l=>{const tt=total(l);return `<tr data-id="${l.id}">
@@ -266,16 +339,17 @@ function desenhar(){
     ${CAMPOS.map(k=>cel(l,k)).join('')}<td class="tot sx ${tt<0?'neg':''}">${fmt(tt)}</td>
     <td class="sx"><input class="cel" value="${esc(l.obs)}" placeholder="—" onchange="editar('${l.id}','obs',this.value)"></td>
     <td style="text-align:center"><button class="xdel" title="Excluir" onclick="apagar('${l.id}')">🗑</button></td></tr>`}).join('')
-    ||`<tr><td colspan="9" class="vazio">Nenhuma classificação em ${nomeMes(mes).toLowerCase()}. Use a linha verde pra adicionar.</td></tr>`;
+    ||`<tr><td colspan="9" class="vazio">${todasMes.length?'Nada com esse filtro.':`Nenhuma classificação em ${nomeMes(mes).toLowerCase()}. Use a linha verde pra adicionar.`}</td></tr>`;
   const ativo=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('tr.rapido')?document.activeElement.id:null;
   const guardado=ativo?[...document.querySelectorAll('tr.rapido input')].map(i=>[i.id,i.value]):null;
-  $('#tabd').innerHTML=`<table><colgroup><col style="width:20%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:21%"><col style="width:5%"></colgroup>
-    <thead><tr><th>Classificação</th><th class="n">Qtd Inicial</th><th class="n">Entrada</th><th class="n">Saída</th><th class="n">Morte</th><th class="n">Abate</th><th class="n">Total</th><th>Observação</th><th></th></tr>
+  $('#tabd').innerHTML=`<table><colgroup><col style="width:20%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:18%"><col style="width:8%"></colgroup>
+    <thead><tr>${COLS.map(c=>`<th class="${c[3]?'n':''}"><div class="thf"><span>${c[1]}</span><button class="fbtn ${filtrosCol[c[0]]||(ordemCol&&ordemCol.k===c[0])?'on':''}" onclick="abrirFiltro(event,'${c[0]}')" title="Filtrar / ordenar">▾</button></div></th>`).join('')}<th></th></tr>
     <tr class="rapido"><td><input id="nC" list="dlClass" placeholder="Classificação"></td>${CAMPOS.map(k=>`<td><input id="n_${k}" class="num" inputmode="numeric" placeholder="0"></td>`).join('')}
-      <td></td><td><input id="nObs" placeholder="Observação"></td><td><button class="lancar" onclick="lancarRapido()" title="Adicionar (Enter)">+</button></td></tr></thead>
+      <td></td><td><input id="nObs" placeholder="Observação"></td><td><button class="lancar" onclick="lancarRapido()" title="Adicionar (Enter)">+ Lançar</button></td></tr></thead>
     <tbody>${corpo}</tbody>
-    <tfoot><tr><td>TOTAL</td>${CAMPOS.map(k=>`<td class="n" id="ft_${k}">${fmt(t[k])}</td>`).join('')}<td class="n" id="ft_total">${fmt(t.total)}</td><td colspan="2"></td></tr></tfoot></table>`;
+    <tfoot><tr><td>${temFiltro()?'TOTAL DO FILTRO':'TOTAL'}</td>${CAMPOS.map(k=>`<td class="n" id="ft_${k}">${fmt(t[k])}</td>`).join('')}<td class="n" id="ft_total">${fmt(t.total)}</td><td colspan="2"></td></tr></tfoot></table>`;
   document.querySelectorAll('tr.rapido input').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarRapido()}}));
+  prepararLarguras();
   if(guardado){guardado.forEach(([id,v])=>{const i=document.getElementById(id);if(i)i.value=v});const a=document.getElementById(ativo);if(a)a.focus()}
   // celular
   $('#lista').innerHTML=ls.length?ls.map(l=>{const tt=total(l);return `<div class="card-c" onclick="editarLinha('${l.id}')"><div class="nm"><b>${esc(l.classificacao||'(sem nome)')}</b>
@@ -285,7 +359,7 @@ function desenhar(){
 }
 function atualizarTotais(){
   // enquanto digita, só atualiza os números calculados (não redesenha a tabela)
-  const ls=linhasDo(mes);
+  const ls=visiveis();
   document.querySelectorAll('#tabd tr[data-id]').forEach(tr=>{const l=ls.find(x=>x.id===tr.dataset.id);if(l){const c=tr.querySelector('.tot');c.textContent=fmt(total(l));c.classList.toggle('neg',total(l)<0)}});
   CAMPOS.forEach(k=>{const c=$('#ft_'+k);if(c)c.textContent=fmt(ls.reduce((s,l)=>s+num(l[k]),0))});
   const c=$('#ft_total');if(c)c.textContent=fmt(ls.reduce((s,l)=>s+total(l),0));
