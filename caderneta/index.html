@@ -25,91 +25,90 @@ button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}
 .topo .t{font-size:16px;font-weight:800;line-height:1.1}.topo .s{font-size:11.5px;opacity:.75}
 .topo .acoes{margin-left:auto;display:flex;gap:6px}
 .icobtn{background:#ffffff14;color:#fff;border:1px solid #ffffff30;border-radius:9px;height:36px;padding:0 11px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.topo-in>.voltar-app{margin:0 4px 0 0;align-self:center}
 /* estrutura */
-.pag{max-width:1800px;margin:0 auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:22px;padding:20px 24px 120px}
+.pag{max-width:1800px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:22px;padding:18px 24px 120px}
+.pag>section{min-width:0}
 .lateral{position:sticky;top:76px;align-self:start;display:flex;flex-direction:column;gap:18px}
 .bloco h4{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muito-suave)}
 .meses-v{display:flex;flex-direction:column;gap:2px}
 .mes-i{border:0;background:none;text-align:left;padding:8px 10px;border-radius:8px;font-size:14px;display:flex;justify-content:space-between;color:var(--texto)}
 .mes-i:hover{background:#e9efea}.mes-i.on{background:var(--verde);color:#fff;font-weight:700}
-.filtros-v{display:flex;flex-direction:column;gap:2px}
-.filtro-i{border:0;background:none;text-align:left;padding:7px 10px;border-radius:8px;font-size:13.5px;display:flex;align-items:center;gap:8px}
-.filtro-i:hover{background:#e9efea}.filtro-i.on{background:var(--verde-claro);font-weight:700;color:var(--verde-esc)}
-.filtro-i b{margin-left:auto;font-weight:700;color:var(--suave);font-size:12.5px}
-.dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
 .lado-acoes{display:flex;flex-direction:column;gap:6px}
+/* abas */
+.abas{display:flex;gap:4px;background:#e7ece8;border-radius:11px;padding:4px;width:max-content;max-width:100%;margin-bottom:14px}
+.aba{border:0;background:none;border-radius:8px;padding:8px 16px;font-size:14px;font-weight:700;color:var(--suave);white-space:nowrap}
+.aba.on{background:#fff;color:var(--verde-esc);box-shadow:0 1px 3px #0002}
 /* cabeçalho da lista */
-.cab{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-.cab h1{margin:0;font-size:22px}.cab .qtd{color:var(--suave);font-size:14px}
-.cab .novo{margin-left:auto}
-.busca{position:relative;flex:1;min-width:220px;max-width:360px}
-.busca input{width:100%;border:1px solid var(--borda);border-radius:10px;padding:9px 12px 9px 34px;background:#fff;font-size:14.5px;outline:none}
+.cab{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.cab h1{margin:0;font-size:21px}.cab .qtd{color:var(--suave);font-size:14px}
+.cab .qtd b{color:var(--texto)}
+.busca{position:relative;margin-left:auto;flex:0 1 320px;min-width:200px}
+.busca input{width:100%;border:1px solid var(--borda);border-radius:10px;padding:8px 12px 8px 34px;background:#fff;font-size:14.5px;outline:none}
 .busca input:focus{border-color:#72a386;box-shadow:0 0 0 3px #72a38622}
 .busca:before{content:"🔎";position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.6}
 .btn{border:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:14px}
 .btn-primary{background:var(--verde);color:#fff}.btn-primary:hover{background:#185b3e}
 .btn-ghost{background:#fff;border:1px solid var(--borda);color:#334139}.btn-ghost:hover{background:#f7f9f7}
 .btn-danger{background:#fff;border:1px solid #e7bbb5;color:#a33627}
-/* faixas do celular */
-.faixa{display:none;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 16px;margin:0 -16px}
+/* faixa de meses (celular) */
+.faixa{display:none;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 16px;margin:0 -16px 10px}
 .faixa::-webkit-scrollbar{display:none}
-.pill{flex:0 0 auto;border:1px solid var(--borda);background:#fff;border-radius:99px;padding:7px 13px;font-size:13.5px;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.pill{flex:0 0 auto;border:1px solid var(--borda);background:#fff;border-radius:99px;padding:7px 13px;font-size:13.5px;white-space:nowrap}
 .pill.on{background:var(--verde);border-color:var(--verde);color:#fff;font-weight:700}
-.pill b{font-weight:800}
-/* lista */
-.lista{background:#fff;border:1px solid var(--borda);border-radius:14px;overflow:hidden}
-.pag>section{min-width:0}
-.dia{background:#f8faf8;border-bottom:1px solid var(--linha);padding:8px 16px;font-size:12px;font-weight:800;color:var(--suave);text-transform:uppercase;letter-spacing:.04em;z-index:2}
-.reg{display:flex;gap:10px;padding:8px 12px;border-bottom:1px solid var(--linha);cursor:pointer;align-items:center;border-left:3px solid var(--cor)}
-.reg:last-child{border-bottom:0}.reg:hover{background:#fafcfa}
-.reg .corpo{flex:1;min-width:0}
-.reg .l1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
-.reg .ti{font-weight:700}
-.rgd{font-size:12.5px;font-weight:700;color:var(--verde-esc);background:var(--verde-claro);border-radius:5px;padding:0 6px}
-.reg .l2{font-size:12.5px;color:var(--suave);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.reg .dir{text-align:right;font-size:11px;color:var(--muito-suave);white-space:nowrap;display:flex;align-items:center;gap:6px}
-.reg .mini-foto{width:32px;height:32px;border-radius:6px;object-fit:cover;background:#eef1ef}
-/* tabela do computador (igual planilha) */
-.tabd{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:auto;max-height:calc(100vh - 210px)}
-.tabd table{border-collapse:separate;border-spacing:0;width:100%;min-width:980px;font-size:13.5px;table-layout:fixed}
-.tabd th{position:sticky;top:0;z-index:2;background:#f3f5f3;color:var(--suave);font-size:11px;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:7px 8px;border-bottom:1px solid var(--borda);border-right:1px solid #e8ebe9;white-space:nowrap}
-.tabd td{padding:0 8px;height:32px;border-bottom:1px solid #edf0ee;border-right:1px solid #f0f2f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* tabela do computador */
+.tabd{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:auto;max-height:calc(100vh - 200px)}
+.tabd table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px;font-size:13.5px;table-layout:fixed}
+.tabd th{position:sticky;top:0;z-index:2;background:#f3f5f3;color:var(--suave);font-size:11px;text-transform:uppercase;letter-spacing:.04em;text-align:left;padding:7px 8px;border-bottom:1px solid var(--borda);border-right:1px solid #e8ebe9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabd td{padding:0 8px;height:34px;border-bottom:1px solid #edf0ee;border-right:1px solid #f0f2f1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tabd tbody tr{cursor:pointer}.tabd tbody tr:hover td{background:#f5faf7}
-.tabd tr.novodia td{border-top:2px solid #dfe6e1}
-.tabd .c{text-align:center}
-.tabd td.obs{white-space:normal;word-break:break-word;padding-top:6px;padding-bottom:6px;line-height:1.35}
-.xdel{border:0;background:none;border-radius:6px;padding:3px 6px;font-size:14px;opacity:.45}.xdel:hover{opacity:1;background:#fbeeec}.tabd .n{text-align:right}
+.tabd .c{text-align:center}.tabd .n{text-align:right}
+.tabd td.quebra{white-space:normal;word-break:break-word;padding-top:6px;padding-bottom:6px;line-height:1.35}
 .tabd .por{color:var(--muito-suave);font-size:12px}
-.tabd tr.rapido td{position:sticky;top:31px;z-index:1;background:#f6faf7;padding:4px;height:auto;border-bottom:2px solid #cfe0d5;overflow:visible}
-/* tira a setinha que o navegador põe nos campos com lista de sugestões */
-input[list]::-webkit-calendar-picker-indicator{display:none!important;opacity:0}
-.tabd .rs{position:absolute;top:0;right:-4px;width:8px;height:100%;cursor:col-resize;z-index:3}
-.tabd .rs:hover{background:#72a38644}
-.tabd tr.rapido td{padding:6px 5px!important}
+.tabd tr.rapido td{position:sticky;top:31px;z-index:1;background:#f6faf7;padding:6px 5px;height:auto;border-bottom:2px solid #cfe0d5;overflow:visible}
 .tabd .rapido input,.tabd .rapido select{width:100%;border:1px solid #d7ded9;border-radius:7px;padding:7px 9px;font-size:13.5px;background:#fff;outline:none;min-width:0}
 .tabd .rapido input:focus,.tabd .rapido select:focus{border-color:#72a386;box-shadow:0 0 0 2px #72a38633}
-.tabd .rapido button{width:100%;border:0;border-radius:6px;background:var(--verde);color:#fff;font-weight:800;padding:7px 0;font-size:13px}
+.tabd .rapido .lancar{width:100%;border:0;border-radius:7px;background:var(--verde);color:#fff;font-weight:800;padding:8px 0;font-size:13px}
+.tabd .rapido .bfoto{width:100%;border:1px dashed #9fbfab;border-radius:7px;background:#fff;color:var(--verde-esc);font-weight:700;padding:7px 4px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabd .vazio{cursor:default;white-space:normal;height:auto}
+.tabd .rs{position:absolute;top:0;right:-4px;width:8px;height:100%;cursor:col-resize;z-index:3}
+.tabd .rs:hover{background:#72a38644}
+input[list]::-webkit-calendar-picker-indicator{display:none!important;opacity:0}
+.sexo{display:inline-block;min-width:22px;text-align:center;font-weight:800;font-size:12px;border-radius:5px;padding:1px 6px}
+.sexo.M{background:#e4eefb;color:#235fa8}.sexo.F{background:#fbe6f0;color:#a8336d}
+.tag-obs{display:inline-block;font-size:12px;font-weight:700;border-radius:5px;padding:1px 7px;background:#f1f4f2;color:#4a5850}
+.tag-obs.ruim{background:#fbeeec;color:#a33627}.tag-obs.gem{background:#fff4dc;color:#8a5a12}
+.minis{display:flex;gap:4px}.minis img{width:30px;height:30px;border-radius:5px;object-fit:cover;background:#eef1ef;cursor:zoom-in}
+.xdel{border:0;background:none;border-radius:6px;padding:3px 6px;font-size:14px;opacity:.45}.xdel:hover{opacity:1;background:#fbeeec}
 .pend{color:#a0681a;font-weight:700}
-.so-cel-l{display:none}
-.vazio{padding:40px 20px;text-align:center;color:var(--suave);line-height:1.5}
+/* lista do celular */
+.lista{display:none;background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:hidden}
+.reg{display:flex;gap:10px;padding:9px 12px;border-bottom:1px solid var(--linha);cursor:pointer;align-items:center}
+.reg:last-child{border-bottom:0}
+.reg .corpo{flex:1;min-width:0}
+.reg .l1{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reg .l1.duas{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.reg .l2{font-size:12.5px;color:var(--suave);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.reg .dir{display:flex;align-items:center;gap:6px}
+.reg .mini-foto{width:38px;height:38px;border-radius:7px;object-fit:cover;background:#eef1ef}
+.vazio{padding:36px 20px;text-align:center;color:var(--suave);line-height:1.5}
 .offline{background:#fff3d6;border:1px solid #ecd28f;color:#6b4f12;border-radius:10px;padding:9px 12px;font-size:13px;margin-bottom:12px}
 .fab{display:none;position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));background:var(--verde);color:#fff;border:0;border-radius:16px;padding:15px 20px;font-size:16px;font-weight:800;box-shadow:0 8px 24px #153e2c55;z-index:8}
 /* formulário */
 .modal{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;z-index:30;padding:20px}
-.folha{background:#fff;width:min(620px,100%);max-height:92vh;display:flex;flex-direction:column;border-radius:16px;overflow:hidden}
+.folha{background:#fff;width:min(600px,100%);max-height:92vh;display:flex;flex-direction:column;border-radius:16px;overflow:hidden}
 .folha-cab{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--linha)}
 .folha-cab h2{margin:0;font-size:17px}.folha-cab .x{margin-left:auto;border:0;background:#f1f4f2;width:34px;height:34px;border-radius:50%;font-size:18px}
 .folha-corpo{padding:16px 18px;overflow:auto}
-.folha-pe{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--linha);background:#fafbfa}
+.folha-pe{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--linha);background:#fafbfa;flex-wrap:wrap}
 .folha-pe .esq{margin-right:auto}
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}.field label{font-size:12.5px;color:var(--suave);font-weight:700}
 .input{width:100%;border:1px solid #d7ded9;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;outline:none}
 .input:focus{border-color:#72a386;box-shadow:0 0 0 3px #72a38622}
-textarea.input{min-height:86px;resize:vertical}
+textarea.input{min-height:96px;resize:vertical}
 .duas{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.tipos{display:flex;flex-wrap:wrap;gap:6px}
-.tipo{border:1px solid #d9dfda;background:#fff;border-radius:99px;padding:7px 12px;font-size:13.5px;display:inline-flex;gap:6px;align-items:center}
-.tipo.on{border-color:var(--verde);background:var(--verde);color:#fff;font-weight:700}
+.seg{display:flex;gap:6px}.seg button{flex:1;border:1px solid #d7ded9;background:#fff;border-radius:10px;padding:10px;font-weight:800;font-size:15px}
+.seg button.on.M{background:#235fa8;border-color:#235fa8;color:#fff}.seg button.on.F{background:#a8336d;border-color:#a8336d;color:#fff}
 .fotos{display:flex;gap:8px;flex-wrap:wrap}.foto{position:relative;width:76px;height:76px;border-radius:10px;overflow:hidden;background:#eef1ef}
 .foto img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}.foto button{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;border:0;background:#000a;color:#fff;line-height:1;font-size:14px}
 .addfoto{width:76px;height:76px;border:2px dashed #b7c9bd;border-radius:10px;display:grid;place-items:center;color:var(--verde);font-weight:700;font-size:12px;text-align:center;background:#fff;cursor:pointer}
@@ -120,22 +119,20 @@ textarea.input{min-height:86px;resize:vertical}
 /* ===== celular ===== */
 @media(max-width:860px){
   .pag{grid-template-columns:minmax(0,1fr);padding:12px 16px 110px;gap:0}
-  .lateral{display:none}
+  .lateral,.tabd,.so-desk{display:none!important}
   .faixa{display:flex}
-  .cab{margin:10px 0 10px}.cab h1{font-size:19px}.cab .novo{display:none}
-  .busca{max-width:none;min-width:0;flex-basis:100%;order:3}
+  .lista{display:block}
+  .abas{width:100%}.aba{flex:1;padding:9px 6px}
+  .cab h1{font-size:19px}
+  .busca{flex-basis:100%;margin-left:0}
   .fab{display:block}
-  .lista{border-radius:12px;margin:0 -4px}
-  .dia{padding:7px 14px}
-  .tabd{display:none}.so-cel-l{display:block}
   .modal{padding:0;align-items:flex-end}
   .folha{width:100%;max-height:96vh;border-radius:18px 18px 0 0}
   .folha-pe{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
 }
-@media(min-width:861px){.topo .so-cel{display:none}}
-.topo-in>.voltar-app{margin:0 4px 0 0;align-self:center}
 @media(max-width:600px){.topo-in>img{display:none}}
-@media print{.topo,.lateral,.faixa,.fab,.offline,.busca,.cab .novo,.so-cel-l,tr.rapido{display:none!important}.tabd{display:block!important;max-height:none;overflow:visible;border:0}.pag{display:block;padding:0}.lista{border:0}.dia{position:static}.reg{break-inside:avoid}}
+@media(min-width:861px){.topo .so-cel{display:none}}
+@media print{.topo,.lateral,.faixa,.fab,.offline,.busca,.abas,.so-cel,tr.rapido,.xdel,.lista{display:none!important}.pag{display:block;padding:0}.tabd{display:block!important;max-height:none;overflow:visible;border:0}}
 </style>
 </head>
 <body>
@@ -151,57 +148,54 @@ textarea.input{min-height:86px;resize:vertical}
 <div class="pag">
   <aside class="lateral">
     <div class="bloco"><h4>Mês</h4><div class="meses-v" id="mesesV"></div></div>
-    <div class="bloco"><h4>Acontecimento</h4><div class="filtros-v" id="filtrosV"></div></div>
     <div class="lado-acoes"><button class="btn btn-ghost" onclick="exportarMes()">⬇ Excel do mês</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div>
   </aside>
   <section>
     <div id="offline" class="offline hidden">📵 Sem internet. Pode lançar normal: fica guardado no aparelho e envia sozinho quando a internet voltar.</div>
+    <div class="abas" id="abas">
+      <button class="aba" data-aba="nasc" onclick="irAba('nasc')">🐮 Nascimentos</button>
+      <button class="aba" data-aba="geral" onclick="irAba('geral')">📝 Lançamento Geral</button>
+    </div>
     <div class="faixa" id="mesesH"></div>
     <div class="cab">
       <h1 id="titulo">Caderneta</h1><span class="qtd" id="qtd"></span>
-      <div class="busca"><input id="busca" placeholder="Buscar RGD, local, observação..." oninput="desenhar()"></div>
-      <button class="btn btn-primary novo" onclick="abrirForm()">+ Novo lançamento</button>
+      <div class="busca"><input id="busca" placeholder="Buscar..." oninput="desenhar()"></div>
     </div>
-    <div class="faixa" id="filtrosH" style="margin-bottom:12px"></div>
-    <div class="tabd" id="tabd"><table><colgroup><col style="width:12%"><col style="width:19%"><col style="width:9%"><col style="width:14%"><col style="width:6%"><col style="width:24%"><col style="width:4%"><col style="width:9%"><col style="width:3%"></colgroup>
-      <thead><tr class="cabcol"><th>Data</th><th>Acontecimento</th><th>RGD</th><th>Local</th><th class="n">Cab.</th><th>Observação</th><th class="c">📷</th><th>Por</th><th></th></tr>
-      <tr class="rapido"><td><input type="date" id="rData"></td><td><select id="rTipo"></select></td><td><input id="rRgd" placeholder="RGD" autocapitalize="characters"></td>
-        <td><input id="rLocal" list="dlLocais" placeholder="Local"></td><td><input id="rQtd" inputmode="numeric" placeholder="Cab."></td><td><input id="rObs" placeholder="Observação"></td>
-        <td colspan="3"><button onclick="lancarRapido()" title="Lançar (Enter)">+ Lançar</button></td></tr></thead>
-      <tbody id="corpoD"></tbody></table></div>
-    <datalist id="dlLocais"></datalist>
-    <div class="lista so-cel-l" id="lista"><div class="vazio">Carregando...</div></div>
+    <div class="tabd" id="tabd"></div>
+    <div class="lista" id="lista"><div class="vazio">Carregando...</div></div>
   </section>
 </div>
 <button class="fab" onclick="abrirForm()">+ Lançar</button>
+<datalist id="dlPelagem"></datalist>
+<datalist id="dlObs"><option value="Natimorto"><option value="Morte"><option value="Gêmeos"></datalist>
+<input id="rArq" type="file" accept="image/*" multiple class="hidden" onchange="fotosRapido(this.files);this.value=''">
 
 <script>
-/* CADERNETA — anotações do dia a dia, uma por documento em apps/caderneta/lancamentos (campo mes = AAAA-MM).
-   Fotos comprimidas em apps/caderneta/fotos. Funciona sem internet (o Firestore guarda no aparelho e envia depois). */
+/* CADERNETA — duas abas:
+   • Nascimentos: RGD Mãe, N° Receptora, Sexo, Data, Peso (kg), Pelagem, Observação (lista + texto livre)
+   • Lançamento Geral: Data, Acontecimento (texto livre), Fotos
+   Tudo em apps/caderneta/lancamentos (campo aba = 'nasc' | 'geral', mes = AAAA-MM). Lançamentos sem "aba" são do
+   modelo antigo e não aparecem mais. Fotos comprimidas em apps/caderneta/fotos. Funciona sem internet. */
 const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDomain:'app-nelore-mra.firebaseapp.com',projectId:'app-nelore-mra',storageBucket:'app-nelore-mra.firebasestorage.app',messagingSenderId:'1043343802346',appId:'1:1043343802346:web:219f5d73748271a85dfc93'};
 const ADMIN_EMAIL='mandrade.gado@terra.com.br', USER_DOMAIN='@app-nelore-mra.firebaseapp.com';
-// Única coisa "travada": o tipo de acontecimento. O resto é livre.
-const TIPOS=[
-  ['Nascimento','🐮','#2a78d6'],['Morte','✝️','#c0392b'],['Vacina / Medicamento','💉','#1b9e8f'],['Doença / Tratamento','🩺','#e05a9c'],
-  ['Compra','🛒','#7a52c7'],['Venda','💰','#c9a227'],['Troca de pasto','🔁','#e08a1e'],['Contagem','🔢','#1f6a49'],
-  ['Desmama','🍼','#5bb8e8'],['Pesagem','⚖️','#8b5a2b'],['Cobertura / Monta','❤️','#9c2f6e'],['Manutenção (cerca, água...)','🔧','#7d8c2a'],['Geral','📝','#8a958d']
-];
-const tipoInfo=n=>TIPOS.find(t=>t[0]===n)||[n,'📝','#9aa49d'];
+const OBS_LISTA=['Natimorto','Morte','Gêmeos'];
 firebase.initializeApp(FIREBASE_CONFIG);
 const fs=firebase.firestore();
 fs.enablePersistence({synchronizeTabs:true}).catch(()=>{});
 const col=fs.collection('apps').doc('caderneta').collection('lancamentos');
 const cfgRef=fs.collection('apps').doc('caderneta').collection('config').doc('listas');
-// Fotos ficam comprimidas num documento próprio cada (não precisa do Storage pago do Firebase)
 const colFotos=fs.collection('apps').doc('caderneta').collection('fotos');
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const hoje=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const fmtData=s=>s?s.split('-').reverse().join('/'):'';
+const diaSem=s=>s?new Date(s+'T12:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.',''):'';
+const numBR=v=>{const n=Number(String(v??'').trim().replace(/\./g,'').replace(',','.'));return String(v??'').trim()!==''&&Number.isFinite(n)?n:null};
 const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const nomeMes=m=>{const [a,n]=m.split('-').map(Number);return `${MESES[n-1]} de ${a}`};
 const curtoMes=m=>{const [a,n]=m.split('-').map(Number);return `${MESES[n-1].slice(0,3)}/${String(a).slice(2)}`};
-let eu=null, ehAdmin=false, meuNome='', mes=hoje().slice(0,7), itens=[], filtroTipo='', locais=[], parar=null, miniFotos={};
+let eu=null, ehAdmin=false, meuNome='', mes=hoje().slice(0,7), todos=[], itens=[], parar=null, miniFotos={}, pelagens=[];
+let aba='nasc';try{aba=localStorage.getItem('app-nelore-mra-caderneta-aba')==='geral'?'geral':'nasc'}catch(e){}
 
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
 function statusRede(){$('#offline').classList.toggle('hidden',navigator.onLine)}
@@ -215,73 +209,112 @@ firebase.auth().onAuthStateChanged(async u=>{
   if(!ehAdmin&&(!perfil||perfil.ativo===false||!(perfil.apps&&perfil.apps.caderneta))){alert('Você não tem acesso à Caderneta. Fale com o administrador.');location.href='../index.html';return}
   meuNome=ehAdmin?'Administrador':((perfil&&(perfil.nome||perfil.usuario))||String(u.email).replace(USER_DOMAIN,''));
   $('#quem').textContent=meuNome;
-  cfgRef.onSnapshot(d=>{locais=(d.exists&&d.data().locais)||[];$('#dlLocais').innerHTML=locais.map(l=>`<option value="${esc(l)}">`).join('')},()=>{});
-  prepararRapido();
-  desenharMeses();ouvirMes();
+  cfgRef.onSnapshot(d=>{pelagens=(d.exists&&d.data().pelagens)||[];$('#dlPelagem').innerHTML=pelagens.map(l=>`<option value="${esc(l)}">`).join('')},()=>{});
+  irAba(aba,true);ouvirMes();
 });
 
-/* ---------- meses (lateral no computador, faixa no celular) ---------- */
+/* ---------- abas e meses ---------- */
+function irAba(a,semDesenhar){
+  aba=a;try{localStorage.setItem('app-nelore-mra-caderneta-aba',a)}catch(e){}
+  document.querySelectorAll('.aba').forEach(b=>b.classList.toggle('on',b.dataset.aba===a));
+  $('#busca').placeholder=a==='nasc'?'Buscar RGD, receptora, pelagem...':'Buscar no acontecimento...';
+  montarTabela();if(!semDesenhar)desenhar();
+}
 function ultimosMeses(){const r=[];const d=new Date();for(let i=0;i<12;i++){const x=new Date(d.getFullYear(),d.getMonth()-i,1);r.push(`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`)}if(!r.includes(mes))r.push(mes);return r.sort().reverse()}
 function desenharMeses(){
   const ms=ultimosMeses();
   $('#mesesV').innerHTML=ms.map(m=>`<button class="mes-i ${m===mes?'on':''}" onclick="irMes('${m}')"><span>${nomeMes(m)}</span>${m===mes?`<span>${itens.length}</span>`:''}</button>`).join('');
-  $('#mesesH').innerHTML=ms.map(m=>`<button class="pill ${m===mes?'on':''}" data-m="${m}" onclick="irMes('${m}')">${curtoMes(m)}${m===mes&&itens.length?` <b>${itens.length}</b>`:''}</button>`).join('');
+  $('#mesesH').innerHTML=ms.map(m=>`<button class="pill ${m===mes?'on':''}" onclick="irMes('${m}')">${curtoMes(m)}${m===mes&&itens.length?` <b>${itens.length}</b>`:''}</button>`).join('');
   const on=$('#mesesH .pill.on');if(on&&on.parentElement.offsetParent)on.parentElement.scrollLeft=on.offsetLeft-on.parentElement.clientWidth/2+on.clientWidth/2;
 }
-function irMes(m){mes=m;filtroTipo='';ouvirMes()}
+function irMes(m){mes=m;ouvirMes()}
 function ouvirMes(){
   if(parar)parar();
   $('#titulo').textContent=nomeMes(mes);
-  $('#lista').innerHTML='<div class="vazio">Carregando...</div>';$('#corpoD').innerHTML='';
-  desenharMeses();
+  $('#lista').innerHTML='<div class="vazio">Carregando...</div>';
   parar=col.where('mes','==',mes).onSnapshot({includeMetadataChanges:true},snap=>{
-    itens=snap.docs.map(d=>({id:d.id,...d.data(),_pend:d.metadata.hasPendingWrites}));
+    todos=snap.docs.map(d=>({id:d.id,...d.data(),_pend:d.metadata.hasPendingWrites}));
     desenhar();
   },e=>{$('#lista').innerHTML=`<div class="vazio">Não consegui carregar.<br><small>${esc(e.message)}</small></div>`});
 }
 
+/* ---------- tabela do computador ---------- */
+const COLS={
+  nasc:[['RGD Mãe',13],['N° Receptora',11],['Sexo',7,'c'],['Data Nasc.',12],['Peso (kg)',9,'n'],['Pelagem',13],['Observação',20],['Por',10],['',5]],
+  geral:[['Data',12],['Acontecimento',52],['Fotos',20],['Por',12],['',4]]
+};
+const LARG_KEY=()=>'app-nelore-mra-caderneta-larguras-'+aba;
+function montarTabela(){
+  const cols=COLS[aba];
+  const rapido=aba==='nasc'
+    ?`<td><input id="rMae" placeholder="RGD Mãe" autocapitalize="characters"></td><td><input id="rRec" placeholder="Receptora" autocapitalize="characters"></td>
+      <td><select id="rSexo"><option value="">—</option><option>M</option><option>F</option></select></td><td><input type="date" id="rData"></td>
+      <td><input id="rPeso" inputmode="decimal" placeholder="kg"></td><td><input id="rPel" list="dlPelagem" placeholder="Pelagem"></td>
+      <td><input id="rObs" list="dlObs" placeholder="Natimorto, Morte, Gêmeos ou escreva"></td><td colspan="2"><button class="lancar" onclick="lancarRapido()">+ Lançar</button></td>`
+    :`<td><input type="date" id="rData"></td><td><input id="rAcont" placeholder="O que aconteceu? (Enter lança)"></td>
+      <td><button class="bfoto" id="rFotoBtn" onclick="$('#rArq').click()">📷 Foto</button></td><td colspan="2"><button class="lancar" onclick="lancarRapido()">+ Lançar</button></td>`;
+  $('#tabd').innerHTML=`<table><colgroup>${cols.map(c=>`<col style="width:${c[1]}%">`).join('')}</colgroup>
+    <thead><tr class="cabcol">${cols.map(c=>`<th class="${c[2]||''}">${c[0]}</th>`).join('')}</tr><tr class="rapido">${rapido}</tr></thead><tbody id="corpoD"></tbody></table>`;
+  $('#rData').value=hoje();fotosR=[];
+  $('#tabd').querySelectorAll('.rapido input,.rapido select').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarRapido()}}));
+  prepararLarguras();
+}
+function aplicarLarguras(){
+  const cols=[...document.querySelectorAll('#tabd col')],tb=$('#tabd table');let l=null;
+  try{l=JSON.parse(localStorage.getItem(LARG_KEY())||'null')}catch(e){}
+  if(l&&l.length===cols.length){cols.forEach((c,i)=>c.style.width=l[i]+'px');tb.style.width=l.reduce((a,b)=>a+b,0)+'px';tb.style.minWidth='0'}
+}
+function prepararLarguras(){
+  document.querySelectorAll('#tabd tr.cabcol th').forEach((th,i,lista)=>{if(i===lista.length-1)return;const h=document.createElement('span');h.className='rs';h.title='Arraste pra mudar a largura (duplo clique volta ao padrão)';th.appendChild(h);
+    h.addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();
+      const ths=[...document.querySelectorAll('#tabd tr.cabcol th')],ws=ths.map(t=>t.offsetWidth),x0=e.clientX,w0=ws[i],cols=[...document.querySelectorAll('#tabd col')],tb=$('#tabd table');
+      const mv=ev=>{ws[i]=Math.max(40,w0+ev.clientX-x0);cols.forEach((c,k)=>c.style.width=ws[k]+'px');tb.style.width=ws.reduce((a,b)=>a+b,0)+'px';tb.style.minWidth='0'};
+      const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);try{localStorage.setItem(LARG_KEY(),JSON.stringify(ws))}catch(e){}};
+      document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up)});
+    h.addEventListener('dblclick',()=>{try{localStorage.removeItem(LARG_KEY())}catch(e){}montarTabela();desenhar()})});
+  aplicarLarguras();
+}
+
 /* ---------- lista ---------- */
+const textoBusca=i=>aba==='nasc'?[i.rgdMae,i.receptora,i.sexo,i.pelagem,i.obs,i.peso,i.criadoPorNome].join(' '):[i.acontecimento,i.criadoPorNome].join(' ');
 function visiveis(){
   const q=$('#busca').value.trim().toLowerCase();
-  return itens.filter(i=>(!filtroTipo||i.acontecimento===filtroTipo)&&(!q||[i.rgd,i.local,i.obs,i.acontecimento,i.criadoPorNome].join(' ').toLowerCase().includes(q)))
+  return itens.filter(i=>!q||textoBusca(i).toLowerCase().includes(q))
     .sort((a,b)=>String(b.data).localeCompare(String(a.data))||String(b.criadoEmLocal||'').localeCompare(String(a.criadoEmLocal||'')));
 }
-function filtrar(t){filtroTipo=filtroTipo===t?'':t;desenhar()}
+const classeObs=o=>{const t=String(o||'').toLowerCase();return t.startsWith('natimorto')||t.startsWith('morte')?'ruim':t.startsWith('gêmeo')||t.startsWith('gemeo')?'gem':''};
+const obsHtml=o=>o?(OBS_LISTA.some(x=>String(o).toLowerCase().startsWith(x.toLowerCase()))?`<span class="tag-obs ${classeObs(o)}">${esc(o)}</span>`:esc(o)):'';
+function minisHtml(i){return (i.fotos||[]).map(f=>miniFotos[f]?`<img src="${miniFotos[f]}" alt="" onclick="event.stopPropagation();verFotoId('${f}')">`:'<span>📷</span>').join('')}
+function carregarMinis(v){v.forEach(i=>(i.fotos||[]).forEach(f=>{if(!(f in miniFotos)){miniFotos[f]='';colFotos.doc(f).get().then(d=>{if(d.exists){miniFotos[f]=d.data().dados;desenhar()}}).catch(()=>{})}}))}
 function desenhar(){
-  const cont={};itens.forEach(i=>cont[i.acontecimento]=(cont[i.acontecimento]||0)+1);
-  $('#qtd').textContent=`${itens.length} lançamento${itens.length===1?'':'s'}`;
-  const tipos=TIPOS.filter(t=>cont[t[0]]).concat(Object.keys(cont).filter(k=>!TIPOS.some(t=>t[0]===k)).map(k=>[k,'📝','#9aa49d']));
-  $('#filtrosV').innerHTML=`<button class="filtro-i ${!filtroTipo?'on':''}" onclick="filtrar('')">Todos <b>${itens.length}</b></button>`+
-    tipos.map(t=>`<button class="filtro-i ${filtroTipo===t[0]?'on':''}" onclick='filtrar(${esc(JSON.stringify(t[0]))})'><span class="dot" style="background:${t[2]}"></span>${esc(t[0])}<b>${cont[t[0]]}</b></button>`).join('')
-    +(tipos.length?'':'<div style="font-size:13px;color:var(--muito-suave);padding:4px 10px">Nada lançado ainda</div>');
-  $('#filtrosH').innerHTML=tipos.length?`<button class="pill ${!filtroTipo?'on':''}" onclick="filtrar('')">Todos <b>${itens.length}</b></button>`+
-    tipos.map(t=>`<button class="pill ${filtroTipo===t[0]?'on':''}" onclick='filtrar(${esc(JSON.stringify(t[0]))})'>${t[1]} ${esc(t[0])} <b>${cont[t[0]]}</b></button>`).join(''):'';
+  itens=todos.filter(i=>i.aba===aba);
   desenharMeses();
-  const v=visiveis();
-  if(!v.length){$('#lista').innerHTML=`<div class="vazio">${itens.length?'Nada encontrado com esse filtro.':`Nenhum lançamento em ${nomeMes(mes).toLowerCase()}.<br>Toque em <b>+ Lançar</b> pra anotar.`}</div>`;
-    $('#corpoD').innerHTML=`<tr><td colspan="9" class="vazio" style="height:auto;white-space:normal">${itens.length?'Nada encontrado com esse filtro.':'Nada lançado neste mês. Use a linha verde acima pra lançar.'}</td></tr>`;return}
-  // computador: tabela
-  let d0='';
-  $('#corpoD').innerHTML=v.map(i=>{const [n,ic,cor]=tipoInfo(i.acontecimento);const nf=(i.fotos||[]).length;const novo=i.data!==d0;d0=i.data;
-    return `<tr class="${novo?'novodia':''}" onclick="abrirForm('${i.id}')"><td>${fmtData(i.data)} <span class="por">${new Date(i.data+'T12:00').toLocaleDateString('pt-BR',{weekday:'short'}).replace('.','')}</span></td>
-      <td title="${esc(n)}"><span class="dot" style="background:${cor};display:inline-block;margin-right:6px"></span>${esc(n)}</td><td>${i.rgd?`<span class="rgd">${esc(i.rgd)}</span>`:''}</td>
-      <td title="${esc(i.local||'')}">${esc(i.local||'')}</td><td class="n">${esc(i.qtd||'')}</td><td class="obs">${esc(i.obs||'')}</td>
-      <td class="c">${nf?'📷'+(nf>1?nf:''):''}</td><td class="por">${i._pend?'<span class="pend">⏳ a enviar</span>':esc(i.criadoPorNome||'')}</td>
-      <td class="c">${podeEditar(i)?`<button class="xdel" title="Excluir" onclick="event.stopPropagation();apagar('${i.id}')">🗑</button>`:''}</td></tr>`}).join('');
-  let html='',dia='';
-  v.forEach(i=>{
-    if(i.data!==dia){dia=i.data;const d=new Date(dia+'T12:00');const ds=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});html+=`<div class="dia">${dia===hoje()?'Hoje · ':''}${ds}</div>`}
-    const [n,ic,cor]=tipoInfo(i.acontecimento);const nf=(i.fotos||[]).length;
-    const extras=[i.local?`📍 ${esc(i.local)}`:'',i.qtd?`${esc(i.qtd)} cab.`:'',i.obs?esc(i.obs):''].filter(Boolean);
-    html+=`<div class="reg" style="--cor:${cor}" onclick="abrirForm('${i.id}')">
-      <div class="corpo"><div class="l1">${ic} <span class="ti">${esc(n)}</span> ${i.rgd?`<span class="rgd">${esc(i.rgd)}</span>`:''}</div>
-        ${extras.length?`<div class="l2">${extras.join(' · ')}</div>`:''}</div>
-      <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${podeEditar(i)?`<button class="xdel" style="font-size:16px;padding:6px" title="Excluir" onclick="event.stopPropagation();apagar('${i.id}')">🗑</button>`:''}${nf?(miniFotos[i.fotos[0]]?`<img class="mini-foto" src="${miniFotos[i.fotos[0]]}" alt="">`:'📷'):''}</div>
-    </div>`;
-  });
-  $('#lista').innerHTML=html;
-  // miniatura da 1ª foto (carrega só uma vez cada)
-  v.forEach(i=>{const f=(i.fotos||[])[0];if(f&&!(f in miniFotos)){miniFotos[f]='';colFotos.doc(f).get().then(d=>{if(d.exists){miniFotos[f]=d.data().dados;desenhar()}}).catch(()=>{})}});
+  if(aba==='nasc'){const m=itens.filter(i=>i.sexo==='M').length,f=itens.filter(i=>i.sexo==='F').length;
+    $('#qtd').innerHTML=`<b>${itens.length}</b> nascimento${itens.length===1?'':'s'}${itens.length?` · ${m} M · ${f} F`:''}`}
+  else $('#qtd').innerHTML=`<b>${itens.length}</b> lançamento${itens.length===1?'':'s'}`;
+  const v=visiveis(),nc=COLS[aba].length;
+  if(!v.length){
+    const msg=itens.length?'Nada encontrado na busca.':`Nada lançado em ${nomeMes(mes).toLowerCase()}.`;
+    $('#corpoD').innerHTML=`<tr><td colspan="${nc}" class="vazio">${msg}</td></tr>`;
+    $('#lista').innerHTML=`<div class="vazio">${msg}${itens.length?'':'<br>Toque em <b>+ Lançar</b>.'}</div>`;return}
+  const del=i=>podeEditar(i)?`<button class="xdel" title="Excluir" onclick="event.stopPropagation();apagar('${i.id}')">🗑</button>`:'';
+  const por=i=>i._pend?'<span class="pend">⏳ a enviar</span>':esc(i.criadoPorNome||'');
+  if(aba==='nasc'){
+    $('#corpoD').innerHTML=v.map(i=>`<tr onclick="abrirForm('${i.id}')"><td>${esc(i.rgdMae||'')}</td><td>${esc(i.receptora||'')}</td>
+      <td class="c">${i.sexo?`<span class="sexo ${i.sexo}">${i.sexo}</span>`:''}</td><td>${fmtData(i.data)} <span class="por">${diaSem(i.data)}</span></td>
+      <td class="n">${esc(i.peso||'')}</td><td>${esc(i.pelagem||'')}</td><td class="quebra">${obsHtml(i.obs)}</td><td class="por">${por(i)}</td><td class="c">${del(i)}</td></tr>`).join('');
+    $('#lista').innerHTML=v.map(i=>{const t1=[i.rgdMae?`Mãe <b>${esc(i.rgdMae)}</b>`:'',i.receptora?`Rec. <b>${esc(i.receptora)}</b>`:''].filter(Boolean).join(' · ')||'<span style="color:var(--muito-suave)">sem RGD</span>';
+      const t2=[fmtData(i.data).slice(0,5),i.peso?esc(i.peso)+' kg':'',esc(i.pelagem||'')].filter(Boolean).join(' · ');
+      return `<div class="reg" onclick="abrirForm('${i.id}')"><div class="corpo"><div class="l1">${i.sexo?`<span class="sexo ${i.sexo}">${i.sexo}</span> `:''}${t1}</div><div class="l2">${t2}${i.obs?' · '+obsHtml(i.obs):''}</div></div>
+        <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${del(i)}</div></div>`}).join('');
+  }else{
+    $('#corpoD').innerHTML=v.map(i=>`<tr onclick="abrirForm('${i.id}')"><td>${fmtData(i.data)} <span class="por">${diaSem(i.data)}</span></td>
+      <td class="quebra">${esc(i.acontecimento||'')}</td><td><div class="minis">${minisHtml(i)}</div></td><td class="por">${por(i)}</td><td class="c">${del(i)}</td></tr>`).join('');
+    $('#lista').innerHTML=v.map(i=>{const f=(i.fotos||[])[0];
+      return `<div class="reg" onclick="abrirForm('${i.id}')"><div class="corpo"><div class="l1 duas">${esc(i.acontecimento||'(sem texto)')}</div><div class="l2">${fmtData(i.data).slice(0,5)} ${diaSem(i.data)} · ${esc(i.criadoPorNome||'')}${(i.fotos||[]).length>1?` · 📷 ${i.fotos.length}`:''}</div></div>
+        <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${f?(miniFotos[f]?`<img class="mini-foto" src="${miniFotos[f]}" alt="">`:'📷'):''}${del(i)}</div></div>`}).join('');
+    carregarMinis(v);
+  }
 }
 
 /* ---------- menu do celular ---------- */
@@ -292,111 +325,125 @@ function abrirMenu(ev){
   document.body.appendChild(m);setTimeout(()=>document.addEventListener('click',()=>m.remove(),{once:true}),0);
 }
 
-/* ---------- formulário ---------- */
+/* ---------- gravação ---------- */
 function podeEditar(i){return ehAdmin||i.criadoPorUid===eu.uid}
-function abrirForm(id,base){
-  const i=id?itens.find(x=>x.id===id):null;const b=base||{};
-  const so=i&&!podeEditar(i);   // outros veem, mas não alteram
-  const sel=i?i.acontecimento:(b.acontecimento||'');
-  const m=document.createElement('div');m.className='modal';m.id='form';
-  m.onclick=e=>{if(e.target===m)m.remove()};
-  const ro=so?'disabled':'';
-  m.innerHTML=`<div class="folha">
-    <div class="folha-cab"><h2>${i?(so?'Lançamento':'Editar lançamento'):'Novo lançamento'}</h2><button class="x" onclick="document.getElementById('form').remove()" aria-label="Fechar">×</button></div>
-    <div class="folha-corpo">
-      ${so?`<div class="offline" style="background:#f1f4f2;border-color:#dde4df;color:#4a5850">Lançado por ${esc(i.criadoPorNome||'')}. Só quem lançou (ou o administrador) pode alterar.</div>`:''}
-      <div class="field"><label>O que aconteceu? *</label><div class="tipos">${TIPOS.map(t=>`<button type="button" ${ro} class="tipo ${t[0]===sel?'on':''}" data-t="${esc(t[0])}" onclick="document.querySelectorAll('.tipo').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${t[1]} ${esc(t[0])}</button>`).join('')}</div></div>
-      <div class="duas"><div class="field"><label>Data *</label><input id="fData" ${ro} class="input" type="date" value="${esc(i?i.data:(b.data||hoje()))}"></div>
-      <div class="field"><label>RGD</label><input id="fRgd" ${ro} class="input" value="${esc(i?i.rgd:'')}" placeholder="opcional" autocapitalize="characters"></div></div>
-      <div class="duas"><div class="field"><label>Local / pasto</label><input id="fLocal" ${ro} class="input" list="listaLocais" value="${esc(i?i.local:(b.local||''))}" placeholder="opcional"><datalist id="listaLocais">${locais.map(l=>`<option value="${esc(l)}">`).join('')}</datalist></div>
-      <div class="field"><label>Cabeças</label><input id="fQtd" ${ro} class="input" inputmode="numeric" value="${esc(i?i.qtd:'')}" placeholder="opcional"></div></div>
-      <div class="field"><label>Observação</label><textarea id="fObs" ${ro} class="input" placeholder="Ex: pasto X com 28 cabeças (14 M e 14 F)">${esc(i?i.obs:'')}</textarea></div>
-      <div class="field" style="margin-bottom:0"><label>Fotos</label><div class="fotos" id="fFotos"></div>
-        <input id="fArq" type="file" accept="image/*" capture="environment" multiple class="hidden" onchange="addFotos(this.files);this.value=''"></div>
-    </div>
-    <div class="folha-pe">${so?'<button class="btn btn-ghost" style="margin-left:auto" onclick="document.getElementById(\'form\').remove()">Fechar</button>':`${i?`<button class="btn btn-danger esq" onclick="apagar('${i.id}')">Apagar</button>`:'<span class="esq"></span>'}<button class="btn btn-ghost" onclick="document.getElementById('form').remove()">Cancelar</button>${i?'':'<button class="btn btn-ghost" onclick="salvar(null,true)" title="Salva e já abre outro igual">Salvar e +1</button>'}<button class="btn btn-primary" onclick="salvar(${i?`'${i.id}'`:''})">Salvar</button>`}</div>
-  </div>`;
-  document.body.appendChild(m);
-  fotosForm=[];removidas=[];somenteVer=so;desenharFotos();
-  (i&&i.fotos||[]).forEach(fid=>colFotos.doc(fid).get().then(d=>{if(d.exists&&document.getElementById('form')){fotosForm.push({id:fid,dados:d.data().dados});desenharFotos()}}).catch(()=>{}));
+const novoDoc=dados=>({...dados,aba,criadoPorUid:eu.uid,criadoPorNome:meuNome,criadoEm:firebase.firestore.FieldValue.serverTimestamp(),criadoEmLocal:new Date().toISOString()});
+function guardarPelagem(p){if(p&&!pelagens.includes(p))cfgRef.set({pelagens:firebase.firestore.FieldValue.arrayUnion(p)},{merge:true}).catch(()=>{})}
+function gravarFotos(lista,lancId,mesDoc){
+  return lista.map(f=>{if(f.id)return f.id;const ref=colFotos.doc();miniFotos[ref.id]=f.dados;
+    ref.set({dados:f.dados,lancamentoId:lancId,mes:mesDoc,criadoPorUid:eu.uid,criadoEmLocal:new Date().toISOString()}).catch(e=>toast('Foto não salvou: '+e.message));return ref.id});
 }
-/* ---------- fotos: comprime no próprio aparelho (máx. 1280 px, ~150 KB) ---------- */
-let fotosForm=[],removidas=[],somenteVer=false;
+const avisoSalvo=()=>toast(navigator.onLine?'Lançado.':'Guardado no aparelho. Envia quando a internet voltar.');
+
+/* linha verde de lançar (computador) */
+let fotosR=[];
+async function fotosRapido(files){for(const f of [...files].slice(0,4-fotosR.length)){try{fotosR.push({id:null,dados:await comprimir(f)})}catch(e){toast('Não consegui ler essa foto.')}}
+  const b=$('#rFotoBtn');if(b)b.textContent=fotosR.length?`📷 ${fotosR.length} foto${fotosR.length>1?'s':''} ✓`:'📷 Foto'}
+function lancarRapido(){
+  const data=$('#rData').value;if(!data){toast('Informe a data.');$('#rData').focus();return}
+  let dados;
+  if(aba==='nasc'){
+    dados={data,mes:data.slice(0,7),rgdMae:$('#rMae').value.trim().toUpperCase(),receptora:$('#rRec').value.trim().toUpperCase(),sexo:$('#rSexo').value,
+      peso:$('#rPeso').value.trim(),pelagem:$('#rPel').value.trim(),obs:$('#rObs').value.trim()};
+    if(!dados.rgdMae&&!dados.receptora&&!dados.sexo&&!dados.peso&&!dados.pelagem&&!dados.obs){toast('Preencha pelo menos um campo.');$('#rMae').focus();return}
+    if(dados.peso&&numBR(dados.peso)===null){toast('Peso: digite só número.');$('#rPeso').focus();return}
+    const ref=col.doc();ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));guardarPelagem(dados.pelagem);
+    ['rMae','rRec','rPeso','rPel','rObs'].forEach(id=>$('#'+id).value='');$('#rSexo').value='';$('#rMae').focus();
+  }else{
+    const ac=$('#rAcont').value.trim();if(!ac&&!fotosR.length){toast('Escreva o que aconteceu.');$('#rAcont').focus();return}
+    const ref=col.doc();dados={data,mes:data.slice(0,7),acontecimento:ac};dados.fotos=gravarFotos(fotosR,ref.id,dados.mes);
+    ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));
+    $('#rAcont').value='';fotosR=[];fotosRapido([]);$('#rAcont').focus();
+  }
+  avisoSalvo();
+  if(dados.mes!==mes)irMes(dados.mes);
+}
+
+/* formulário (celular, editar, ver) */
+let fotosForm=[],removidas=[],somenteVer=false,sexoForm='';
+function fecharForm(){const f=document.getElementById('form');if(f)f.remove()}
+function abrirForm(id,base){
+  const i=id?itens.find(x=>x.id===id):null,b=base||{},so=!!(i&&!podeEditar(i)),ro=so?'disabled':'',v=k=>esc(i?(i[k]??''):(b[k]??''));
+  const m=document.createElement('div');m.className='modal';m.id='form';m.onclick=e=>{if(e.target===m)m.remove()};
+  const nome=aba==='nasc'?'nascimento':'lançamento';
+  let corpo;
+  if(aba==='nasc'){
+    sexoForm=i?i.sexo||'':'';
+    corpo=`<div class="duas"><div class="field"><label>RGD Mãe</label><input id="fMae" ${ro} class="input" value="${v('rgdMae')}" autocapitalize="characters"></div>
+      <div class="field"><label>N° Receptora</label><input id="fRec" ${ro} class="input" value="${v('receptora')}" autocapitalize="characters"></div></div>
+      <div class="duas"><div class="field"><label>Sexo</label><div class="seg">${['M','F'].map(x=>`<button type="button" ${ro} class="${x} ${sexoForm===x?'on':''}" onclick="sexoForm=sexoForm==='${x}'?'':'${x}';document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('on',b.textContent===sexoForm))">${x}</button>`).join('')}</div></div>
+      <div class="field"><label>Data Nascimento *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):esc(b.data||hoje())}"></div></div>
+      <div class="duas"><div class="field"><label>Peso Nascimento (kg)</label><input id="fPeso" ${ro} class="input" inputmode="decimal" value="${v('peso')}"></div>
+      <div class="field"><label>Pelagem</label><input id="fPel" ${ro} class="input" list="dlPelagem" value="${v('pelagem')}"></div></div>
+      <div class="field" style="margin-bottom:0"><label>Observação</label><input id="fObs" ${ro} class="input" list="dlObs" value="${v('obs')}" placeholder="Natimorto, Morte, Gêmeos ou escreva"></div>`;
+  }else{
+    corpo=`<div class="field"><label>Data *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):esc(b.data||hoje())}"></div>
+      <div class="field"><label>Acontecimento</label><textarea id="fAcont" ${ro} class="input" placeholder="O que aconteceu?">${v('acontecimento')}</textarea></div>
+      <div class="field" style="margin-bottom:0"><label>Fotos</label><div class="fotos" id="fFotos"></div>
+        <input id="fArq" type="file" accept="image/*" capture="environment" multiple class="hidden" onchange="addFotos(this.files);this.value=''"></div>`;
+  }
+  m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>${i?(so?(aba==='nasc'?'Nascimento':'Lançamento'):'Editar '+nome):(aba==='nasc'?'Novo nascimento':'Novo lançamento')}</h2><button class="x" onclick="fecharForm()" aria-label="Fechar">×</button></div>
+    <div class="folha-corpo">${so?`<div class="offline" style="background:#f1f4f2;border-color:#dde4df;color:#4a5850">Lançado por ${esc(i.criadoPorNome||'')}. Só quem lançou (ou o administrador) pode alterar.</div>`:''}${corpo}</div>
+    <div class="folha-pe">${so?'<button class="btn btn-ghost" style="margin-left:auto" onclick="fecharForm()">Fechar</button>':`${i?`<button class="btn btn-danger esq" onclick="apagar('${i.id}')">Excluir</button>`:'<span class="esq"></span>'}<button class="btn btn-ghost" onclick="fecharForm()">Cancelar</button>${i?'':'<button class="btn btn-ghost" onclick="salvar(null,true)" title="Salva e já abre outro">Salvar e +1</button>'}<button class="btn btn-primary" onclick="salvar(${i?`'${i.id}'`:'null'})">Salvar</button>`}</div></div>`;
+  document.body.appendChild(m);
+  fotosForm=[];removidas=[];somenteVer=so;
+  if(aba==='geral'){desenharFotos();(i&&i.fotos||[]).forEach(fid=>colFotos.doc(fid).get().then(d=>{if(d.exists&&document.getElementById('form')){fotosForm.push({id:fid,dados:d.data().dados});desenharFotos()}}).catch(()=>{}))}
+}
+function salvar(id,outro){
+  const data=$('#fData').value;if(!data){toast('Informe a data.');return}
+  let dados;
+  if(aba==='nasc'){
+    dados={data,mes:data.slice(0,7),rgdMae:$('#fMae').value.trim().toUpperCase(),receptora:$('#fRec').value.trim().toUpperCase(),sexo:sexoForm,peso:$('#fPeso').value.trim(),pelagem:$('#fPel').value.trim(),obs:$('#fObs').value.trim()};
+    if(dados.peso&&numBR(dados.peso)===null){toast('Peso: digite só número.');return}
+    guardarPelagem(dados.pelagem);
+  }else{
+    dados={data,mes:data.slice(0,7),acontecimento:$('#fAcont').value.trim()};
+    if(!dados.acontecimento&&!fotosForm.length){toast('Escreva o que aconteceu.');return}
+  }
+  const ref=id?col.doc(id):col.doc();
+  if(aba==='geral'){dados.fotos=gravarFotos(fotosForm,ref.id,dados.mes);removidas.forEach(fid=>colFotos.doc(fid).delete().catch(()=>{}))}
+  if(id)ref.update({...dados,alteradoEm:firebase.firestore.FieldValue.serverTimestamp(),alteradoPor:meuNome}).catch(e=>toast('Não salvou: '+e.message));
+  else ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));
+  fecharForm();avisoSalvo();
+  if(dados.mes!==mes)irMes(dados.mes);
+  if(outro)abrirForm(null,{data:dados.data,pelagem:dados.pelagem});
+}
+function apagar(id){
+  if(!confirm('Excluir este lançamento?'))return;
+  const i=todos.find(x=>x.id===id);(i&&i.fotos||[]).forEach(fid=>colFotos.doc(fid).delete().catch(()=>{}));
+  col.doc(id).delete().catch(e=>toast('Não excluiu: '+e.message));
+  fecharForm();toast('Excluído.');
+}
+
+/* ---------- fotos: comprimidas no próprio aparelho (máx. 1280 px, ~150 KB) ---------- */
 function desenharFotos(){
   const el=document.getElementById('fFotos');if(!el)return;
-  el.innerHTML=fotosForm.map((f,k)=>`<div class="foto"><img src="${f.dados}" onclick="verFoto(${k})">${somenteVer?'':`<button type="button" onclick="tirarFoto(${k})" aria-label="Remover">×</button>`}</div>`).join('')
+  el.innerHTML=fotosForm.map((f,k)=>`<div class="foto"><img src="${f.dados}" onclick="verFoto(fotosForm[${k}].dados)">${somenteVer?'':`<button type="button" onclick="tirarFoto(${k})" aria-label="Remover">×</button>`}</div>`).join('')
     +(!somenteVer&&fotosForm.length<4?`<div class="addfoto" onclick="document.getElementById('fArq').click()">📷<br>Adicionar</div>`:'')
     +(somenteVer&&!fotosForm.length?'<span style="font-size:13px;color:var(--muito-suave)">Sem fotos</span>':'');
 }
 function comprimir(arq){return new Promise((ok,erro)=>{const r=new FileReader();r.onerror=erro;r.onload=()=>{const img=new Image();img.onerror=erro;img.onload=()=>{
-  const M=1280,esc=Math.min(1,M/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*esc);c.height=Math.round(img.height*esc);
+  const M=1280,k=Math.min(1,M/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
   c.getContext('2d').drawImage(img,0,0,c.width,c.height);let q=0.7,d=c.toDataURL('image/jpeg',q);while(d.length>600000&&q>0.3){q-=0.1;d=c.toDataURL('image/jpeg',q)}ok(d)};img.src=r.result};r.readAsDataURL(arq)})}
 async function addFotos(files){for(const f of [...files].slice(0,4-fotosForm.length)){try{fotosForm.push({id:null,dados:await comprimir(f)})}catch(e){toast('Não consegui ler essa foto.')}}desenharFotos()}
 function tirarFoto(k){const f=fotosForm[k];if(f.id)removidas.push(f.id);fotosForm.splice(k,1);desenharFotos()}
-function verFoto(k){const z=document.createElement('div');z.className='zoom';z.onclick=()=>z.remove();z.innerHTML=`<img src="${fotosForm[k].dados}">`;document.body.appendChild(z)}
-function salvar(id,outro){
-  const t=document.querySelector('.tipo.on');if(!t){toast('Escolha o que aconteceu.');return}
-  const data=$('#fData').value;if(!data){toast('Informe a data.');return}
-  const dados={acontecimento:t.dataset.t,data,mes:data.slice(0,7),rgd:$('#fRgd').value.trim().toUpperCase(),local:$('#fLocal').value.trim(),qtd:$('#fQtd').value.trim(),obs:$('#fObs').value.trim()};
-  const lancId=id||col.doc().id;
-  dados.fotos=fotosForm.map(f=>{if(f.id)return f.id;const ref=colFotos.doc();miniFotos[ref.id]=f.dados;ref.set({dados:f.dados,lancamentoId:lancId,mes:dados.mes,criadoPorUid:eu.uid,criadoEmLocal:new Date().toISOString()}).catch(e=>toast('Foto não salvou: '+e.message));return ref.id});
-  removidas.forEach(fid=>colFotos.doc(fid).delete().catch(()=>{}));
-  // Gravação vai pra fila do aparelho na hora (funciona sem internet) — não espera o servidor.
-  if(id){col.doc(id).update({...dados,alteradoEm:firebase.firestore.FieldValue.serverTimestamp(),alteradoPor:meuNome}).catch(e=>toast('Não salvou: '+e.message))}
-  else{col.doc(lancId).set({...dados,criadoPorUid:eu.uid,criadoPorNome:meuNome,criadoEm:firebase.firestore.FieldValue.serverTimestamp(),criadoEmLocal:new Date().toISOString()}).catch(e=>toast('Não salvou: '+e.message))}
-  if(dados.local&&!locais.includes(dados.local))cfgRef.set({locais:firebase.firestore.FieldValue.arrayUnion(dados.local)},{merge:true}).catch(()=>{});
-  document.getElementById('form').remove();
-  toast(navigator.onLine?'Lançamento salvo.':'Guardado no aparelho. Envia quando a internet voltar.');
-  if(dados.mes!==mes)irMes(dados.mes);
-  if(outro)abrirForm(null,{data:dados.data,acontecimento:dados.acontecimento,local:dados.local});
-}
-/* ---------- largura das colunas: arrastar a borda do título (duplo clique volta ao padrão) ---------- */
-const LARG_KEY='app-nelore-mra-caderneta-larguras';
-function aplicarLarguras(){
-  const cols=[...document.querySelectorAll('#tabd col')],tb=$('#tabd table');let l=null;
-  try{l=JSON.parse(localStorage.getItem(LARG_KEY)||'null')}catch(e){}
-  if(l&&l.length===cols.length){cols.forEach((c,i)=>c.style.width=l[i]+'px');tb.style.width=l.reduce((a,b)=>a+b,0)+'px';tb.style.minWidth='0'}
-}
-function prepararLarguras(){
-  document.querySelectorAll('#tabd tr.cabcol th').forEach((th,i,todos)=>{if(i===todos.length-1)return;th.style.position='sticky';const h=document.createElement('span');h.className='rs';h.title='Arraste pra mudar a largura (duplo clique volta ao padrão)';th.appendChild(h);
-    h.addEventListener('mousedown',e=>{e.preventDefault();e.stopPropagation();
-      const ths=[...document.querySelectorAll('#tabd tr.cabcol th')],ws=ths.map(t=>t.offsetWidth),x0=e.clientX,w0=ws[i],cols=[...document.querySelectorAll('#tabd col')],tb=$('#tabd table');
-      const mv=ev=>{ws[i]=Math.max(40,w0+ev.clientX-x0);cols.forEach((c,k)=>c.style.width=ws[k]+'px');tb.style.width=ws.reduce((a,b)=>a+b,0)+'px';tb.style.minWidth='0'};
-      const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);try{localStorage.setItem(LARG_KEY,JSON.stringify(ws))}catch(e){}};
-      document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up)});
-    h.addEventListener('dblclick',()=>{try{localStorage.removeItem(LARG_KEY)}catch(e){}location.reload()})});
-  aplicarLarguras();
-}
-prepararLarguras();
+function verFoto(src){const z=document.createElement('div');z.className='zoom';z.onclick=()=>z.remove();z.innerHTML=`<img src="${src}">`;document.body.appendChild(z)}
+function verFotoId(id){if(miniFotos[id])verFoto(miniFotos[id])}
 
-/* ---------- linha de lançamento rápido (computador) ---------- */
-function prepararRapido(){
-  $('#rTipo').innerHTML='<option value="">— escolha —</option>'+TIPOS.map(t=>`<option>${esc(t[0])}</option>`).join('');
-  $('#rData').value=hoje();
-  ['rData','rTipo','rRgd','rLocal','rQtd','rObs'].forEach(id=>$('#'+id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarRapido()}}));
-}
-function lancarRapido(){
-  const tipo=$('#rTipo').value,data=$('#rData').value;
-  if(!tipo){toast('Escolha o acontecimento.');$('#rTipo').focus();return}
-  if(!data){toast('Informe a data.');$('#rData').focus();return}
-  const dados={acontecimento:tipo,data,mes:data.slice(0,7),rgd:$('#rRgd').value.trim().toUpperCase(),local:$('#rLocal').value.trim(),qtd:$('#rQtd').value.trim(),obs:$('#rObs').value.trim(),fotos:[]};
-  col.doc().set({...dados,criadoPorUid:eu.uid,criadoPorNome:meuNome,criadoEm:firebase.firestore.FieldValue.serverTimestamp(),criadoEmLocal:new Date().toISOString()}).catch(e=>toast('Não salvou: '+e.message));
-  if(dados.local&&!locais.includes(dados.local))cfgRef.set({locais:firebase.firestore.FieldValue.arrayUnion(dados.local)},{merge:true}).catch(()=>{});
-  ['rRgd','rQtd','rObs'].forEach(id=>$('#'+id).value='');$('#rRgd').focus();
-  if(dados.mes!==mes){irMes(dados.mes);toast('Lançado em '+nomeMes(dados.mes)+'.')}
-}
-function apagar(id){
-  if(!confirm('Apagar este lançamento?'))return;
-  const i=itens.find(x=>x.id===id);(i&&i.fotos||[]).forEach(fid=>colFotos.doc(fid).delete().catch(()=>{}));
-  col.doc(id).delete().catch(e=>toast('Não apagou: '+e.message));
-  const f=document.getElementById('form');if(f)f.remove();toast('Lançamento apagado.');
-}
+/* ---------- Excel (planilha simples) ---------- */
 function exportarMes(){
   if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
   const v=visiveis().slice().reverse();if(!v.length){toast('Nada pra exportar neste mês.');return}
-  const ws=XLSX.utils.json_to_sheet(v.map(i=>({DATA:fmtData(i.data),ACONTECIMENTO:i.acontecimento,RGD:i.rgd||'',LOCAL:i.local||'',QTD_CABECAS:i.qtd||'',OBSERVACAO:i.obs||'',FOTOS:(i.fotos||[]).length||'',LANCADO_POR:i.criadoPorNome||''})));
-  ws['!cols']=[{wch:12},{wch:24},{wch:14},{wch:20},{wch:12},{wch:50},{wch:7},{wch:18}];
-  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Caderneta '+mes);XLSX.writeFile(wb,`caderneta_${mes}.xlsx`);
+  let ws;
+  if(aba==='nasc'){
+    ws=XLSX.utils.json_to_sheet(v.map(i=>({RGD_MAE:i.rgdMae||'',N_RECEPTORA:i.receptora||'',SEXO:i.sexo||'',DATA_NASCIMENTO:fmtData(i.data),PESO_KG:numBR(i.peso)??'',PELAGEM:i.pelagem||'',OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''})));
+    ws['!cols']=[{wch:14},{wch:14},{wch:6},{wch:16},{wch:9},{wch:16},{wch:30},{wch:18}];
+  }else{
+    ws=XLSX.utils.json_to_sheet(v.map(i=>({DATA:fmtData(i.data),ACONTECIMENTO:i.acontecimento||'',FOTOS:(i.fotos||[]).length||'',LANCADO_POR:i.criadoPorNome||''})));
+    ws['!cols']=[{wch:12},{wch:70},{wch:7},{wch:18}];
+  }
+  const nome=aba==='nasc'?'Nascimentos':'Lancamento Geral';
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,nome);XLSX.writeFile(wb,`caderneta_${aba==='nasc'?'nascimentos':'geral'}_${mes}.xlsx`);
 }
 if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
 </script>
