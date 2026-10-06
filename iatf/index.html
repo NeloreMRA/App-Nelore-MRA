@@ -1040,7 +1040,9 @@ function openExcelFilter(ev,kind,key,label){
   document.body.appendChild(p);const r=ev.currentTarget.getBoundingClientRect(),w=240;let left=Math.min(r.left,window.innerWidth-w-10);left=Math.max(10,left);let top=r.bottom+5;if(top+330>window.innerHeight)top=Math.max(10,r.top-330);p.style.left=left+'px';p.style.top=top+'px';
 } window.openExcelFilter=openExcelFilter;
 function excelToggleValue(i,on){if(!excelFilterContext)return;const v=excelFilterContext.values[i];on?excelFilterContext.selected.add(v):excelFilterContext.selected.delete(v);const all=$('#excelAll');if(all)all.checked=excelFilterContext.selected.size===excelFilterContext.values.length} window.excelToggleValue=excelToggleValue;
-function excelSelectAll(on){if(!excelFilterContext)return;excelFilterContext.selected=on?new Set(excelFilterContext.values):new Set();$$('#excelFilterPopup .excel-value input').forEach(x=>x.checked=on)} window.excelSelectAll=excelSelectAll;
+function excelVisiveis(){return $$('#excelFilterPopup .excel-value').map((x,i)=>x.classList.contains('hidden')?-1:i).filter(i=>i>-1)}
+function excelSelectAll(on){if(!excelFilterContext)return;const q=($('#excelFilterPopup .excel-search')||{}).value;if(!q||!q.trim()){excelFilterContext.selected=on?new Set(excelFilterContext.values):new Set();$$('#excelFilterPopup .excel-value input').forEach(x=>x.checked=on);return}
+  const ins=$$('#excelFilterPopup .excel-value input');excelVisiveis().forEach(i=>{const v=excelFilterContext.values[i];on?excelFilterContext.selected.add(v):excelFilterContext.selected.delete(v);ins[i].checked=on})} window.excelSelectAll=excelSelectAll;
 function excelSearch(q){q=norm(q).toLowerCase();$$('#excelFilterPopup .excel-value').forEach(x=>x.classList.toggle('hidden',q&&!norm(x.dataset.search).toLowerCase().includes(q)))} window.excelSearch=excelSearch;
 function excelSearchEnter(e){
   if(e.key!=='Enter')return;
@@ -1059,7 +1061,9 @@ function renderByKind(k){
   const fns={animals:renderAnimalTable,iatf:renderIatfRows,acasal:renderAcasalTable,stock:renderStock,embrioes:renderEmbrioesTable,fiv:renderFivTable};
   (fns[k]||function(){})();
 }
-function excelApply(){if(!excelFilterContext)return;const {kind,key,values,selected}=excelFilterContext;if(selected.size===values.length)delete excelFilters[kind][key];else excelFilters[kind][key]=[...selected];const k=kind;closeExcelFilter();renderByKind(k)} window.excelApply=excelApply;
+function excelApply(){if(!excelFilterContext)return;const {kind,key,values}=excelFilterContext;let selected=excelFilterContext.selected;
+  // digitou na busca: vale só o que aparece na lista (marcado), igual Excel
+  const q=($('#excelFilterPopup .excel-search')||{}).value;if(q&&q.trim()){const vis=new Set(excelVisiveis().map(i=>values[i]));selected=new Set([...selected].filter(v=>vis.has(v)));if(!selected.size)return}if(selected.size===values.length)delete excelFilters[kind][key];else excelFilters[kind][key]=[...selected];const k=kind;closeExcelFilter();renderByKind(k)} window.excelApply=excelApply;
 function excelClear(){if(!excelFilterContext)return;const {kind,key}=excelFilterContext;delete excelFilters[kind][key];const k=kind;closeExcelFilter();renderByKind(k)} window.excelClear=excelClear;
 function excelSort(dir){if(!excelFilterContext)return;const {kind,key}=excelFilterContext;if(kind==='animals')animalSort={key,dir};else if(kind==='iatf')iatfSort={key,dir};else if(kind==='acasal')acasalSort={key,dir};else if(kind==='embrioes')embrioesSort={key,dir};else if(kind==='fiv')fivSort={key,dir};else stockSort={key,dir};closeExcelFilter();renderByKind(kind)} window.excelSort=excelSort;
 document.addEventListener('click',e=>{const p=$('#excelFilterPopup');if(p&&!p.contains(e.target)&&!e.target.closest('.excel-filter-btn'))closeExcelFilter()});
