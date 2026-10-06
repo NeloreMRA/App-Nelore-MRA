@@ -1272,7 +1272,10 @@ function fivSection(){
   const bulls=Object.values(byBull).map(b=>({...b,...rateOf(b.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||String(a.name).localeCompare(String(b.name),'pt-BR'));
   const bl=dashMore.fivBulls?bulls:bulls.slice(0,10);
   const cols=[...datas.map((d,i)=>({k:i,l:`${i+1}ª`,tt:fmtDate(d)})),...(temSemData?[{k:'s',l:'Sem data',tt:''}]:[])];
-  const pctCel=rs=>{const st=rateOf(rs,r=>r.resultado);return st.n?`<div style="font-size:10px;color:#69746c">${pctTxt(st.rate)}</div>`:''};
+  // célula do touro numa FIV: Prenhas/Vazias (PRT conta como vazia) e a % embaixo
+  const pvCel=rs=>{const st=rateOf(rs,r=>r.resultado);
+    if(!st.n)return `<span style="color:#9aa49d">—</span><div style="font-size:10px;color:#9aa49d">${rs.length} sem result.</div>`;
+    return `<strong style="color:#216440">${st.p}</strong><span style="color:#9aa49d"> / </span><strong style="color:#c08a2e">${st.n-st.p}</strong><div style="font-size:10.5px;font-weight:700;color:#233129">${pctTxt(st.rate)}</div>`};
   // um quadrinho por FIV (igual IATF): % geral grande + barra por tipo
   const fivCard=(titulo,data,rs,total)=>{const g=rateOf(rs,r=>r.resultado);const ts=tipos.map(t=>[t,rateOf(rs.filter(r=>r.tipo===t),r=>r.resultado)]).filter(([,st])=>st.n);
     return `<div class="dcard${total?' total':''}"><div class="hd"><div><div class="t">${esc(titulo)}</div>${data?`<div class="d">${esc(data)}</div>`:''}</div><div class="big">${pctTxt(g.rate)}<small>${g.p} de ${g.n} prenhas · ${rs.length} transf.</small></div></div>
@@ -1293,8 +1296,8 @@ function fivSection(){
       <div class="dcard"><div class="hd"><div class="t">% de prenhez por tipo</div></div>${tipos.map(t=>barRow(t,DASH_GOLD,rateOf(rows.filter(r=>r.tipo===t),r=>r.resultado))).join('')}</div>
     </div>
   </div>
-  <div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">Touros mais usados na FIV</div></div>
-    ${bulls.length?`<div style="overflow-x:auto"><table class="dtable"><thead><tr><th>Touro</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Total</th><th>% de prenhez (geral)</th></tr></thead><tbody>${bl.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>{const rs=b.rows.filter(r=>fivCol(r)===c.k);return `<td class="num">${rs.length?`<strong>${rs.length}</strong>${pctCel(rs)}`:'—'}</td>`}).join('')}<td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
+  <div class="dcard" style="margin-top:12px"><div class="hd"><div><div class="t">Touros mais usados na FIV</div><div class="d">Em cada FIV: <b style="color:#216440">Prenhas</b> / <b style="color:#c08a2e">Vazias</b> (PRT conta como vazia) e a % embaixo</div></div></div>
+    ${bulls.length?`<div style="overflow-x:auto"><table class="dtable"><thead><tr><th>Touro</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Geral P / V</th><th class="num">Transf.</th><th>% de prenhez (geral)</th></tr></thead><tbody>${bl.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>{const rs=b.rows.filter(r=>fivCol(r)===c.k);return `<td class="num">${rs.length?pvCel(rs):'<span style="color:#c9d0cb">·</span>'}</td>`}).join('')}<td class="num">${pvCel(b.rows)}</td><td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
     ${bulls.length>10?`<button class="dmore" onclick="dashToggle('fivBulls')">${dashMore.fivBulls?'− Mostrar só os 10 primeiros':`+ Ver todos os touros (${bulls.length})`}</button>`:''}`:'<div class="dempty">Nenhuma FIV lançada nesta estação.</div>'}
   </div>`;
 }
