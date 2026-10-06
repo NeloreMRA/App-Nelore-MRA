@@ -158,7 +158,7 @@ auth.onAuthStateChanged(async u=>{
   if(!u){$('#app').classList.add('hidden');$('#login').classList.remove('hidden');return}
   ehAdmin=String(u.email||'').toLowerCase()===ADMIN_EMAIL;
   perfil=null;
-  try{const d=await fs.collection('users').doc(u.uid).get();perfil=d.exists?d.data():null}catch(e){console.warn(e)}
+  try{const d=await fs.collection('users').doc(u.uid).get();perfil=d.exists?d.data():null;try{localStorage.setItem('app-nelore-mra-perfil-'+u.uid,JSON.stringify(perfil))}catch(_){}}catch(e){console.warn(e);try{perfil=JSON.parse(localStorage.getItem('app-nelore-mra-perfil-'+u.uid)||'null')}catch(_){}}
   $('#login').classList.add('hidden');$('#app').classList.remove('hidden');
   $('#btnConfig').classList.toggle('hidden',!ehAdmin);
   irPara('inicio');
