@@ -1274,32 +1274,26 @@ function fivSection(){
   const cols=[...datas.map((d,i)=>({k:i,l:`${i+1}ª`,tt:fmtDate(d)})),...(temSemData?[{k:'s',l:'Sem data',tt:''}]:[])];
   // célula do touro numa FIV: Prenhas/Vazias (PRT conta como vazia) e a % embaixo
   const pvCel=rs=>{const st=rateOf(rs,r=>r.resultado);
-    if(!st.n)return `<span style="color:#9aa49d">—</span><div style="font-size:10px;color:#9aa49d">${rs.length} sem result.</div>`;
-    return `<strong style="color:#216440">${st.p}</strong><span style="color:#9aa49d"> / </span><strong style="color:#c08a2e">${st.n-st.p}</strong><div style="font-size:10.5px;font-weight:700;color:#233129">${pctTxt(st.rate)}</div>`};
+    if(!st.n)return '—';
+    return `<strong style="color:#216440">${st.p}</strong><span> / </span><strong style="color:#c08a2e">${st.n-st.p}</strong><div style="font-size:10.5px;font-weight:700;color:#233129">${pctTxt(st.rate)}</div>`};
   // um quadrinho por FIV (igual IATF): % geral grande + barra por tipo
   const fivCard=(titulo,data,rs,total)=>{const g=rateOf(rs,r=>r.resultado);const ts=tipos.map(t=>[t,rateOf(rs.filter(r=>r.tipo===t),r=>r.resultado)]).filter(([,st])=>st.n);
-    return `<div class="dcard${total?' total':''}"><div class="hd"><div><div class="t">${esc(titulo)}</div>${data?`<div class="d">${esc(data)}</div>`:''}</div><div class="big">${pctTxt(g.rate)}<small>${g.p} de ${g.n} prenhas · ${rs.length} transf.</small></div></div>
+    return `<div class="dcard${total?' total':''}"><div class="hd"><div><div class="t">${esc(titulo)}</div>${data?`<div class="d">${esc(data)}</div>`:''}</div><div class="big">${pctTxt(g.rate)}<small>${g.p} de ${g.n} prenhas</small></div></div>
     ${ts.map(([t,st])=>barRow(t,DASH_GOLD,st)).join('')||'<div class="dempty">Sem resultado ainda</div>'}</div>`};
   const cards=`<div class="dash-grid" style="margin-top:12px">${fivCard('Todas as FIVs','',rows,true)}${datas.map((d,i)=>{const l=fivLocal(d);return fivCard(`${i+1}ª FIV`,fmtDate(d)+(l?' · '+l:''),rows.filter(r=>r.data===d),false)}).join('')}</div>`;
   const kpi=(l,v)=>`<div class="dkpi" style="--k:#b39a3b"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+  // tabela por FIV (touros e doadoras no mesmo formato): Prenhas / Vazias em cada FIV com a % embaixo
+  const tabelaPorFiv=(titulo,nomeCol,lista,mais,rotulo)=>{const vis=dashMore[mais]?lista:lista.slice(0,10);
+    return `<div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">${titulo}</div></div>
+    ${lista.length?`<div style="overflow-x:auto"><table class="dtable"><thead><tr><th>${nomeCol}</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Geral P / V</th><th class="num">Transf.</th><th style="min-width:150px">% de prenhez (geral)</th></tr></thead><tbody>${vis.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>{const rs=b.rows.filter(r=>fivCol(r)===c.k);return `<td class="num">${rs.length?pvCel(rs):''}</td>`}).join('')}<td class="num">${pvCel(b.rows)}</td><td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
+    ${lista.length>10?`<button class="dmore" onclick="dashToggle('${mais}')">${dashMore[mais]?'− Mostrar só 10':`+ Ver ${rotulo} (${lista.length})`}</button>`:''}`:'<div class="dempty">Nenhuma FIV lançada nesta estação.</div>'}
+  </div>`};
   const byDonor={};rows.forEach(r=>{const k=norm(r.rgdDoadora);(byDonor[k]=byDonor[k]||{name:r.rgdDoadora,rows:[]}).rows.push(r)});
-  const donors=Object.values(byDonor).map(d=>({name:d.name,t:d.rows.length,...rateOf(d.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||(b.rate??-1)-(a.rate??-1)||String(a.name).localeCompare(String(b.name),'pt-BR',{numeric:true}));
-  const dl=dashMore.donors?donors:donors.slice(0,10);
+  const donors=Object.values(byDonor).map(d=>({name:d.name,rows:d.rows,t:d.rows.length,...rateOf(d.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||(b.rate??-1)-(a.rate??-1)||String(a.name).localeCompare(String(b.name),'pt-BR',{numeric:true}));
   return `<div class="dash-kpis">${kpi('Transferências',rows.length)}${kpi('Prenhez FIV',pctTxt(g.rate))}${kpi('Prenhas',g.p)}${kpi('Aguardando resultado',aguard)}${kpi('Doadoras',doadoras)}${kpi('FIVs feitas',datas.length)}</div>
   ${rows.length?cards:''}
-  <div class="dash-2" style="margin-top:12px">
-    <div class="dcard"><div class="hd"><div class="t">% de prenhez por doadora</div></div>
-      ${donors.length?`<table class="dtable"><thead><tr><th>Doadora</th><th>% de prenhez</th><th class="num">Prenhas</th><th class="num">Transferências</th></tr></thead><tbody>${dl.map(d=>`<tr><td><strong>${esc(d.name)}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${d.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(d.rate)}</b></div></td><td class="num">${d.p}/${d.n}</td><td class="num"><strong>${d.t}</strong></td></tr>`).join('')}</tbody></table>
-      ${donors.length>10?`<button class="dmore" onclick="dashToggle('donors')">${dashMore.donors?'− Mostrar só as 10 primeiras':`+ Ver todas as doadoras (${donors.length})`}</button>`:''}`:'<div class="dempty">Nenhuma FIV lançada nesta estação.</div>'}
-    </div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="dcard"><div class="hd"><div class="t">% de prenhez por tipo</div></div>${tipos.map(t=>barRow(t,DASH_GOLD,rateOf(rows.filter(r=>r.tipo===t),r=>r.resultado))).join('')}</div>
-    </div>
-  </div>
-  <div class="dcard" style="margin-top:12px"><div class="hd"><div><div class="t">Touros mais usados na FIV</div><div class="d">Em cada FIV: <b style="color:#216440">Prenhas</b> / <b style="color:#c08a2e">Vazias</b> (PRT conta como vazia) e a % embaixo</div></div></div>
-    ${bulls.length?`<div style="overflow-x:auto"><table class="dtable"><thead><tr><th>Touro</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Geral P / V</th><th class="num">Transf.</th><th>% de prenhez (geral)</th></tr></thead><tbody>${bl.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>{const rs=b.rows.filter(r=>fivCol(r)===c.k);return `<td class="num">${rs.length?pvCel(rs):'<span style="color:#c9d0cb">·</span>'}</td>`}).join('')}<td class="num">${pvCel(b.rows)}</td><td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
-    ${bulls.length>10?`<button class="dmore" onclick="dashToggle('fivBulls')">${dashMore.fivBulls?'− Mostrar só os 10 primeiros':`+ Ver todos os touros (${bulls.length})`}</button>`:''}`:'<div class="dempty">Nenhuma FIV lançada nesta estação.</div>'}
-  </div>`;
+  ${tabelaPorFiv('Touros mais usados na FIV','Touro',bulls,'fivBulls','todos os touros')}
+  ${tabelaPorFiv('% de prenhez por doadora','Doadora',donors,'donors','todas as doadoras')}`;
 }
 function dashboard(){
   title('Dashboard','Resumo da '+activeSeason().name);
@@ -2410,7 +2404,7 @@ function fivResumoHTML(){
   const box=(t,cells)=>`<div class="fiv-q"><div class="fiv-q-t">${t}</div><div class="fiv-q-c">${cells.map(([l,v,cor])=>`<div><span>${l}</span><strong style="color:${cor||'#233129'}">${v}</strong></div>`).join('')}</div></div>`;
   return box('Quantidade',[['Prenha',q.p,'#216440'],['Vazia',q.v,'#c08a2e'],['PRT',q.prt,'#b8483a'],['Total',q.total]])
     +box('Resultado',[['% Prenha',pctTxt(q.pctP),'#216440'],['% Vazia',pctTxt(q.pctV),'#c08a2e']])
-    +(q.sem?`<div class="muted" style="align-self:center;font-size:11px">${q.sem} sem resultado ainda<br>(PRT conta como vazia)</div>`:`<div class="muted" style="align-self:center;font-size:11px">PRT conta como vazia</div>`);
+;
 }
 function atualizarResumoFiv(){const el=$('#fivResumo');if(el)el.innerHTML=fivResumoHTML();const b=$('#fivPrtBtn');if(b)b.textContent=`⟳ PRTs (${fivDaData().filter(r=>normResult(r.resultado)==='PRT').length})`}
 function openFivPrt(){
@@ -2494,8 +2488,8 @@ async function exportFiv(comResumo=true){
   const cab=['Nº','RGD DOADORA','1º ACASALAMENTO','Nº RECEPTORA','Nº ABCZ','TIPO','DATA','LOCAL','RESULTADO'];
   const dados=rows.map(r=>[r.n||'',r.rgdDoadora,r.sire||'',r.receptora||'',r.abcz||'',r.tipo||'',fmtDate(r.data||''),fivLocal(r.data),r.resultado||'']);
   const q=fivResumo(fivDaData());
-  const topo=comResumo?[[fivTituloSaida()],[],['PRENHA','VAZIA','PRT','TOTAL'],[q.p,q.v,q.prt,q.total],[],['% PRENHA','% VAZIA'],[pctTxt(q.pctP),pctTxt(q.pctV)],['(PRT conta como vazia'+(q.sem?`; ${q.sem} sem resultado`:'')+')'],[]]:[];
-  const negrito=comResumo?[1,3,6,10]:[1];
+  const topo=comResumo?[[fivTituloSaida()],[],['PRENHA','VAZIA','PRT','TOTAL'],[q.p,q.v,q.prt,q.total],[],['% PRENHA','% VAZIA'],[pctTxt(q.pctP),pctTxt(q.pctV)],[]]:[];
+  const negrito=comResumo?[1,3,6,9]:[1];
   const linhas=[...topo,cab,...dados];
   const nome=`fiv-${fivAtual()||'sem-data'}.xlsx`;
   if(typeof ExcelJS==='undefined'){
@@ -2511,7 +2505,7 @@ function printFiv(comResumo=true){
   const rows=fivRowsFiltered().filter(r=>String(r.rgdDoadora||'').trim());
   if(!rows.length)return alert('Nenhuma linha pra imprimir.');
   const q=fivResumo(fivDaData());
-  const resumo=comResumo?`<div style="display:flex;gap:14px;margin:0 0 14px"><table style="width:auto"><thead><tr><th>Prenha</th><th>Vazia</th><th>PRT</th><th>Total</th></tr></thead><tbody><tr><td>${q.p}</td><td>${q.v}</td><td>${q.prt}</td><td><b>${q.total}</b></td></tr></tbody></table><table style="width:auto"><thead><tr><th>% Prenha</th><th>% Vazia</th></tr></thead><tbody><tr><td><b>${pctTxt(q.pctP)}</b></td><td><b>${pctTxt(q.pctV)}</b></td></tr></tbody></table><div style="font-size:10px;color:#666;align-self:end">PRT conta como vazia${q.sem?` · ${q.sem} sem resultado`:''}</div></div>`:'';
+  const resumo=comResumo?`<div style="display:flex;gap:14px;margin:0 0 14px"><table style="width:auto"><thead><tr><th>Prenha</th><th>Vazia</th><th>PRT</th><th>Total</th></tr></thead><tbody><tr><td>${q.p}</td><td>${q.v}</td><td>${q.prt}</td><td><b>${q.total}</b></td></tr></tbody></table><table style="width:auto"><thead><tr><th>% Prenha</th><th>% Vazia</th></tr></thead><tbody><tr><td><b>${pctTxt(q.pctP)}</b></td><td><b>${pctTxt(q.pctV)}</b></td></tr></tbody></table></div>`:'';
   const trs=rows.map(r=>`<tr><td style="width:34px">${r.n||''}</td><td>${esc(r.rgdDoadora)}</td><td>${esc(r.sire||'')}</td><td>${esc(r.receptora||'')}</td><td>${esc(r.abcz||'')}</td><td>${esc(r.tipo||'')}</td><td>${esc(r.resultado||'')}</td></tr>`).join('');
   printHTML(fivTituloSaida(),`${resumo}<table><thead><tr><th>Nº</th><th>RGD Doadora</th><th>1º Acasalamento</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Resultado</th></tr></thead><tbody>${trs}</tbody></table>`);
 } window.printFiv=printFiv;
