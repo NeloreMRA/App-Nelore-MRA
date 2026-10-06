@@ -2846,7 +2846,7 @@ async function bootAuth(){
         const isAdmin=String(user.email||'').toLowerCase()===ADMIN_EMAIL;
         if(!isAdmin){
           let perfil=null;
-          try{const d=await firebase.firestore().collection('users').doc(user.uid).get();perfil=d.exists?d.data():null}catch(e){console.warn(e)}
+          try{const d=await firebase.firestore().collection('users').doc(user.uid).get();perfil=d.exists?d.data():null;try{localStorage.setItem('app-nelore-mra-perfil-'+user.uid,JSON.stringify(perfil))}catch(_){}}catch(e){console.warn(e);try{perfil=JSON.parse(localStorage.getItem('app-nelore-mra-perfil-'+user.uid)||'null')}catch(_){}}
           if(!perfil||perfil.ativo===false||!(perfil.apps&&perfil.apps.iatf)){alert('Você não tem acesso ao IATF. Fale com o administrador.');location.href='../index.html';return}
           const pg=perfil.paginas&&perfil.paginas.iatf;
           ALLOWED_PAGES=Array.isArray(pg)&&pg.length?pg:null;

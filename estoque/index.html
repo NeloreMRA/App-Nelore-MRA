@@ -199,7 +199,7 @@ firebase.auth().onAuthStateChanged(async u=>{
   if(!u){location.href='../index.html';return}
   eu=u;const ehAdmin=String(u.email||'').toLowerCase()===ADMIN_EMAIL;
   let perfil=null;
-  try{const d=await fs.collection('users').doc(u.uid).get();perfil=d.exists?d.data():null}catch(e){console.warn(e)}
+  try{const d=await fs.collection('users').doc(u.uid).get();perfil=d.exists?d.data():null;try{localStorage.setItem('app-nelore-mra-perfil-'+u.uid,JSON.stringify(perfil))}catch(_){}}catch(e){console.warn(e);try{perfil=JSON.parse(localStorage.getItem('app-nelore-mra-perfil-'+u.uid)||'null')}catch(_){}}
   if(!ehAdmin&&(!perfil||perfil.ativo===false||!(perfil.apps&&perfil.apps.estoque))){alert('Você não tem acesso ao Estoque Gado. Fale com o administrador.');location.href='../index.html';return}
   meuNome=ehAdmin?'Administrador':((perfil&&(perfil.nome||perfil.usuario))||String(u.email).replace(USER_DOMAIN,''));
   $('#quem').textContent=meuNome;

@@ -1261,7 +1261,7 @@ async function iniciarFirebase(){
     ABAS_PERMITIDAS = null;
     if(String(usuario.email || '').toLowerCase() !== ADMIN_EMAIL){
       let perfil = null;
-      try{ const d = await fbDb.collection('users').doc(usuario.uid).get(); perfil = d.exists ? d.data() : null; }catch(e){ console.warn(e); }
+      try{const d=await fbDb.collection('users').doc(usuario.uid).get();perfil=d.exists?d.data():null;try{localStorage.setItem('app-nelore-mra-perfil-'+usuario.uid,JSON.stringify(perfil))}catch(_){}}catch(e){console.warn(e);try{perfil=JSON.parse(localStorage.getItem('app-nelore-mra-perfil-'+usuario.uid)||'null')}catch(_){}}
       if(!perfil || perfil.ativo === false || !(perfil.apps && perfil.apps.contabil)){ alert('Você não tem acesso ao Contábil. Fale com o administrador.'); location.href = '../index.html'; return; }
       const pg = perfil.paginas && perfil.paginas.contabil;
       ABAS_PERMITIDAS = Array.isArray(pg) && pg.length ? pg : null;
