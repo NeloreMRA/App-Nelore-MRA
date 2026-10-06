@@ -258,6 +258,7 @@ let excelFilters={animals:{},iatf:{},stock:{},acasal:{},embrioes:{},fiv:{}};
 let acasalSort={key:'',dir:1};
 let embrioesSort={key:'',dir:1};
 let fivSort={key:'',dir:1};
+let fivData=null; // FIV (data) aberta na tela
 let excelFilterContext=null;
 
 const $=s=>document.querySelector(s);
@@ -279,6 +280,7 @@ function migrate(x){
   x.cycleDates=x.cycleDates||{};
   x.iatfCycleCategories=x.iatfCycleCategories||{};
   x.iatfMaxCycles=x.iatfMaxCycles||{};
+  x.fivDatas=x.fivDatas||{}; // FIVs criadas (por data) em cada estação
   x.animals=x.animals||[];x.semen=x.semen||[];x.iatf=x.iatf||[];
   x.deletedAnimals=x.deletedAnimals||[];
   x.acasalamentos=x.acasalamentos||[];
@@ -1007,7 +1009,7 @@ function rawRowsForExcel(kind){
   if(kind==='stock')return db.semen.map(s=>({...s,used:usedEffective(s),saldo:stockBalance(s)}));
   if(kind==='acasal')return seasonAcasal();
   if(kind==='embrioes')return (db.embrioes||[]).map(e=>({...e,...embRowCalc(e)}));
-  if(kind==='fiv')return seasonFiv();
+  if(kind==='fiv')return fivDaData();
   return []
 }
 function excelValue(row,key){const v=row?.[key];return v===null||v===undefined?'':String(v)}
@@ -2162,8 +2164,53 @@ function embDoadoraDatalist(){
 function touroOptionsForRgd(rgd){
   return [...new Set((db.embrioes||[]).filter(e=>norm(e.rgd)===norm(rgd)&&String(e.touro||'').trim()).map(e=>e.touro))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
 }
+/* FIV por data (igual IATF): cada FIV é uma data; a tabela mostra só a FIV escolhida em cima.
+   As datas criadas ficam em db.fivDatas[estação] (pra FIV vazia não sumir); linhas antigas sem data
+   aparecem em "Sem data". */
+function fivDatasLista(){
+  const sid=db.meta.activeSeasonId;
+  const ds=new Set([...((db.fivDatas||{})[sid]||[]),...seasonFiv().map(r=>r.data||'').filter(Boolean)]);
+  const lista=[...ds].sort();
+  if(seasonFiv().some(r=>!r.data))lista.push('');
+  return lista;
+}
+function fivAtual(){
+  const l=fivDatasLista();
+  if(fivData===null||!l.includes(fivData))fivData=l.length?l.filter(Boolean).slice(-1)[0]??l[0]:null;
+  return fivData;
+}
+const fivNome=d=>{const l=fivDatasLista().filter(Boolean);return d?`${l.indexOf(d)+1}ª FIV — ${fmtDate(d)}`:'Sem data'};
+function fivDaData(){const d=fivAtual();return d===null?[]:seasonFiv().filter(r=>(r.data||'')===d)}
+function selectFiv(v){fivData=v;fivPage()} window.selectFiv=selectFiv;
+function openCriarFiv(){
+  openModal(`<h2>Criar FIV</h2>
+  <div class="form-grid"><div class="field full"><label>Data da FIV</label><input id="fivNovaData" type="date" class="input" value="${todayISO()}"></div></div>
+  <div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="primary" onclick="criarFiv()">Criar</button></div>`);
+} window.openCriarFiv=openCriarFiv;
+function criarFiv(){
+  const d=$('#fivNovaData').value;if(!d)return alert('Informe a data da FIV.');
+  const sid=db.meta.activeSeasonId;
+  if(!fivDatasLista().includes(d)){db.fivDatas=db.fivDatas||{};db.fivDatas[sid]=[...((db.fivDatas[sid])||[]),d];save()}
+  fivData=d;closeModal();fivPage();
+} window.criarFiv=criarFiv;
+// muda a data da FIV aberta: leva junto todas as linhas dela
+function mudarDataFiv(nova,el){
+  const velha=fivAtual();if(nova===velha)return;
+  if(!nova){el.value=velha||'';return alert('Informe a data.')}
+  if(fivDatasLista().includes(nova)){el.value=velha||'';return alert(`Já existe uma FIV em ${fmtDate(nova)}. Escolha ela na lista em cima.`)}
+  const sid=db.meta.activeSeasonId;db.fivDatas=db.fivDatas||{};
+  db.fivDatas[sid]=[...((db.fivDatas[sid])||[]).filter(x=>x!==velha),nova];
+  seasonFiv().forEach(r=>{if((r.data||'')===velha)r.data=nova});
+  fivData=nova;save();fivPage();
+} window.mudarDataFiv=mudarDataFiv;
+function excluirFivVazia(){
+  const d=fivAtual();if(fivDaData().length)return;
+  const sid=db.meta.activeSeasonId;
+  if(db.fivDatas&&db.fivDatas[sid])db.fivDatas[sid]=db.fivDatas[sid].filter(x=>x!==d);
+  fivData=null;save();fivPage();
+} window.excluirFivVazia=excluirFivVazia;
 function fivRowsFiltered(){
-  let rows=seasonFiv().filter(r=>excelPass('fiv',r));
+  let rows=fivDaData().filter(r=>excelPass('fiv',r));
   const k=fivSort.key,d=fivSort.dir;
   if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);
   return rows;
@@ -2171,20 +2218,31 @@ function fivRowsFiltered(){
 function fivPage(){
   title('FIV','Transferência de embriões — RGD Doadora e touro vêm de Embriões; o Tipo alimenta o Usados de lá sozinho. Lançamentos pertencem à estação '+activeSeason().name+'.');
   setActions('');
+  if(excelFilters.fiv)delete excelFilters.fiv.data; // a data agora é escolhida em cima
+  const lista=fivDatasLista(),atual=fivAtual(),vazia=atual!==null&&!fivDaData().length;
   $('#content').innerHTML=`
   ${bullDatalist()}${embDoadoraDatalist()}<datalist id="fivResultList"><option value="P"></option><option value="V"></option><option value="PRT"></option></datalist>
   <div class="fiv-page">
-  <div class="toolbar">
-    <div class="quick-add"><button class="primary" onclick="addBlankFiv()">+ Linha em branco</button><button class="ghost" onclick="openFivEntryModal()">+ Cadastrar em tela</button></div>
+  <div class="toolbar" style="margin-bottom:9px">
+    <div class="filters">
+      ${lista.length?`<select id="fivSel" onchange="selectFiv(this.value)">${lista.map(d=>`<option value="${esc(d)}" ${d===atual?'selected':''}>${esc(fivNome(d))}</option>`).join('')}</select>`:''}<button class="ghost" onclick="openCriarFiv()">+ Criar FIV</button>
+      ${atual!==null?`<div class="date-box"><label>Data da FIV</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)"></div>`:''}
+      ${vazia&&atual?`<button class="mini" onclick="excluirFivVazia()">Excluir esta FIV</button>`:''}
+    </div>
     <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="exportFiv()">⬇ Excel</button><button class="ghost" onclick="printFiv()">🖨 Imprimir</button></div>
   </div>
-  <div id="fivTable"></div>
+  ${atual===null?`<div class="notice">Nenhuma FIV nesta estação. Clique em <strong>+ Criar FIV</strong> e escolha a data.</div>`:`
+  <div class="toolbar">
+    <div class="quick-add"><button class="primary" onclick="addBlankFiv()">+ Linha em branco</button><button class="ghost" onclick="openFivEntryModal()">+ Cadastrar em tela</button></div>
+  </div>
+  <div id="fivTable"></div>`}
   </div>`;
   renderFivTable();
 }
 function addBlankFiv(){
+  const d=fivAtual();if(d===null)return openCriarFiv();
   db.fiv=db.fiv||[];
-  db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:todayISO(),resultado:''});
+  db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});
   save();fivPage();
   setTimeout(()=>{const els=$$('.nav-fiv-rgd');const last=els[els.length-1];if(last){last.scrollIntoView({block:'nearest'});last.focus()}},30)
 } window.addBlankFiv=addBlankFiv;
@@ -2205,7 +2263,7 @@ function renderFivTable(){
   const __view=captureViewPosition();
   const rows=fivRowsFiltered();
   root.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c">${fivStatsHTML(rows)}<span><strong style="color:#233129;margin-right:4px">${rows.length}</strong> linha(s)</span></div><div class="table-wrap"><table><thead>
-  <tr><th></th><th>${excelHead('fiv','rgdDoadora','RGD Doadora')}</th><th>${excelHead('fiv','sire','1º Acasalamento')}</th><th>${excelHead('fiv','receptora','Nº Receptora')}</th><th>${excelHead('fiv','abcz','Nº ABCZ')}</th><th>${excelHead('fiv','tipo','Tipo')}</th><th>${excelHead('fiv','data','Data')}</th><th>${excelHead('fiv','resultado','Resultado')}</th><th></th></tr>
+  <tr><th></th><th>${excelHead('fiv','rgdDoadora','RGD Doadora')}</th><th>${excelHead('fiv','sire','1º Acasalamento')}</th><th>${excelHead('fiv','receptora','Nº Receptora')}</th><th>${excelHead('fiv','abcz','Nº ABCZ')}</th><th>${excelHead('fiv','tipo','Tipo')}</th><th>${excelHead('fiv','resultado','Resultado')}</th><th></th></tr>
   </thead><tbody>${rows.map(r=>`<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'fiv','${r.id}')">
   ${rowHandleTd('fiv',r.id)}
   <td><input class="cell-input nav-fiv-rgd" list="embDoadoraList" style="font-weight:700;min-width:110px" value="${esc(r.rgdDoadora)}" onkeydown="iatfEnter(event,'nav-fiv-rgd')" onchange="editFiv('${r.id}','rgdDoadora',this.value,this)"></td>
@@ -2213,7 +2271,6 @@ function renderFivTable(){
   <td><input class="cell-input nav-fiv-recept" style="min-width:110px" value="${esc(r.receptora||'')}" onkeydown="iatfEnter(event,'nav-fiv-recept')" onchange="editFiv('${r.id}','receptora',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-abcz" style="min-width:110px" value="${esc(r.abcz||'')}" onkeydown="iatfEnter(event,'nav-fiv-abcz')" onchange="editFiv('${r.id}','abcz',this.value,this)"></td>
   <td><select class="cell-input nav-fiv-tipo" style="min-width:90px" onkeydown="iatfEnter(event,'nav-fiv-tipo')" onchange="editFiv('${r.id}','tipo',this.value,this)"><option value="">—</option><option ${r.tipo==='Fresco'?'selected':''}>Fresco</option><option ${r.tipo==='VIT'?'selected':''}>VIT</option><option ${r.tipo==='DT'?'selected':''}>DT</option></select></td>
-  <td style="white-space:nowrap"><input class="cell-input nav-fiv-data" type="date" style="width:135px" value="${esc(r.data||'')}" onkeydown="iatfEnter(event,'nav-fiv-data')" onchange="editFiv('${r.id}','data',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-res" list="fivResultList" maxlength="3" style="width:70px;text-align:center" value="${esc(r.resultado||'')}" oninput="this.value=this.value.toUpperCase()" onkeydown="iatfEnter(event,'nav-fiv-res')" onchange="editFiv('${r.id}','resultado',this.value,this)"></td>
   <td><button class="mini" onclick="deleteFiv('${r.id}')">Excluir</button></td></tr>`).join('')}</tbody></table></div>`;
   restoreViewPosition(__view);
@@ -2251,7 +2308,7 @@ function printFiv(){
   const rows=fivRowsFiltered().filter(r=>String(r.rgdDoadora||'').trim());
   if(!rows.length)return alert('Nenhuma linha pra imprimir.');
   const trs=rows.map(r=>`<tr><td>${esc(r.rgdDoadora)}</td><td>${esc(r.sire||'')}</td><td>${esc(r.receptora||'')}</td><td>${esc(r.abcz||'')}</td><td>${esc(r.tipo||'')}</td><td>${fmtDate(r.data||'')}</td><td>${esc(r.resultado||'')}</td></tr>`).join('');
-  printHTML('FIV',`<table><thead><tr><th>RGD Doadora</th><th>1º Acasalamento</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Data</th><th>Resultado</th></tr></thead><tbody>${trs}</tbody></table>`);
+  printHTML(fivNome(fivAtual()),`<table><thead><tr><th>RGD Doadora</th><th>1º Acasalamento</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Data</th><th>Resultado</th></tr></thead><tbody>${trs}</tbody></table>`);
 } window.printFiv=printFiv;
 
 /* Ficha de cadastro da FIV em tela (alternativa ao "+ Linha em branco") — mesmas regras de
@@ -2271,7 +2328,6 @@ function openFivEntryModal(){
     <div class="field"><label>Nº Receptora</label><input id="fmRecept" class="input"></div>
     <div class="field"><label>Nº ABCZ</label><input id="fmAbcz" class="input"></div>
     <div class="field"><label>Tipo</label><select id="fmTipo"><option value="">—</option><option>Fresco</option><option>VIT</option><option>DT</option></select></div>
-    <div class="field"><label>Data</label><input id="fmData" type="date" class="input" value="${todayISO()}"></div>
     <div class="field full"><label>Resultado (opcional)</label><select id="fmResultado"><option value="">—</option><option>P</option><option>V</option><option>PRT</option></select></div>
   </div>
   <div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="primary" onclick="saveFivEntryModal()">Salvar</button></div>`);
@@ -2295,7 +2351,7 @@ function saveFivEntryModal(){
     receptora:$('#fmRecept').value.trim(),
     abcz:$('#fmAbcz').value.trim(),
     tipo:$('#fmTipo').value,
-    data:$('#fmData').value,
+    data:fivAtual()||'',
     resultado
   });
   save();closeModal();
@@ -2555,7 +2611,7 @@ function saveSeason(id){
   save();closeModal();settings();renderSeasonSelector()
 } window.saveSeason=saveSeason;
 // Ao trocar de estação, limpa filtros/seleções da tela pra nada da estação anterior "vazar" pra nova.
-function resetSeasonView(){Object.keys(excelFilters).forEach(k=>excelFilters[k]={});iatfCycle=1;iatfCategory='';animalSelecting=false;animalSelected.clear()}
+function resetSeasonView(){Object.keys(excelFilters).forEach(k=>excelFilters[k]={});iatfCycle=1;fivData=null;iatfCategory='';animalSelecting=false;animalSelected.clear()}
 function activateSeason(id){if(id!==db.meta.activeSeasonId)resetSeasonView();db.meta.activeSeasonId=id;save();render()} window.activateSeason=activateSeason;
 function deleteSeason(id){
   const s=db.seasons.find(x=>x.id===id);if(!s)return;
@@ -2566,6 +2622,7 @@ function deleteSeason(id){
   db.seasons=db.seasons.filter(x=>x.id!==id);
   db.iatf=db.iatf.filter(r=>r.seasonId!==id);
   if(db.cycleDates)delete db.cycleDates[id];
+  if(db.fivDatas)delete db.fivDatas[id];
   if(db.meta.activeSeasonId===id)db.meta.activeSeasonId=db.seasons[0].id;
   save();settings();renderSeasonSelector();
   alert(`Estação "${s.name}" excluída.`)
