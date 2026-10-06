@@ -1287,6 +1287,7 @@ async function conectarDados(){
     const [cfg, banco, caixa] = await Promise.all([refConfig.get(), refBanco.get(), refCaixa.get()]);
     // primeira vez no Firebase: sobe o que já está neste navegador
     if(!cfg.exists && !banco.exists && !caixa.exists){
+      if(cfg.metadata.fromCache) throw new Error('Sem conexão com o servidor.');
       if(state.cadastro.length || state.arquivos.length || state.movCaixa){
         await enviarConfig();
         if(state.arquivos.length) await enviarBanco();

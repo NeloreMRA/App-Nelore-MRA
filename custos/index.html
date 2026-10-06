@@ -535,8 +535,8 @@ function initFirebase(){
         if(adicionouSojaImportada){
           docRef.set({safras: JSON.parse(JSON.stringify(state.safras))});
         }
-      } else {
-        // primeira vez: manda os dados iniciais (milho) pro banco
+      } else if(!snap.metadata.fromCache){
+        // primeira vez (confirmado pelo servidor): manda os dados iniciais (milho) pro banco
         docRef.set({safras: JSON.parse(JSON.stringify(state.safras))});
       }
       firebaseReady = true;
@@ -1866,7 +1866,10 @@ function iniciarDiesel(){
   dieselRef = firebase.firestore().collection('apps').doc('custos').collection('dados').doc('diesel');
   dieselUnsub = dieselRef.onSnapshot(snap=>{
     if(!snap.exists){
-      dieselRef.set({...DIESEL_PADRAO, lancamentos:{}, estoque:{}}, {merge:true})
+      // SEGURANÇA: só cria quando o SERVIDOR confirma que o diesel não existe (sem internet o Firebase
+      // pode dizer "não existe" pelo cache) e nunca grava lancamentos/estoque vazios (isso apagava tudo).
+      if(snap.metadata.fromCache) return;
+      dieselRef.set({...DIESEL_PADRAO}, {merge:true})
         .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao criar diesel', 'err'); });
       return;
     }
