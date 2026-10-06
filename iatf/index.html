@@ -449,7 +449,7 @@ function save(renderToo=false){
     // realmente terminar com sucesso — é o que impede um F5 rápido demais de "desfazer" sua
     // edição (antes, ao recarregar, a tela sempre confiava mais no Firebase do que no que você
     // tinha acabado de fazer, e como o Firebase ainda não tinha recebido, ele te atropelava).
-    localStorage.setItem(PENDING_KEY,'1');
+    localStorage.setItem(PENDING_KEY,String(Date.now()));
   }catch(e){console.warn('Cache local:',e)}
   if(renderToo)render();
   if(applyingRemote)return;
@@ -545,7 +545,11 @@ async function init(){
   try{
     const saved=localStorage.getItem(STORE);
     localDb=migrate(saved?JSON.parse(saved):deepClone(DEFAULT_DB));
-    hadPendingWrite=!!localStorage.getItem(PENDING_KEY);
+    // Só confia na alteração pendente se for recente (30 min). Uma pendência velha (celular que ficou
+    // dias fechado) NÃO pode subir por cima do que os outros lançaram depois.
+    const pend=Number(localStorage.getItem(PENDING_KEY)||0);
+    hadPendingWrite=pend>0&&Date.now()-pend<30*60*1000;
+    if(!hadPendingWrite)localStorage.removeItem(PENDING_KEY);
   }catch(e){
     console.warn('Não foi possível ler o cache local:',e);
     localDb=migrate(deepClone(DEFAULT_DB));
