@@ -1961,7 +1961,10 @@ function importNaoUtilizadasExcel(file){
 /* EMBRIÕES — Estoque / Saída Fazenda / Usados, cada um com Fresco/VIT/DT. GLOBAL (não pertence a
    nenhuma estação — é estoque de verdade, junto com o Estoque de Sêmen, e continua entre estações).
    Uma linha por RGD Doadora + Touro (uma doadora pode ter várias linhas, uma pra cada touro usado). */
+// Regra "FIV dá baixa nos Usados dos Embriões": DESLIGADA por padrão (em espera, a pedido do dono,
+// até terminar de lançar os embriões). Liga/desliga no botão da tela Embriões (db.settings.fivBaixaEmbrioes).
 function embUsados(rgd, touro, tipo){
+  if(!db.settings.fivBaixaEmbrioes)return 0;
   return (db.fiv||[]).filter(f=>norm(f.rgdDoadora)===norm(rgd) && norm(f.sire||'')===norm(touro||'') && f.tipo===tipo).length;
 }
 function embRowCalc(e){
@@ -1987,6 +1990,11 @@ function embrioesRowsFiltered(){
   });
   return rows;
 }
+function toggleFivBaixa(){
+  const ligar=!db.settings.fivBaixaEmbrioes;
+  if(!confirm(ligar?'Ligar: cada FIV lançada (RGD Doadora + touro + tipo) passa a contar como Usado aqui nos Embriões. Ligar?':'Desligar: as FIVs param de contar como Usado aqui nos Embriões. Desligar?'))return;
+  db.settings.fivBaixaEmbrioes=ligar;save();embrioesPage();
+} window.toggleFivBaixa=toggleFivBaixa;
 function embrioesPage(){
   title('Embriões','Estoque, saída pra fazenda e uso — separado por tipo (Fresco/VIT/DT) e por touro. É estoque de verdade: continua igual entre estações, junto com o Estoque de Sêmen.');
   setActions('');
@@ -1994,7 +2002,7 @@ function embrioesPage(){
   ${bullDatalist()}
   <div class="embrioes-page">
   <div class="toolbar">
-    <div class="quick-add"><button class="primary" onclick="addBlankEmbriao()">+ Linha em branco</button><button class="ghost" onclick="document.getElementById('embrioesImportFile').click()">⬆ Subir Excel</button></div>
+    <div class="quick-add"><button class="primary" onclick="addBlankEmbriao()">+ Linha em branco</button><button class="ghost" onclick="document.getElementById('embrioesImportFile').click()">⬆ Subir Excel</button><button class="ghost" onclick="toggleFivBaixa()" title="Quando ligado, cada FIV lançada conta como Usado aqui">${db.settings.fivBaixaEmbrioes?'✅ FIV dando baixa aqui — desligar':'⏸ FIV não dá baixa aqui — ligar'}</button></div>
     <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="exportEmbrioes()">⬇ Excel</button><button class="ghost" onclick="printEmbrioes()">🖨 Imprimir</button></div>
   </div>
   <div id="embrioesTable"></div>
@@ -2216,12 +2224,12 @@ function fivRowsFiltered(){
   return rows;
 }
 function fivPage(){
-  title('FIV','Transferência de embriões — RGD Doadora e touro vêm de Embriões; o Tipo alimenta o Usados de lá sozinho. Lançamentos pertencem à estação '+activeSeason().name+'.');
+  title('FIV','RGD Doadora livre; touro do Estoque de Sêmen. Lançamentos pertencem à estação '+activeSeason().name+'.');
   setActions('');
   if(excelFilters.fiv)delete excelFilters.fiv.data; // a data agora é escolhida em cima
   const lista=fivDatasLista(),atual=fivAtual(),vazia=atual!==null&&!fivDaData().length;
   $('#content').innerHTML=`
-  ${bullDatalist()}${embDoadoraDatalist()}<datalist id="fivResultList"><option value="P"></option><option value="V"></option><option value="PRT"></option></datalist>
+  ${bullDatalist()}${animalDatalist()}<datalist id="fivResultList"><option value="P"></option><option value="V"></option><option value="PRT"></option></datalist>
   <div class="fiv-page">
   <div class="toolbar" style="margin-bottom:9px">
     <div class="filters">
@@ -2266,8 +2274,8 @@ function renderFivTable(){
   <tr><th></th><th>${excelHead('fiv','rgdDoadora','RGD Doadora')}</th><th>${excelHead('fiv','sire','1º Acasalamento')}</th><th>${excelHead('fiv','receptora','Nº Receptora')}</th><th>${excelHead('fiv','abcz','Nº ABCZ')}</th><th>${excelHead('fiv','tipo','Tipo')}</th><th>${excelHead('fiv','resultado','Resultado')}</th><th></th></tr>
   </thead><tbody>${rows.map(r=>`<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'fiv','${r.id}')">
   ${rowHandleTd('fiv',r.id)}
-  <td><input class="cell-input nav-fiv-rgd" list="embDoadoraList" style="font-weight:700;min-width:110px" value="${esc(r.rgdDoadora)}" onkeydown="iatfEnter(event,'nav-fiv-rgd')" onchange="editFiv('${r.id}','rgdDoadora',this.value,this)"></td>
-  <td><input class="cell-input nav-fiv-sire" list="fivSireList-${r.id}" style="min-width:200px" value="${esc(r.sire)}" onkeydown="iatfEnter(event,'nav-fiv-sire')" onfocus="this.select()" onchange="editFiv('${r.id}','sire',this.value,this)"><datalist id="fivSireList-${r.id}">${touroOptionsForRgd(r.rgdDoadora).map(t=>`<option value="${esc(t)}"></option>`).join('')}</datalist></td>
+  <td><input class="cell-input nav-fiv-rgd" list="animalsList" style="font-weight:700;min-width:110px" value="${esc(r.rgdDoadora)}" onkeydown="iatfEnter(event,'nav-fiv-rgd')" onchange="editFiv('${r.id}','rgdDoadora',this.value,this)"></td>
+  <td><input class="cell-input nav-fiv-sire" list="bullsList" style="min-width:200px" value="${esc(r.sire)}" onkeydown="iatfEnter(event,'nav-fiv-sire')" onfocus="this.select()" onchange="editFiv('${r.id}','sire',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-recept" style="min-width:110px" value="${esc(r.receptora||'')}" onkeydown="iatfEnter(event,'nav-fiv-recept')" onchange="editFiv('${r.id}','receptora',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-abcz" style="min-width:110px" value="${esc(r.abcz||'')}" onkeydown="iatfEnter(event,'nav-fiv-abcz')" onchange="editFiv('${r.id}','abcz',this.value,this)"></td>
   <td><select class="cell-input nav-fiv-tipo" style="min-width:90px" onkeydown="iatfEnter(event,'nav-fiv-tipo')" onchange="editFiv('${r.id}','tipo',this.value,this)"><option value="">—</option><option ${r.tipo==='Fresco'?'selected':''}>Fresco</option><option ${r.tipo==='VIT'?'selected':''}>VIT</option><option ${r.tipo==='DT'?'selected':''}>DT</option></select></td>
@@ -2286,11 +2294,6 @@ function editFiv(id,key,val,el){
   }
   r[key]=val;
   save();
-  if(key==='rgdDoadora'){
-    // RGD mudou: atualiza a lista suspensa do touro SÓ dessa linha, sem recarregar a tabela toda
-    const dl=document.getElementById('fivSireList-'+id);
-    if(dl)dl.innerHTML=touroOptionsForRgd(val).map(t=>`<option value="${esc(t)}"></option>`).join('');
-  }
 } window.editFiv=editFiv;
 function deleteFiv(id){
   if(!confirm('Excluir esta linha de FIV?'))return;
@@ -2320,11 +2323,11 @@ function fivModalSireOptions(rgd){
 }
 function openFivEntryModal(){
   openModal(`<h2>Nova ficha de FIV</h2>
-  ${embDoadoraDatalist()}
-  <div class="notice green">Segue as mesmas regras da tabela: o touro precisa existir no Estoque, e a lista dele muda de acordo com o RGD Doadora escolhido.</div>
+  ${animalDatalist()}${bullDatalist()}
+  <div class="notice green">RGD Doadora pode ser qualquer número; o touro precisa existir no Estoque de Sêmen.</div>
   <div class="form-grid">
-    <div class="field full"><label>RGD Doadora</label><input id="fmRgd" list="embDoadoraList" class="input" oninput="fivModalRefreshSire()"></div>
-    <div class="field full"><label>1º Acasalamento (touro)</label><input id="fmSire" list="fmSireList" class="input" placeholder="Escolha o RGD Doadora primeiro"><datalist id="fmSireList"></datalist></div>
+    <div class="field full"><label>RGD Doadora</label><input id="fmRgd" list="animalsList" class="input"></div>
+    <div class="field full"><label>1º Acasalamento (touro)</label><input id="fmSire" list="bullsList" class="input"></div>
     <div class="field"><label>Nº Receptora</label><input id="fmRecept" class="input"></div>
     <div class="field"><label>Nº ABCZ</label><input id="fmAbcz" class="input"></div>
     <div class="field"><label>Tipo</label><select id="fmTipo"><option value="">—</option><option>Fresco</option><option>VIT</option><option>DT</option></select></div>
