@@ -80,6 +80,14 @@ td.csel{background:#dcebe2!important;box-shadow:inset 0 0 0 1px #72a386}
 .vazio{padding:30px 20px;text-align:center;color:var(--suave);line-height:1.5}
 /* celular */
 .lista{display:none}
+.tabd tbody tr[data-cor] td{background:var(--cor)}
+.tabd tbody tr[data-cor] td.csel{background:#dcebe2!important}
+.pintar{border:0;background:none;border-radius:6px;padding:3px 6px;font-size:14px;opacity:.55}.pintar:hover{opacity:1;background:#eef2ef}
+.paleta{position:fixed;z-index:45;background:#fff;border:1px solid var(--borda);border-radius:12px;box-shadow:0 10px 30px #0003;padding:10px;display:grid;grid-template-columns:repeat(4,34px);gap:8px}
+.paleta button{width:34px;height:34px;border-radius:8px;border:1px solid #cfd8d2;cursor:pointer}
+.paleta button.sem{background:#fff;font-size:15px;color:#a33627}
+.paleta .tit{grid-column:1/-1;font-size:12px;font-weight:700;color:var(--suave)}
+.cores-f{display:flex;gap:8px;flex-wrap:wrap}.cores-f button{width:38px;height:38px;border-radius:9px;border:1px solid #cfd8d2;color:#a33627}.cores-f button.on{outline:3px solid var(--verde);outline-offset:1px}
 .card-c{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer}
 .card-c .nm{flex:1;min-width:0}.card-c .nm b{font-size:15px}.card-c .nm small{display:block;color:var(--suave);font-size:12.5px;margin-top:3px}
 .card-c .tt{font-size:22px;font-weight:800}
@@ -268,7 +276,7 @@ function novaDoc(d){const r=colM.doc();const linha={mes,classificacao:'',inicial
 function puxar(){
   const ant=mesAnteriorComDados(mes);if(!ant||linhasDo(mes).length)return;
   const prev=linhasDo(ant).filter(l=>total(l)!==0);
-  prev.forEach((l,k)=>novaDoc({classificacao:l.classificacao||'',inicial:total(l),ordem:k+1}));
+  prev.forEach((l,k)=>novaDoc({classificacao:l.classificacao||'',inicial:total(l),ordem:k+1,cor:l.cor||''}));
   toast(`${prev.length} classificaç${prev.length===1?'ão puxada':'ões puxadas'} de ${nomeMes(ant)}.`);desenhar();
 }
 function atualizarIniciais(){
@@ -276,7 +284,7 @@ function atualizarIniciais(){
   const ls=linhasDo(mes),prev=linhasDo(ant);let n=0;
   prev.forEach(p=>{const a=ls.find(l=>chave(l.classificacao)===chave(p.classificacao));const t=total(p);
     if(a){if(num(a.inicial)!==t){colM.doc(a.id).update({inicial:t,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));a.inicial=t;n++}}
-    else if(t!==0){novaDoc({classificacao:p.classificacao,inicial:t,ordem:(p.ordem||0)});n++}});
+    else if(t!==0){novaDoc({classificacao:p.classificacao,inicial:t,ordem:(p.ordem||0),cor:p.cor||''});n++}});
   toast(`Qtd Inicial atualizada (${n}).`);desenhar();
 }
 
@@ -339,6 +347,27 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('focusin',e=>{if(e.target.classList&&e.target.classList.contains('cel')&&e.target.classList.contains('num'))setTimeout(()=>{try{e.target.select()}catch(x){}},0)});
 
+/* ---------- pintar linha (igual pintar no Excel) ---------- */
+const CORES=['#d9f0df','#fff1b8','#d8e8fb','#ffe0c4','#fbd9d4','#eadcfb','#e6e9e7'];
+function fecharPaleta(){const p=$('.paleta');if(p)p.remove()}
+document.addEventListener('click',e=>{if(!e.target.closest('.paleta')&&!e.target.closest('.pintar'))fecharPaleta()});
+function abrirPaleta(ev,id){
+  ev.stopPropagation();fecharPaleta();
+  // se tiver células marcadas em várias linhas (arrastando o mouse), pinta todas elas
+  const marcadas=[...new Set([...selX.cels].map(td=>td.closest('tr')&&td.closest('tr').dataset.id).filter(Boolean))];
+  const ids=marcadas.includes(id)&&marcadas.length>1?marcadas:[id];
+  const p=document.createElement('div');p.className='paleta';
+  p.innerHTML=`<div class="tit">Pintar ${ids.length>1?ids.length+' linhas':'linha'}</div>`+CORES.map(c=>`<button style="background:${c}" data-c="${c}"></button>`).join('')+`<button class="sem" data-c="" title="Tirar a cor">✕</button>`;
+  p.onclick=e=>{const b=e.target.closest('button');if(!b)return;e.stopPropagation();pintar(ids,b.dataset.c);fecharPaleta()};
+  document.body.appendChild(p);
+  const r=ev.currentTarget.getBoundingClientRect();p.style.left=Math.max(8,Math.min(r.right-p.offsetWidth,innerWidth-p.offsetWidth-8))+'px';
+  let top=r.bottom+6;if(top+p.offsetHeight>innerHeight-8)top=Math.max(8,r.top-p.offsetHeight-6);p.style.top=top+'px';
+}
+function pintar(ids,cor){
+  ids.forEach(id=>{const l=todos.find(x=>x.id===id);if(l)l.cor=cor;colM.doc(id).update({cor,...carimbo()}).catch(e=>toast('Não salvou: '+e.message))});
+  desenhar();
+}
+
 /* ---------- tabela (computador) ---------- */
 let redesenharDepois=false,ultimaEdicao=0;
 const digitando=()=>!!(document.activeElement&&document.activeElement.classList.contains('cel'))||Date.now()-ultimaEdicao<700;
@@ -354,11 +383,11 @@ function desenhar(){
     +(temFiltro()||ordemCol?`<span class="aviso-f">🔎 ${temFiltro()?'Filtro na tabela':'Ordenado'} <button onclick="limparTudoCol()">Limpar</button></span>`:'');
   $('#dlClass').innerHTML=[...new Set(todos.map(l=>l.classificacao).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join('');
   const cel=(l,k)=>`<td class="n sx"><input class="cel num" inputmode="numeric" value="${num(l[k])||''}" placeholder="0" onchange="editar('${l.id}','${k}',this.value)"></td>`;
-  const corpo=ls.map(l=>{const tt=total(l);return `<tr data-id="${l.id}">
+  const corpo=ls.map(l=>{const tt=total(l);return `<tr data-id="${l.id}"${l.cor?` data-cor style="--cor:${esc(l.cor)}"`:''}>
     <td class="sx"><input class="cel" list="dlClass" value="${esc(l.classificacao)}" placeholder="Classificação" onchange="editar('${l.id}','classificacao',this.value)"></td>
     ${CAMPOS.map(k=>cel(l,k)).join('')}<td class="tot sx ${tt<0?'neg':''}">${fmt(tt)}</td>
     <td class="sx"><input class="cel" value="${esc(l.obs)}" placeholder="—" onchange="editar('${l.id}','obs',this.value)"></td>
-    <td style="text-align:center"><button class="xdel" title="Excluir" onclick="apagar('${l.id}')">🗑</button></td></tr>`}).join('')
+    <td style="text-align:center;white-space:nowrap"><button class="pintar" title="Pintar a linha" onclick="abrirPaleta(event,'${l.id}')">🎨</button><button class="xdel" title="Excluir" onclick="apagar('${l.id}')">🗑</button></td></tr>`}).join('')
     ||`<tr><td colspan="9" class="vazio">${todasMes.length?'Nada com esse filtro.':`Nenhuma classificação em ${nomeMes(mes).toLowerCase()}. Use a linha verde pra adicionar.`}</td></tr>`;
   const ativo=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('tr.rapido')?document.activeElement.id:null;
   const guardado=ativo?[...document.querySelectorAll('tr.rapido input')].map(i=>[i.id,i.value]):null;
@@ -372,7 +401,7 @@ function desenhar(){
   prepararLarguras();
   if(guardado){guardado.forEach(([id,v])=>{const i=document.getElementById(id);if(i)i.value=v});const a=document.getElementById(ativo);if(a)a.focus()}
   // celular
-  $('#lista').innerHTML=ls.length?ls.map(l=>{const tt=total(l);return `<div class="card-c" onclick="editarLinha('${l.id}')"><div class="nm"><b>${esc(l.classificacao||'(sem nome)')}</b>
+  $('#lista').innerHTML=ls.length?ls.map(l=>{const tt=total(l);return `<div class="card-c" onclick="editarLinha('${l.id}')"${l.cor?` style="background:${esc(l.cor)}"`:''}><div class="nm"><b>${esc(l.classificacao||'(sem nome)')}</b>
       <small>Inicial ${fmt(num(l.inicial))} · Entrada ${fmt(num(l.entrada))} · Saída ${fmt(num(l.saida))} · Morte ${fmt(num(l.morte))} · Abate ${fmt(num(l.abate))}${l.obs?' · '+esc(l.obs):''}</small></div>
       <div class="tt ${tt<0?'menos':''}">${fmt(tt)}</div></div>`}).join('')+`<div class="contador" style="text-align:right;margin-top:8px">Total do mês: <b>${fmt(t.total)}</b> cabeças</div>`
     :`<div class="card-c" style="cursor:default"><div class="vazio" style="padding:14px;width:100%">Nenhuma classificação em ${nomeMes(mes).toLowerCase()}.<br>Toque em <b>+ Adicionar</b>.</div></div>`;
@@ -412,7 +441,7 @@ function barraSoma(){const b=$('#barraSoma'),cels=[...selX.cels].filter(td=>td.i
   const ns=cels.map(valTd).filter(v=>v!==null),soma=ns.reduce((a,x)=>a+x,0);
   b.innerHTML=(ns.length?`<span>Média: <b>${(soma/ns.length).toLocaleString('pt-BR',{maximumFractionDigits:2})}</b></span>`:'')+`<span>Contagem: <b>${cels.length}</b></span>`+(ns.length?`<span>Soma: <b>${fmt(soma)}</b></span>`:'');b.classList.add('ativa')}
 document.addEventListener('mousedown',e=>{if(e.button!==0)return;const td=e.target.closest('#tabd tbody td.sx');
-  if(!td){if(selX.cels.size)limparSel();return}const pos=posX(td);if(!pos)return;
+  if(!td){if(selX.cels.size&&!e.target.closest('.pintar,.paleta'))limparSel();return}const pos=posX(td);if(!pos)return;
   if(e.shiftKey&&selX.anc){e.preventDefault();marcarSel(selX.anc,pos);return}
   if(e.ctrlKey||e.metaKey){e.preventDefault();if(selX.cels.has(td)){selX.cels.delete(td);td.classList.remove('csel')}else{selX.cels.add(td);td.classList.add('csel')}if(!selX.anc)selX.anc=pos;barraSoma();return}
   limparSel();selX.anc=pos;selX.arr=true;selX.cels.add(td);td.classList.add('csel')});
@@ -436,13 +465,14 @@ function editarLinha(id){
       <div class="duas">${st('inicial','Qtd Inicial')}${st('entrada','Entrada')}</div>
       <div class="duas">${st('saida','Saída')}${st('morte','Morte')}</div>
       <div class="duas">${st('abate','Abate')}<div class="field"><label>Total</label><div style="font-size:26px;font-weight:800;padding:4px 2px" id="eTot"></div></div></div>
-      <div class="field" style="margin-bottom:0"><label>Observação</label><input id="eObs" class="input" value="${esc(l?l.obs:'')}"></div>
+      <div class="field"><label>Observação</label><input id="eObs" class="input" value="${esc(l?l.obs:'')}"></div>
+      <div class="field" style="margin-bottom:0"><label>Cor da linha</label><div class="cores-f">${['',...CORES].map(c=>`<button type="button" class="${(l&&l.cor||'')===c?'on':''}" data-c="${c}" style="background:${c||'#fff'}" onclick="document.querySelectorAll('.cores-f button').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${c?'':'✕'}</button>`).join('')}</div></div>
     </div>
     <div class="folha-pe">${l?`<button class="btn btn-danger esq" onclick="apagar('${l.id}')">Excluir</button>`:'<span class="esq"></span>'}<button class="btn btn-ghost" onclick="fecharJanela()">Cancelar</button><button class="btn btn-primary" onclick="salvarLinha(${l?`'${l.id}'`:''})">Salvar</button></div></div>`;
   document.body.appendChild(m);totalForm();
 }
 function salvarLinha(id){
-  const d={classificacao:$('#eC').value.trim(),obs:$('#eObs').value.trim()};CAMPOS.forEach(k=>d[k]=num($('#e_'+k).value));
+  const d={classificacao:$('#eC').value.trim(),obs:$('#eObs').value.trim(),cor:(document.querySelector('.cores-f button.on')||{dataset:{c:''}}).dataset.c};CAMPOS.forEach(k=>d[k]=num($('#e_'+k).value));
   if(!d.classificacao){toast('Escreva a classificação.');return}
   if(id){colM.doc(id).update({...d,...carimbo()}).catch(e=>toast('Não salvou: '+e.message));const l=todos.find(x=>x.id===id);if(l)Object.assign(l,d)}
   else novaDoc(d);
