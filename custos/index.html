@@ -906,7 +906,7 @@ function toggleFilterMenu(tableKey, colKey, btnEl){
       <button class="fp-btn" data-act="sort-asc">A→Z ▲</button>
       <button class="fp-btn" data-act="sort-desc">Z→A ▼</button>
     </div>
-    <input type="text" class="fp-search" placeholder="Buscar...">
+    <input type="text" class="fp-search" placeholder="Buscar... (Enter aplica)">
     <label class="fp-item fp-all"><input type="checkbox" class="fp-all-cb" ${!activeSet?'checked':''}> Selecionar tudo</label>
     <div class="fp-list">
       ${uniqueVals.map(v=>`<label class="fp-item"><input type="checkbox" class="fp-item-cb" value="${esc(v)}" ${(!activeSet || activeSet.has(v))?'checked':''}> ${esc(v)}</label>`).join('')}
@@ -944,14 +944,19 @@ function toggleFilterMenu(tableKey, colKey, btnEl){
     });
   });
   panel.querySelector('.fp-all-cb').addEventListener('change', e=>{
-    panel.querySelectorAll('.fp-item-cb').forEach(cb=>cb.checked = e.target.checked);
+    panel.querySelectorAll('.fp-item-cb').forEach(cb=>{ if(cb.closest('.fp-item').style.display!=='none') cb.checked = e.target.checked; });
   });
+  // Enter na busca aplica o filtro com o que apareceu
+  panel.querySelector('.fp-search').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); panel.querySelector('[data-act="apply"]').click(); } });
   panel.querySelector('[data-act="clear"]').addEventListener('click', ()=>{
     ts.colFilters[colKey] = null;
     render();
   });
   panel.querySelector('[data-act="apply"]').addEventListener('click', ()=>{
-    const checked = Array.from(panel.querySelectorAll('.fp-item-cb:checked')).map(cb=>cb.value);
+    // digitou na busca: vale só o que aparece na lista (igual Excel)
+    const busca = panel.querySelector('.fp-search').value.trim();
+    const checked = Array.from(panel.querySelectorAll('.fp-item-cb:checked')).filter(cb=>!busca || cb.closest('.fp-item').style.display!=='none').map(cb=>cb.value);
+    if(!checked.length) return;
     if(checked.length===uniqueVals.length){ ts.colFilters[colKey] = null; }
     else { ts.colFilters[colKey] = new Set(checked); }
     render();

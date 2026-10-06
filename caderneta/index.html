@@ -321,7 +321,7 @@ function abrirFiltro(ev,k){
   const ativo=filtrosCol[aba][k];
   const p=document.createElement('div');p.className='fpainel';p.dataset.k=k;p.onclick=e=>e.stopPropagation();
   p.innerHTML=`<div class="fp-ord"><button class="btn btn-ghost" onclick="ordenarCol('${k}',1)">A→Z ▲</button><button class="btn btn-ghost" onclick="ordenarCol('${k}',-1)">Z→A ▼</button></div>
-    <input class="fp-busca" placeholder="Buscar...">
+    <input class="fp-busca" placeholder="Buscar... (Enter aplica)">
     <label class="fp-it"><input type="checkbox" class="fp-todos" ${!ativo?'checked':''}> <b>Selecionar tudo</b></label>
     <div class="fp-lista">${vals.map(v=>`<label class="fp-it"><input type="checkbox" class="fp-cb" value="${esc(v)}" ${!ativo||ativo.includes(v)?'checked':''}> ${esc(v)}</label>`).join('')}</div>
     <div class="fp-acoes"><button class="btn btn-ghost" onclick="limparFiltroCol('${k}')">Limpar</button><button class="btn btn-primary" onclick="aplicarFiltroCol('${k}')">OK</button></div>`;
@@ -329,10 +329,11 @@ function abrirFiltro(ev,k){
   const r=ev.currentTarget.getBoundingClientRect(),w=Math.min(250,innerWidth-16);p.style.width=w+'px';
   p.style.left=Math.max(8,Math.min(r.right-w,innerWidth-w-8))+'px';const top=r.bottom+6;p.style.top=top+'px';
   if(top+p.offsetHeight>innerHeight-8)p.style.top=Math.max(8,r.top-p.offsetHeight-6)+'px';
+  p.querySelector('.fp-busca').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();aplicarFiltroCol(k)}};
   p.querySelector('.fp-busca').oninput=e=>{const q=e.target.value.toLowerCase();p.querySelectorAll('.fp-lista .fp-it').forEach(l=>l.style.display=l.textContent.toLowerCase().includes(q)?'':'none')};
   p.querySelector('.fp-todos').onchange=e=>p.querySelectorAll('.fp-cb').forEach(c=>{if(c.parentElement.style.display!=='none')c.checked=e.target.checked});
 }
-function aplicarFiltroCol(k){const p=$('.fpainel');const cbs=[...p.querySelectorAll('.fp-cb')],m=cbs.filter(c=>c.checked).map(c=>c.value);filtrosCol[aba][k]=m.length===cbs.length?null:m;fecharFiltro();desenhar()}
+function aplicarFiltroCol(k){const p=$('.fpainel');const busca=p.querySelector('.fp-busca').value.trim(),cbs=[...p.querySelectorAll('.fp-cb')],m=cbs.filter(c=>c.checked&&(!busca||c.parentElement.style.display!=='none')).map(c=>c.value);if(!m.length)return;filtrosCol[aba][k]=m.length===cbs.length?null:m;fecharFiltro();desenhar()}
 function limparFiltroCol(k){filtrosCol[aba][k]=null;if(ordemCol[aba]&&ordemCol[aba].k===k)ordemCol[aba]=null;fecharFiltro();desenhar()}
 function ordenarCol(k,dir){ordemCol[aba]={k,dir};fecharFiltro();desenhar()}
 function limparTudoCol(){filtrosCol[aba]={};ordemCol[aba]=null;desenhar()}
