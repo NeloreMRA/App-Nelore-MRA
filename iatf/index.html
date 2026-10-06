@@ -1273,10 +1273,10 @@ function fivSection(){
   const bulls=Object.values(byBull).map(b=>({...b,...rateOf(b.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||String(a.name).localeCompare(String(b.name),'pt-BR'));
   const bl=dashMore.fivBulls?bulls:bulls.slice(0,10);
   const cols=[...datas.map((d,i)=>({k:i,l:`${i+1}ª`,tt:fmtDate(d)})),...(temSemData?[{k:'s',l:'Sem data',tt:''}]:[])];
-  // célula do touro numa FIV: Prenhas/Vazias (PRT conta como vazia) e a % embaixo
+  // célula do touro/doadora numa FIV: Prenhas / Total com resultado e a % embaixo
   const pvCel=rs=>{const st=rateOf(rs,r=>r.resultado);
     if(!st.n)return '—';
-    return `<strong style="color:#216440">${st.p}</strong><span> / </span><strong style="color:#c08a2e">${st.n-st.p}</strong><div style="font-size:10.5px;font-weight:700;color:#233129">${pctTxt(st.rate)}</div>`};
+    return `<strong style="color:#216440">${st.p}</strong><span> / </span><strong>${st.n}</strong><div style="font-size:10.5px;font-weight:700;color:#233129">${pctTxt(st.rate)}</div>`};
   // um quadrinho por FIV (igual IATF): % geral grande + barra por tipo
   const fivCard=(titulo,data,rs,total)=>{const g=rateOf(rs,r=>r.resultado);const ts=tipos.map(t=>[t,rateOf(rs.filter(r=>r.tipo===t),r=>r.resultado)]).filter(([,st])=>st.n);
     return `<div class="dcard${total?' total':''}"><div class="hd"><div><div class="t">${esc(titulo)}</div>${data?`<div class="d">${esc(data)}</div>`:''}</div><div class="big">${pctTxt(g.rate)}<small>${g.p} de ${g.n} prenhas</small></div></div>
@@ -1286,7 +1286,7 @@ function fivSection(){
   // tabela por FIV (touros e doadoras no mesmo formato): Prenhas / Vazias em cada FIV com a % embaixo
   const tabelaPorFiv=(titulo,nomeCol,lista,mais,rotulo)=>{const vis=dashMore[mais]?lista:lista.slice(0,10);
     return `<div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">${titulo}</div></div>
-    ${lista.length?`<div style="overflow-x:auto"><table class="dtable"><thead><tr><th>${nomeCol}</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Geral P / V</th><th class="num">Transf.</th><th style="min-width:150px">% de prenhez (geral)</th></tr></thead><tbody>${vis.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>{const rs=b.rows.filter(r=>fivCol(r)===c.k);return `<td class="num">${rs.length?pvCel(rs):''}</td>`}).join('')}<td class="num">${pvCel(b.rows)}</td><td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
+    ${lista.length?`<div style="overflow-x:auto"><table class="dtable"><thead><tr><th>${nomeCol}</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Geral P / Total</th><th class="num">Transf.</th><th style="min-width:150px">% de prenhez (geral)</th></tr></thead><tbody>${vis.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>{const rs=b.rows.filter(r=>fivCol(r)===c.k);return `<td class="num">${rs.length?pvCel(rs):''}</td>`}).join('')}<td class="num">${pvCel(b.rows)}</td><td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
     ${lista.length>10?`<button class="dmore" onclick="dashToggle('${mais}')">${dashMore[mais]?'− Mostrar só 10':`+ Ver ${rotulo} (${lista.length})`}</button>`:''}`:'<div class="dempty">Nenhuma FIV lançada nesta estação.</div>'}
   </div>`};
   const byDonor={};rows.forEach(r=>{const k=norm(r.rgdDoadora);(byDonor[k]=byDonor[k]||{name:r.rgdDoadora,rows:[]}).rows.push(r)});
