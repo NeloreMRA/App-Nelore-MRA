@@ -301,7 +301,11 @@ function prepararLarguras(){
 /* ---------- lista ---------- */
 const textoBusca=i=>aba==='nasc'?[i.rgdMae,i.receptora,i.sexo,i.pelagem,i.obs,i.peso,i.criadoPorNome].join(' '):[i.rgd,i.situacao,obsGeral(i),i.criadoPorNome].join(' ');
 /* filtros da tabela (estilo Excel, igual Custos) */
+// filtros da tabela ficam guardados no aparelho (não somem ao trocar de mês/aba nem ao recarregar)
+const FILTRO_KEY='app-nelore-mra-caderneta-filtros';
 const filtrosCol={nasc:{},geral:{}},ordemCol={nasc:null,geral:null};
+try{const f=JSON.parse(localStorage.getItem(FILTRO_KEY)||'{}');Object.assign(filtrosCol,f.filtros||{});Object.assign(ordemCol,f.ordem||{})}catch(e){}
+const guardarFiltros=()=>{try{localStorage.setItem(FILTRO_KEY,JSON.stringify({filtros:filtrosCol,ordem:ordemCol}))}catch(e){}};
 const valCampo=(i,k)=>k==='data'?(i.data||''):k==='por'?(i.criadoPorNome||''):k==='peso'?(numBR(i.peso)??''):k==='obs'&&aba==='geral'?obsGeral(i):(i[k]||'');
 const txtCampo=(i,k)=>{const v=valCampo(i,k);return v===''?'(vazio)':k==='data'?fmtData(v):k==='peso'?String(v).replace('.',','):String(v)};
 const temFiltroCol=()=>Object.values(filtrosCol[aba]).some(Boolean);
@@ -342,6 +346,7 @@ const obsHtml=o=>o?(OBS_LISTA.some(x=>String(o).toLowerCase().startsWith(x.toLow
 function minisHtml(i){return (i.fotos||[]).map(f=>miniFotos[f]?`<img src="${miniFotos[f]}" alt="" onclick="event.stopPropagation();verFotoId('${f}')">`:'<span>📷</span>').join('')}
 function carregarMinis(v){v.forEach(i=>(i.fotos||[]).forEach(f=>{if(!(f in miniFotos)){miniFotos[f]='';colFotos.doc(f).get().then(d=>{if(d.exists){miniFotos[f]=d.data().dados;desenhar()}}).catch(()=>{})}}))}
 function desenhar(){
+  guardarFiltros();
   itens=todos.filter(i=>i.aba===aba&&(!mes||i.mes===mes));
   montarMeses();
   const v=visiveis(),nc=COLS[aba].length;
