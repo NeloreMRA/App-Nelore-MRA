@@ -117,7 +117,7 @@
   .side-tool:disabled{opacity:.45; cursor:not-allowed;}
   .logout-btn{margin-top:auto;}
   body.perfil-diesel .admin-only{display:none !important;}
-  body.pagina-diesel #undoBtn{display:none !important;}
+  body.pagina-diesel #undoBtn{visibility:hidden !important;} /* some sem mexer no menu (não pula de lugar) */
   .user-badge{font-size:11px; color:#cfc9b5; margin:-4px 0 12px; word-break:break-all;}
   .nav-sep{height:1px; background:rgba(255,255,255,.15); margin:8px 4px;}
   .lista-cad{border:1px solid var(--line); border-radius:8px; max-height:220px; overflow-y:auto;}
@@ -523,6 +523,7 @@ function initFirebase(){
       if(snap.exists && snap.data().safras){
         suppressSave = true;
         state.safras = normalizarEstruturaSafras(snap.data().safras);
+        ultimoSalvoJSON = JSON.stringify(state.safras);
         clearUndoHistory();
         let adicionouSojaImportada = false;
         if(!state.safras.soja2526){
@@ -533,10 +534,12 @@ function initFirebase(){
         render();
         suppressSave = false;
         if(adicionouSojaImportada){
+          ultimoSalvoJSON = JSON.stringify(state.safras);
           docRef.set({safras: JSON.parse(JSON.stringify(state.safras))});
         }
       } else if(!snap.metadata.fromCache){
         // primeira vez (confirmado pelo servidor): manda os dados iniciais (milho) pro banco
+        ultimoSalvoJSON = JSON.stringify(state.safras);
         docRef.set({safras: JSON.parse(JSON.stringify(state.safras))});
       }
       firebaseReady = true;
@@ -550,6 +553,7 @@ function initFirebase(){
         if(JSON.stringify(remote) === JSON.stringify(state.safras)) return; // eco da própria escrita
         suppressSave = true;
         state.safras = normalizarEstruturaSafras(remote);
+        ultimoSalvoJSON = JSON.stringify(state.safras);
         clearUndoHistory();
         if(!state.safras[state.safraAtual]) state.safraAtual = Object.keys(state.safras)[0];
         render();
@@ -562,12 +566,19 @@ function initFirebase(){
     setSyncStatus('🔴 Erro na configuração', 'err');
   }
 }
+// JSON da última versão que veio do servidor ou que este aparelho gravou. Se nada mudou, não grava:
+// assim só trocar de tela nunca sobrescreve o que outra pessoa acabou de lançar.
+let ultimoSalvoJSON = null;
 function scheduleSave(immediate=false){
   if(!firebaseReady || suppressSave || !docRef) return;
+  if(JSON.stringify(state.safras) === ultimoSalvoJSON) return;
   setSyncStatus('🟡 Salvando...', 'local');
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{
-    docRef.set({safras: JSON.parse(JSON.stringify(state.safras))})
+    const j = JSON.stringify(state.safras);
+    if(j === ultimoSalvoJSON){ setSyncStatus('🟢 Sincronizado', 'ok'); return; }
+    ultimoSalvoJSON = j;
+    docRef.set({safras: JSON.parse(j)})
       .then(()=> setSyncStatus('🟢 Sincronizado', 'ok'))
       .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao salvar', 'err'); });
   }, immediate ? 0 : 600);
@@ -1677,6 +1688,10 @@ function pageSafras(){
 }
 function usarSafra(key){ state.safraAtual = key; setPage('dashboard'); }
 function removerSafra(key){
+  const s = state.safras[key]; if(!s) return;
+  const n = (s.colheita||[]).length + (s.adiantamentos||[]).length + (s.vendas||[]).length;
+  if(!confirm(`ATENÇÃO: excluir a safra "${s.nome}"?\n\nIsso apaga ${n} lançamento(s) (colheita, adiantamentos e vendas) dessa safra.`)) return;
+  if(!confirm(`Confirme mais uma vez: excluir definitivamente "${s.nome}"?`)) return;
   recordUndo();
   delete state.safras[key];
   if(state.safraAtual===key) state.safraAtual = Object.keys(state.safras)[0];
