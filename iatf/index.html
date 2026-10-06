@@ -58,6 +58,7 @@ td{padding:8px 10px;border-bottom:1px solid #edf0ee;white-space:nowrap}tbody tr:
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .out-actions{display:flex;gap:8px;align-items:center;margin-left:auto;padding-left:12px;border-left:1px solid #e1e6e2}
 @media(max-width:700px){.out-actions{margin-left:0;border-left:0;padding-left:0}}
+.fiv-resumo{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 10px}.fiv-q{border:1px solid #d9e4dc;background:#fff;border-radius:10px;padding:7px 12px}.fiv-q-t{font-size:10px;font-weight:800;color:#69746c;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}.fiv-q-c{display:flex;gap:16px}.fiv-q-c div{display:flex;flex-direction:column;align-items:center;min-width:44px}.fiv-q-c span{font-size:11px;color:#4a5850}.fiv-q-c strong{font-size:19px;line-height:1.15}
 .date-box{display:flex;align-items:center;gap:7px;background:#edf6f0;border:1px solid #cfe3d5;border-radius:8px;padding:6px 9px}.date-box label{font-size:12px;font-weight:650}
 .iatf-category-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid #d9dfda;border-radius:8px;padding:6px 9px}.iatf-category-box>span{font-size:11px;font-weight:700;color:#657169;margin-right:2px}.iatf-cat-check{display:flex;align-items:center;gap:5px;padding:4px 7px;border-radius:7px;cursor:pointer;font-size:12px;user-select:none}.iatf-cat-check input{margin:0}.iatf-cat-check.vacas{background:#e7f0ff;color:#245a9c}.iatf-cat-check.primi{background:#fff0da;color:#8a5919}.iatf-cat-check.preco{background:#efe8ff;color:#6743a0}
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.clickable{cursor:pointer}
@@ -397,6 +398,10 @@ function migrate(x){
     x.meta.seasonScopedExtras_v10=true;
   }
   (x.fiv||[]).forEach(f=>{if(f.data===undefined)f.data=''});
+  // Nº = ordem de lançamento dentro de cada FIV (fixo: não muda ao excluir/ordenar)
+  {const mx={},k=f=>f.seasonId+'|'+(f.data||'');
+   (x.fiv||[]).forEach(f=>{if(Number(f.n)>0)mx[k(f)]=Math.max(mx[k(f)]||0,Number(f.n))});
+   (x.fiv||[]).forEach(f=>{if(!(Number(f.n)>0)){mx[k(f)]=(mx[k(f)]||0)+1;f.n=mx[k(f)]}});}
   // restos das antigas "Configurações avançadas" (removidas)
   delete x.settings.noticeTexts;delete x.settings.brandName;delete x.settings.brandSubtitle;
   return x
@@ -786,7 +791,7 @@ function setActions(h){$('#pageActions').innerHTML=h||''}
 // Colar mais linhas do que a tabela tem: cria as que faltam (por id do container da tabela)
 const GRID_ADD_ROWS={
   fivTable:n=>{const d=fivAtual();if(d===null)return;fivSort={key:'',dir:1};
-    for(let i=0;i<n;i++)db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});renderFivTable()},
+    for(let i=0;i<n;i++)db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,n:fivProxN(d),rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});renderFivTable()},
   acasalTable:n=>{acasalSort={key:'',dir:1};
     for(let i=0;i<n;i++)db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:todayISO()});renderAcasalTable()},
   embrioesTable:n=>{embrioesSort={key:'',dir:1};
@@ -1267,11 +1272,18 @@ function fivSection(){
   const bulls=Object.values(byBull).map(b=>({...b,...rateOf(b.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||String(a.name).localeCompare(String(b.name),'pt-BR'));
   const bl=dashMore.fivBulls?bulls:bulls.slice(0,10);
   const cols=[...datas.map((d,i)=>({k:i,l:`${i+1}ª`,tt:fmtDate(d)})),...(temSemData?[{k:'s',l:'Sem data',tt:''}]:[])];
+  const pctCel=rs=>{const st=rateOf(rs,r=>r.resultado);return st.n?`<div style="font-size:10px;color:#69746c">${pctTxt(st.rate)}</div>`:''};
+  // um quadrinho por FIV (igual IATF): % geral grande + barra por tipo
+  const fivCard=(titulo,data,rs,total)=>{const g=rateOf(rs,r=>r.resultado);const ts=tipos.map(t=>[t,rateOf(rs.filter(r=>r.tipo===t),r=>r.resultado)]).filter(([,st])=>st.n);
+    return `<div class="dcard${total?' total':''}"><div class="hd"><div><div class="t">${esc(titulo)}</div>${data?`<div class="d">${esc(data)}</div>`:''}</div><div class="big">${pctTxt(g.rate)}<small>${g.p} de ${g.n} prenhas · ${rs.length} transf.</small></div></div>
+    ${ts.map(([t,st])=>barRow(t,DASH_GOLD,st)).join('')||'<div class="dempty">Sem resultado ainda</div>'}</div>`};
+  const cards=`<div class="dash-grid" style="margin-top:12px">${fivCard('Todas as FIVs','',rows,true)}${datas.map((d,i)=>{const l=fivLocal(d);return fivCard(`${i+1}ª FIV`,fmtDate(d)+(l?' · '+l:''),rows.filter(r=>r.data===d),false)}).join('')}</div>`;
   const kpi=(l,v)=>`<div class="dkpi" style="--k:#b39a3b"><div class="l">${l}</div><div class="v">${v}</div></div>`;
   const byDonor={};rows.forEach(r=>{const k=norm(r.rgdDoadora);(byDonor[k]=byDonor[k]||{name:r.rgdDoadora,rows:[]}).rows.push(r)});
   const donors=Object.values(byDonor).map(d=>({name:d.name,t:d.rows.length,...rateOf(d.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||(b.rate??-1)-(a.rate??-1)||String(a.name).localeCompare(String(b.name),'pt-BR',{numeric:true}));
   const dl=dashMore.donors?donors:donors.slice(0,10);
   return `<div class="dash-kpis">${kpi('Transferências',rows.length)}${kpi('Prenhez FIV',pctTxt(g.rate))}${kpi('Prenhas',g.p)}${kpi('Aguardando resultado',aguard)}${kpi('Doadoras',doadoras)}${kpi('FIVs feitas',datas.length)}</div>
+  ${rows.length?cards:''}
   <div class="dash-2" style="margin-top:12px">
     <div class="dcard"><div class="hd"><div class="t">% de prenhez por doadora</div></div>
       ${donors.length?`<table class="dtable"><thead><tr><th>Doadora</th><th>% de prenhez</th><th class="num">Prenhas</th><th class="num">Transferências</th></tr></thead><tbody>${dl.map(d=>`<tr><td><strong>${esc(d.name)}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${d.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(d.rate)}</b></div></td><td class="num">${d.p}/${d.n}</td><td class="num"><strong>${d.t}</strong></td></tr>`).join('')}</tbody></table>
@@ -1282,7 +1294,7 @@ function fivSection(){
     </div>
   </div>
   <div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">Touros mais usados na FIV</div></div>
-    ${bulls.length?`<div style="overflow-x:auto"><table class="dtable"><thead><tr><th>Touro</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Total</th><th>% de prenhez</th></tr></thead><tbody>${bl.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>`<td class="num">${b.por[c.k]||'—'}</td>`).join('')}<td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
+    ${bulls.length?`<div style="overflow-x:auto"><table class="dtable"><thead><tr><th>Touro</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Total</th><th>% de prenhez (geral)</th></tr></thead><tbody>${bl.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>{const rs=b.rows.filter(r=>fivCol(r)===c.k);return `<td class="num">${rs.length?`<strong>${rs.length}</strong>${pctCel(rs)}`:'—'}</td>`}).join('')}<td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
     ${bulls.length>10?`<button class="dmore" onclick="dashToggle('fivBulls')">${dashMore.fivBulls?'− Mostrar só os 10 primeiros':`+ Ver todos os touros (${bulls.length})`}</button>`:''}`:'<div class="dempty">Nenhuma FIV lançada nesta estação.</div>'}
   </div>`;
 }
@@ -2285,6 +2297,7 @@ function touroOptionsForRgd(rgd){
 /* FIV por data (igual IATF): cada FIV é uma data; a tabela mostra só a FIV escolhida em cima.
    As datas criadas ficam em db.fivDatas[estação] (pra FIV vazia não sumir); linhas antigas sem data
    aparecem em "Sem data". */
+function fivProxN(d){return Math.max(0,...seasonFiv().filter(r=>(r.data||'')===(d||'')).map(r=>Number(r.n)||0))+1}
 function fivDatasLista(){
   const sid=db.meta.activeSeasonId;
   const ds=new Set([...((db.fivDatas||{})[sid]||[]),...seasonFiv().map(r=>r.data||'').filter(Boolean)]);
@@ -2346,7 +2359,8 @@ function excluirFivVazia(){
 function fivRowsFiltered(){
   let rows=fivDaData().filter(r=>excelPass('fiv',r));
   const k=fivSort.key,d=fivSort.dir;
-  if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);
+  if(k==='n')rows.sort((a,b)=>((Number(a.n)||0)-(Number(b.n)||0))*d);
+  else if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);
   return rows;
 }
 function fivPage(){
@@ -2363,11 +2377,12 @@ function fivPage(){
       ${atual!==null?`<div class="date-box"><label>Data da FIV</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)"></div><div class="date-box"><label>Local</label><input class="input" id="fivLocal" style="min-width:180px" value="${esc(fivLocal(atual))}" onchange="setFivLocal(this.value)" onkeydown="if(event.key==='Enter')this.blur()"></div>`:''}
       ${atual!==null?`<button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirFivVazia()">Excluir esta FIV</button>`:''}
     </div>
-    <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="exportFiv()">⬇ Excel</button><button class="ghost" onclick="printFiv()">🖨 Imprimir</button></div>
+    <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="openFivOutput('export')">⬇ Excel</button><button class="ghost" onclick="openFivOutput('print')">🖨 Imprimir</button></div>
   </div>
   ${atual===null?`<div class="notice">Nenhuma FIV nesta estação. Clique em <strong>+ Criar FIV</strong> e escolha a data.</div>`:`
+  <div id="fivResumo" class="fiv-resumo"></div>
   <div class="toolbar">
-    <div class="quick-add"><button class="primary" onclick="addBlankFiv()">+ Linha em branco</button><button class="ghost" onclick="openFivEntryModal()">+ Cadastrar em tela</button></div>
+    <div class="quick-add"><button class="primary" onclick="addBlankFiv()">+ Linha em branco</button><button class="ghost" onclick="openFivEntryModal()">+ Cadastrar em tela</button><button class="ghost" id="fivPrtBtn" onclick="openFivPrt()">⟳ PRTs</button></div>
   </div>
   <div id="fivTable"></div>`}
   </div>`;
@@ -2376,10 +2391,36 @@ function fivPage(){
 function addBlankFiv(){
   const d=fivAtual();if(d===null)return openCriarFiv();
   db.fiv=db.fiv||[];
-  db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});
+  db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,n:fivProxN(d),rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});
   save();fivPage();
   setTimeout(()=>{const els=$$('.nav-fiv-rgd');const last=els[els.length-1];if(last){last.scrollIntoView({block:'nearest'});last.focus()}},30)
 } window.addBlankFiv=addBlankFiv;
+// Quadro da FIV: quantidades e % (PRT conta como vazia). % sobre as que já têm resultado.
+function fivResumo(rows){
+  rows=rows.filter(r=>String(r.rgdDoadora||'').trim());
+  const c=k=>rows.filter(r=>normResult(r.resultado)===k).length;
+  const p=c('P'),v=c('V'),prt=c('PRT'),diag=p+v+prt;
+  return {p,v,prt,total:rows.length,sem:rows.length-diag,diag,pctP:diag?p/diag*100:null,pctV:diag?(v+prt)/diag*100:null};
+}
+function fivResumoHTML(){
+  const q=fivResumo(fivDaData());
+  const box=(t,cells)=>`<div class="fiv-q"><div class="fiv-q-t">${t}</div><div class="fiv-q-c">${cells.map(([l,v,cor])=>`<div><span>${l}</span><strong style="color:${cor||'#233129'}">${v}</strong></div>`).join('')}</div></div>`;
+  return box('Quantidade',[['Prenha',q.p,'#216440'],['Vazia',q.v,'#c08a2e'],['PRT',q.prt,'#b8483a'],['Total',q.total]])
+    +box('Resultado',[['% Prenha',pctTxt(q.pctP),'#216440'],['% Vazia',pctTxt(q.pctV),'#c08a2e']])
+    +(q.sem?`<div class="muted" style="align-self:center;font-size:11px">${q.sem} sem resultado ainda<br>(PRT conta como vazia)</div>`:`<div class="muted" style="align-self:center;font-size:11px">PRT conta como vazia</div>`);
+}
+function atualizarResumoFiv(){const el=$('#fivResumo');if(el)el.innerHTML=fivResumoHTML();const b=$('#fivPrtBtn');if(b)b.textContent=`⟳ PRTs (${fivDaData().filter(r=>normResult(r.resultado)==='PRT').length})`}
+function openFivPrt(){
+  const list=fivDaData().filter(r=>normResult(r.resultado)==='PRT').sort((a,b)=>(Number(a.n)||0)-(Number(b.n)||0));
+  if(!list.length)return openModal(`<h2>PRTs — ${esc(fivNome(fivAtual()))}</h2><div class="notice green">Nenhuma PRT nesta FIV.</div><div class="actions"><button class="primary" onclick="closeModal()">Fechar</button></div>`);
+  openModal(`<h2>PRTs — ${esc(fivNome(fivAtual()))}</h2>
+  <div class="notice green">Troque o resultado pra <strong>P</strong> ou <strong>V</strong> (Enter desce pra próxima).</div>
+  <div class="table-wrap" style="max-height:380px"><table><thead><tr><th>Nº</th><th>RGD Doadora</th><th>Touro</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Resultado</th></tr></thead><tbody>
+  ${list.map(r=>`<tr><td>${r.n||''}</td><td><strong>${esc(r.rgdDoadora)}</strong></td><td>${esc(r.sire||'')}</td><td>${esc(r.receptora||'')}</td><td>${esc(r.abcz||'')}</td><td>${esc(r.tipo||'')}</td><td><input class="cell-input nav-fivprt-res" list="fivResultList" maxlength="3" style="width:70px;text-align:center;border:1px solid #d7ded9!important" value="${esc(r.resultado||'')}" oninput="this.value=this.value.toUpperCase()" onkeydown="iatfEnter(event,'nav-fivprt-res')" onchange="editFiv('${r.id}','resultado',this.value,this)"></td></tr>`).join('')}
+  </tbody></table></div>
+  <div class="actions"><button class="primary" onclick="closeModal();manterTela(renderFivTable)">Pronto</button></div>`);
+  setTimeout(()=>{const i=$('.nav-fivprt-res');if(i){i.focus();i.select()}},50);
+} window.openFivPrt=openFivPrt;
 function fivStatsHTML(rows){
   const doadoras=new Set(rows.map(r=>norm(r.rgdDoadora)).filter(Boolean)).size;
   const fresco=rows.filter(r=>r.tipo==='Fresco').length;
@@ -2395,11 +2436,13 @@ function fivStatsHTML(rows){
 function renderFivTable(){
   const root=$('#fivTable');if(!root)return;
   const __view=captureViewPosition();
+  atualizarResumoFiv();
   const rows=fivRowsFiltered();
   root.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c">${fivStatsHTML(rows)}<span><strong style="color:#233129;margin-right:4px">${rows.length}</strong> linha(s)</span></div><div class="table-wrap"><table><thead>
-  <tr><th></th><th>${excelHead('fiv','rgdDoadora','RGD Doadora')}</th><th>${excelHead('fiv','sire','1º Acasalamento')}</th><th>${excelHead('fiv','receptora','Nº Receptora')}</th><th>${excelHead('fiv','abcz','Nº ABCZ')}</th><th>${excelHead('fiv','tipo','Tipo')}</th><th>${excelHead('fiv','resultado','Resultado')}</th><th></th></tr>
+  <tr><th></th><th style="width:44px;min-width:44px">${excelHead('fiv','n','Nº')}</th><th>${excelHead('fiv','rgdDoadora','RGD Doadora')}</th><th>${excelHead('fiv','sire','1º Acasalamento')}</th><th>${excelHead('fiv','receptora','Nº Receptora')}</th><th>${excelHead('fiv','abcz','Nº ABCZ')}</th><th>${excelHead('fiv','tipo','Tipo')}</th><th>${excelHead('fiv','resultado','Resultado')}</th><th></th></tr>
   </thead><tbody>${rows.map(r=>`<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'fiv','${r.id}')">
   ${rowHandleTd('fiv',r.id)}
+  <td style="text-align:center;color:#69746c;font-size:10.5px">${r.n||''}</td>
   <td><input class="cell-input nav-fiv-rgd" list="animalsList" style="font-weight:700;min-width:110px" value="${esc(r.rgdDoadora)}" onkeydown="iatfEnter(event,'nav-fiv-rgd')" onchange="editFiv('${r.id}','rgdDoadora',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-sire" list="bullsList" style="min-width:200px" value="${esc(r.sire)}" onkeydown="iatfEnter(event,'nav-fiv-sire')" onfocus="this.select()" onchange="editFiv('${r.id}','sire',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-recept" style="min-width:110px" value="${esc(r.receptora||'')}" onkeydown="iatfEnter(event,'nav-fiv-recept')" onchange="editFiv('${r.id}','receptora',this.value,this)"></td>
@@ -2427,24 +2470,47 @@ function editFiv(id,key,val,el){
   }
   r[key]=val;
   save();
+  if(key==='resultado'||key==='rgdDoadora')atualizarResumoFiv();
 } window.editFiv=editFiv;
 function deleteFiv(id){
   if(!confirm('Excluir esta linha de FIV?'))return;
   db.fiv=(db.fiv||[]).filter(x=>x.id!==id);
   save();manterTela(fivPage);
 } window.deleteFiv=deleteFiv;
-function exportFiv(){
-  if(!needXLSX())return;
+function openFivOutput(mode){
+  if(!fivRowsFiltered().some(r=>String(r.rgdDoadora||'').trim()))return alert(mode==='print'?'Nenhuma linha pra imprimir.':'Nenhuma linha pra exportar.');
+  openModal(`<h2>${mode==='print'?'Imprimir':'Exportar'} — ${esc(fivNome(fivAtual()))}</h2>
+  <label class="excel-value" style="padding:10px 2px;font-size:14px"><input type="checkbox" id="fivOutResumo" checked> <span>Incluir o quadro de resultados (Prenha, Vazia, PRT, Total e %)</span></label>
+  <div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="primary" onclick="runFivOutput('${mode}')">${mode==='print'?'Imprimir':'Exportar Excel'}</button></div>`);
+} window.openFivOutput=openFivOutput;
+function runFivOutput(mode){const comResumo=$('#fivOutResumo').checked;closeModal();if(mode==='print')printFiv(comResumo);else exportFiv(comResumo)} window.runFivOutput=runFivOutput;
+function fivTituloSaida(){const d=fivAtual(),l=fivLocal(d);return fivNome(d)+(l?' — '+l:'')+' - '+activeSeason().name}
+async function exportFiv(comResumo=true){
   const rows=fivRowsFiltered().filter(r=>String(r.rgdDoadora||'').trim());
   if(!rows.length)return alert('Nenhuma linha pra exportar.');
-  const out=rows.map(r=>({RGD_DOADORA:r.rgdDoadora,'1_ACASALAMENTO':r.sire||'',N_RECEPTORA:r.receptora||'',N_ABCZ:r.abcz||'',TIPO:r.tipo||'',DATA:r.data||'',LOCAL:fivLocal(r.data),RESULTADO:r.resultado||''}));
-  jsonToXlsx(out,'fiv.xlsx','FIV');
+  const cab=['Nº','RGD DOADORA','1º ACASALAMENTO','Nº RECEPTORA','Nº ABCZ','TIPO','DATA','LOCAL','RESULTADO'];
+  const dados=rows.map(r=>[r.n||'',r.rgdDoadora,r.sire||'',r.receptora||'',r.abcz||'',r.tipo||'',fmtDate(r.data||''),fivLocal(r.data),r.resultado||'']);
+  const q=fivResumo(fivDaData());
+  const topo=comResumo?[[fivTituloSaida()],[],['PRENHA','VAZIA','PRT','TOTAL'],[q.p,q.v,q.prt,q.total],[],['% PRENHA','% VAZIA'],[pctTxt(q.pctP),pctTxt(q.pctV)],['(PRT conta como vazia'+(q.sem?`; ${q.sem} sem resultado`:'')+')'],[]]:[];
+  const negrito=comResumo?[1,3,6,10]:[1];
+  const linhas=[...topo,cab,...dados];
+  const nome=`fiv-${fivAtual()||'sem-data'}.xlsx`;
+  if(typeof ExcelJS==='undefined'){
+    if(!needXLSX())return;
+    const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(linhas),'FIV');downloadWorkbook(wb,nome);return;
+  }
+  const wb=new ExcelJS.Workbook();const ws=wb.addWorksheet('FIV');
+  linhas.forEach(l=>ws.addRow(l));negrito.forEach(i=>{ws.getRow(i).font={bold:true}});
+  ws.columns.forEach((c,i)=>{c.width=[6,16,26,14,14,9,12,18,11][i]||12});
+  await downloadExcelJSWorkbook(wb,nome);
 } window.exportFiv=exportFiv;
-function printFiv(){
+function printFiv(comResumo=true){
   const rows=fivRowsFiltered().filter(r=>String(r.rgdDoadora||'').trim());
   if(!rows.length)return alert('Nenhuma linha pra imprimir.');
-  const trs=rows.map(r=>`<tr><td>${esc(r.rgdDoadora)}</td><td>${esc(r.sire||'')}</td><td>${esc(r.receptora||'')}</td><td>${esc(r.abcz||'')}</td><td>${esc(r.tipo||'')}</td><td>${fmtDate(r.data||'')}</td><td>${esc(r.resultado||'')}</td></tr>`).join('');
-  printHTML(fivNome(fivAtual())+(fivLocal(fivAtual())?' — '+fivLocal(fivAtual()):''),`<table><thead><tr><th>RGD Doadora</th><th>1º Acasalamento</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Data</th><th>Resultado</th></tr></thead><tbody>${trs}</tbody></table>`);
+  const q=fivResumo(fivDaData());
+  const resumo=comResumo?`<div style="display:flex;gap:14px;margin:0 0 14px"><table style="width:auto"><thead><tr><th>Prenha</th><th>Vazia</th><th>PRT</th><th>Total</th></tr></thead><tbody><tr><td>${q.p}</td><td>${q.v}</td><td>${q.prt}</td><td><b>${q.total}</b></td></tr></tbody></table><table style="width:auto"><thead><tr><th>% Prenha</th><th>% Vazia</th></tr></thead><tbody><tr><td><b>${pctTxt(q.pctP)}</b></td><td><b>${pctTxt(q.pctV)}</b></td></tr></tbody></table><div style="font-size:10px;color:#666;align-self:end">PRT conta como vazia${q.sem?` · ${q.sem} sem resultado`:''}</div></div>`:'';
+  const trs=rows.map(r=>`<tr><td style="width:34px">${r.n||''}</td><td>${esc(r.rgdDoadora)}</td><td>${esc(r.sire||'')}</td><td>${esc(r.receptora||'')}</td><td>${esc(r.abcz||'')}</td><td>${esc(r.tipo||'')}</td><td>${esc(r.resultado||'')}</td></tr>`).join('');
+  printHTML(fivTituloSaida(),`${resumo}<table><thead><tr><th>Nº</th><th>RGD Doadora</th><th>1º Acasalamento</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Resultado</th></tr></thead><tbody>${trs}</tbody></table>`);
 } window.printFiv=printFiv;
 
 /* Ficha de cadastro da FIV em tela (alternativa ao "+ Linha em branco") — mesmas regras de
@@ -2482,7 +2548,7 @@ function saveFivEntryModal(){
   if(resultadoRaw && !resultado)return alert('Resultado deve ser P, V ou PRT.');
   db.fiv=db.fiv||[];
   db.fiv.push({
-    id:uid('fiv'),seasonId:db.meta.activeSeasonId,
+    id:uid('fiv'),seasonId:db.meta.activeSeasonId,n:fivProxN(fivAtual()||''),
     rgdDoadora:rgd,sire,
     receptora:$('#fmRecept').value.trim(),
     abcz:$('#fmAbcz').value.trim(),
