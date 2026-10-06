@@ -446,8 +446,10 @@ function undoLastChange(){
 }
 window.undoLastChange=undoLastChange;
 let lastLocalEditAt=0;
+let gridBatch=false, gridBatchDirty=false; // colando (Ctrl+V): junta tudo num salvamento e num Desfazer só
 const PENDING_KEY=STORE+'-pending';
 function save(renderToo=false){
+  if(gridBatch){gridBatchDirty=true;if(renderToo)render();return}
   registerUndoSnapshot();
   try{
     localStorage.setItem(STORE,JSON.stringify(db));
@@ -619,7 +621,10 @@ async function init(){
       // Mudança realmente vinda de outro dispositivo: atualiza a base, mas NÃO apaga o histórico local.
       resetUndoBaseline(false);
       applyingRemote=false;
+      // volta o foco pra mesma célula (senão a atualização de outro aparelho "tira" você da célula)
+      const fa=document.activeElement,fi=fa&&fa.classList&&fa.classList.contains('cell-input')?gridInfo(fa):null,fh=fi&&gridHostId(fi.table);
       render();
+      if(fi){const t=gridCellInputAt(gridTableOf(fh,fi.table),fi.r,fi.c);if(t)t.focus()}
       setSyncStatus('ok','Sincronizado');
     },err=>{
       console.error('Listener Firestore:',err);
@@ -775,6 +780,64 @@ function setActions(h){$('#pageActions').innerHTML=h||''}
    e "preencher pra baixo" arrastando o quadradinho azul do canto — funciona sozinho em
    QUALQUER tabela editável do sistema (Matrizes, IATF, Acasalamentos, Embriões, FIV,
    Estoque), sem precisar mexer em cada tela: fica escutando o documento inteiro. */
+// Colar mais linhas do que a tabela tem: cria as que faltam (por id do container da tabela)
+const GRID_ADD_ROWS={
+  fivTable:n=>{const d=fivAtual();if(d===null)return;fivSort={key:'',dir:1};
+    for(let i=0;i<n;i++)db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});renderFivTable()},
+  acasalTable:n=>{acasalSort={key:'',dir:1};
+    for(let i=0;i<n;i++)db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:todayISO()});renderAcasalTable()},
+  embrioesTable:n=>{embrioesSort={key:'',dir:1};
+    for(let i=0;i<n;i++)db.embrioes.push({id:uid('emb'),rgd:'',touro:'',estFresco:0,estVit:0,estDt:0,saidaFresco:0,saidaVit:0,saidaDt:0});renderEmbrioesTable()}
+};
+const gridHostId=table=>{const h=table&&table.closest('[id]');return h?h.id:''};
+const gridTableOf=(hostId,fallback)=>(hostId&&document.getElementById(hostId)?.querySelector('table'))||fallback;
+// mostra a célula na tela (igual Excel: a tela acompanha a seleção)
+function gridScrollTo(table,r,c){const td=table.tBodies[0]?.children[r]?.children[c];if(td)td.scrollIntoView({block:'nearest',inline:'nearest'})}
+// Ctrl+Shift+seta: pula até o fim dos dados (igual Excel)
+function gridJump(table,r,c,dr,dc){
+  const rows=table.tBodies[0].children.length;
+  const has=(rr,cc)=>{const ci=gridCellInputAt(table,rr,cc);return !!ci&&String(ci.value||'').trim()!==''};
+  if(dr){
+    const ok=rr=>rr>=0&&rr<rows;
+    if(has(r,c)&&ok(r+dr)&&has(r+dr,c)){while(ok(r+dr)&&has(r+dr,c))r+=dr;return r}
+    let x=r+dr;while(ok(x)&&!has(x,c))x+=dr;return ok(x)?x:(dr>0?rows-1:0);
+  }
+  const tr=table.tBodies[0].children[r];if(!tr)return c;
+  const cols=[...tr.children].map((td,i)=>td.querySelector('.cell-input')?i:-1).filter(i=>i>=0);
+  let k=cols.indexOf(c);if(k<0)return c;
+  const ok=kk=>kk>=0&&kk<cols.length;
+  if(has(r,cols[k])&&ok(k+dc)&&has(r,cols[k+dc])){while(ok(k+dc)&&has(r,cols[k+dc]))k+=dc;return cols[k]}
+  let x=k+dc;while(ok(x)&&!has(r,cols[x]))x+=dc;return cols[ok(x)?x:(dc>0?cols.length-1:0)];
+}
+// Tab/Enter nunca saem da tabela: Enter desce, Shift+Enter sobe, Tab vai pra direita (no fim da
+// linha, começo da próxima), Shift+Tab volta. Sem célula pra ir, fica na mesma.
+function gridNextCell(table,r,c,isTab,back){
+  if(!isTab)return gridCellInputAt(table,back?r-1:r+1,c);
+  const rows=table.tBodies[0].children;
+  const inputsOf=rr=>rows[rr]?[...rows[rr].children].map((td,i)=>td.querySelector('.cell-input')?i:-1).filter(i=>i>=0):[];
+  const cols=inputsOf(r);
+  const nx=back?cols.filter(i=>i<c).pop():cols.find(i=>i>c);
+  if(nx!==undefined)return gridCellInputAt(table,r,nx);
+  const rr=back?r-1:r+1,cs=inputsOf(rr);
+  return cs.length?gridCellInputAt(table,rr,back?cs[cs.length-1]:cs[0]):null;
+}
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Tab'&&e.key!=='Enter')return;
+  const el=document.activeElement;
+  if(!el||!el.classList||!el.classList.contains('cell-input')||el.closest('#modal'))return;
+  const info=gridInfo(el);if(!info)return;
+  e.preventDefault();e.stopPropagation();
+  const hostId=gridHostId(info.table),{r,c}=info,isTab=e.key==='Tab',back=e.shiftKey;
+  el.blur(); // grava a célula (dispara o change)
+  setTimeout(()=>{
+    const table=gridTableOf(hostId,info.table);
+    const t=gridNextCell(table,r,c,isTab,back)||gridCellInputAt(table,r,c);
+    if(!t)return;
+    t.focus();if(t.tagName==='INPUT')t.select();
+    const ni=gridInfo(t);
+    if(ni){gridAnchor={table,r:ni.r,c:ni.c};gridFocusCell={r:ni.r,c:ni.c};gridHighlight(table,ni.r,ni.c,ni.r,ni.c);gridScrollTo(table,ni.r,ni.c)}
+  },0);
+},true);
 let gridDown=false, gridAnchor=null, gridFocusCell=null, gridFillFrom=null, gridFillDragging=false;
 function gridInfo(cellInput){
   const td=cellInput.closest('td');const tr=td&&td.closest('tr');const tbody=tr&&tr.closest('tbody');
@@ -926,21 +989,38 @@ document.addEventListener('keydown',e=>{
     e.preventDefault();
     navigator.clipboard.readText().then(text=>{
       if(!text)return;
-      const rows=text.replace(/\r/g,'').split('\n').filter((l,i,arr)=>!(i===arr.length-1&&l===''));
+      const rows=text.replace(/\r/g,'').split('\n');
+      if(rows.length>1&&rows[rows.length-1]==='')rows.pop(); // só o "enter" do fim que o Excel põe
       const grid=rows.map(l=>l.split('\t'));
       if(!grid.length)return;
+      const gCols=Math.max(...grid.map(g=>g.length));
       const sel=gridSelectionOf(info.table);
       const startR=sel?sel.r1:info.r, startC=sel?sel.c1:info.c;
-      const endR=sel&&(sel.r2>sel.r1)?sel.r2:startR+grid.length-1;
-      const endC=sel&&(sel.c2>sel.c1)?sel.c2:startC+(grid[0]?grid[0].length-1:0);
-      for(let r=startR;r<=endR;r++){
-        for(let c=startC;c<=endC;c++){
-          const ci=gridCellInputAt(info.table,r,c);if(!ci)continue;
-          const val=grid[(r-startR)%grid.length][(c-startC)%(grid[0]?grid[0].length:1)]??'';
-          gridSetValue(ci,val);
+      // cola TUDO o que foi copiado; só repete se a seleção for múltipla do que foi copiado (igual Excel)
+      const selR=sel?sel.r2-sel.r1+1:1, selC=sel?sel.c2-sel.c1+1:1;
+      const nR=(selR>grid.length&&selR%grid.length===0)?selR:grid.length;
+      const nC=(selC>gCols&&selC%gCols===0)?selC:gCols;
+      const endR=startR+nR-1,endC=startC+nC-1;
+      const hostId=gridHostId(info.table);
+      const avisos=[],alertOrig=window.alert;
+      gridBatch=true;window.alert=m=>{if(!avisos.includes(m))avisos.push(m)};
+      let table=info.table;
+      try{
+        const tem=table.tBodies[0].children.length;
+        if(endR>=tem&&GRID_ADD_ROWS[hostId]){GRID_ADD_ROWS[hostId](endR-tem+1);table=gridTableOf(hostId,table)}
+        for(let r=startR;r<=endR;r++){
+          for(let c=startC;c<=endC;c++){
+            const ci=gridCellInputAt(table,r,c);if(!ci)continue;
+            const val=(grid[(r-startR)%grid.length][(c-startC)%gCols]??'').trim();
+            gridSetValue(ci,val);
+          }
         }
+      }finally{
+        window.alert=alertOrig;gridBatch=false;
+        if(gridBatchDirty){gridBatchDirty=false;save()}
       }
-      gridHighlight(info.table,startR,startC,endR,endC);
+      gridHighlight(table,startR,startC,endR,endC);
+      if(avisos.length)alert('Colado, mas algumas células não foram aceitas:\n\n'+avisos.slice(0,8).join('\n')+(avisos.length>8?`\n... e mais ${avisos.length-8}`:''));
     }).catch(()=>{});
     return;
   }
@@ -948,10 +1028,14 @@ document.addEventListener('keydown',e=>{
     e.preventDefault();
     if(!gridFocusCell || !gridAnchor || gridAnchor.table!==info.table){gridAnchor={table:info.table,r:info.r,c:info.c};gridFocusCell={r:info.r,c:info.c}}
     let{r,c}=gridFocusCell;
-    if(e.key==='ArrowDown')r++;if(e.key==='ArrowUp')r--;if(e.key==='ArrowRight')c++;if(e.key==='ArrowLeft')c--;
-    r=Math.max(0,r);c=Math.max(0,c);
+    const dr=e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0,dc=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;
+    if(e.ctrlKey||e.metaKey){if(dr)r=gridJump(info.table,r,c,dr,0);else c=gridJump(info.table,r,c,0,dc)}
+    else{r+=dr;c+=dc}
+    const nRows=info.table.tBodies[0].children.length,nCols=info.tr.children.length;
+    r=Math.max(0,Math.min(nRows-1,r));c=Math.max(0,Math.min(nCols-1,c));
     gridFocusCell={r,c};
     gridHighlight(info.table,gridAnchor.r,gridAnchor.c,r,c);
+    gridScrollTo(info.table,r,c);
   }
 });
 document.addEventListener('click',e=>{
@@ -2216,7 +2300,14 @@ function mudarDataFiv(nova,el){
   fivData=nova;save();fivPage();
 } window.mudarDataFiv=mudarDataFiv;
 function excluirFivVazia(){
-  const d=fivAtual();if(fivDaData().length)return;
+  const d=fivAtual();if(d===null)return;
+  const n=fivDaData().length,nome=fivNome(d);
+  if(n){
+    if(!confirm(`Excluir a ${nome}?\n\nIsso apaga as ${n} linha(s) dela.`))return;
+    if(!confirm(`Confirme mais uma vez: apagar a ${nome} com ${n} linha(s)?\n\n(Se errar, use o botão Desfazer.)`))return;
+    const ids=new Set(fivDaData().map(r=>r.id));
+    db.fiv=db.fiv.filter(r=>!ids.has(r.id));
+  }
   const sid=db.meta.activeSeasonId;
   if(db.fivDatas&&db.fivDatas[sid])db.fivDatas[sid]=db.fivDatas[sid].filter(x=>x!==d);
   fivData=null;save();fivPage();
@@ -2231,7 +2322,7 @@ function fivPage(){
   title('FIV','RGD Doadora livre; touro do Estoque de Sêmen. Lançamentos pertencem à estação '+activeSeason().name+'.');
   setActions('');
   if(excelFilters.fiv)delete excelFilters.fiv.data; // a data agora é escolhida em cima
-  const lista=fivDatasLista(),atual=fivAtual(),vazia=atual!==null&&!fivDaData().length;
+  const lista=fivDatasLista(),atual=fivAtual();
   $('#content').innerHTML=`
   ${bullDatalist()}${animalDatalist()}<datalist id="fivResultList"><option value="P"></option><option value="V"></option><option value="PRT"></option></datalist>
   <div class="fiv-page">
@@ -2239,7 +2330,7 @@ function fivPage(){
     <div class="filters">
       ${lista.length?`<select id="fivSel" onchange="selectFiv(this.value)">${lista.map(d=>`<option value="${esc(d)}" ${d===atual?'selected':''}>${esc(fivNome(d))}</option>`).join('')}</select>`:''}<button class="ghost" onclick="openCriarFiv()">+ Criar FIV</button>
       ${atual!==null?`<div class="date-box"><label>Data da FIV</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)"></div>`:''}
-      ${vazia&&atual?`<button class="mini" onclick="excluirFivVazia()">Excluir esta FIV</button>`:''}
+      ${atual!==null?`<button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirFivVazia()">Excluir esta FIV</button>`:''}
     </div>
     <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="exportFiv()">⬇ Excel</button><button class="ghost" onclick="printFiv()">🖨 Imprimir</button></div>
   </div>
