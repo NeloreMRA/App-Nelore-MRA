@@ -149,7 +149,7 @@ td.cell-selected{background:#dbe9ff!important}
 .crow .tr{height:10px;border-radius:5px;background:#eef1ef;overflow:hidden}.crow .fl{height:100%;border-radius:0 4px 4px 0}
 .crow .vl{text-align:right;font-weight:700}.crow .vl small{font-weight:500;color:#5d6a62}
 .dtable{width:100%;border-collapse:collapse;font-size:12.5px}.dtable th{position:static;background:none;border-bottom:1px solid #e3e7e4;padding:6px 8px;font-size:10.5px;color:#5d6a62;text-align:left}
-.dtable td{padding:7px 8px;border-bottom:1px solid #f0f2f0}.dtable tr:last-child td{border-bottom:0}.dtable .num{text-align:right;font-variant-numeric:tabular-nums}
+.dtable.fiv-compacta td{padding:3px 8px;white-space:nowrap}.dtable td{padding:7px 8px;border-bottom:1px solid #f0f2f0}.dtable tr:last-child td{border-bottom:0}.dtable .num{text-align:right;font-variant-numeric:tabular-nums}
 .dtable .rk{width:26px;color:#5d6a62;font-variant-numeric:tabular-nums}.dtable .bar{display:flex;align-items:center;gap:8px;min-width:150px}
 .dtable .bar .tr{flex:1;height:8px;border-radius:4px;background:#eef1ef;overflow:hidden}.dtable .bar .fl{height:100%;border-radius:0 4px 4px 0}.dtable .bar b{width:44px;text-align:right}
 .dtable tr.few .fl{opacity:.4}.few-tag{font-size:10px;font-weight:700;color:#8a5919;background:#fff0da;border-radius:99px;padding:1px 6px;margin-left:4px}
@@ -1276,7 +1276,7 @@ function fivSection(){
   // célula do touro/doadora numa FIV: Prenhas / Total com resultado e a % embaixo
   const pvCel=rs=>{const st=rateOf(rs,r=>r.resultado);
     if(!st.n)return '—';
-    return `<strong style="color:#216440">${st.p}</strong><span> / </span><strong>${st.n}</strong><div style="font-size:10.5px;font-weight:700;color:#233129">${pctTxt(st.rate)}</div>`};
+    return `<strong style="color:#216440">${st.p}</strong><span> / </span><strong>${st.n}</strong> <span style="font-size:10.5px;font-weight:700;color:#233129;display:inline-block;min-width:40px">${pctTxt(st.rate)}</span>`};
   // um quadrinho por FIV (igual IATF): % geral grande + barra por tipo
   const fivCard=(titulo,data,rs,total)=>{const g=rateOf(rs,r=>r.resultado);const ts=tipos.map(t=>[t,rateOf(rs.filter(r=>r.tipo===t),r=>r.resultado)]).filter(([,st])=>st.n);
     return `<div class="dcard${total?' total':''}"><div class="hd"><div><div class="t">${esc(titulo)}</div>${data?`<div class="d">${esc(data)}</div>`:''}</div><div class="big">${pctTxt(g.rate)}<small>${g.p} de ${g.n} prenhas</small></div></div>
@@ -1284,10 +1284,10 @@ function fivSection(){
   const cards=`<div class="dash-grid" style="margin-top:12px">${fivCard('Todas as FIVs','',rows,true)}${datas.map((d,i)=>{const l=fivLocal(d);return fivCard(`${i+1}ª FIV`,fmtDate(d)+(l?' · '+l:''),rows.filter(r=>r.data===d),false)}).join('')}</div>`;
   const kpi=(l,v)=>`<div class="dkpi" style="--k:#b39a3b"><div class="l">${l}</div><div class="v">${v}</div></div>`;
   // tabela por FIV (touros e doadoras no mesmo formato): Prenhas / Vazias em cada FIV com a % embaixo
-  const tabelaPorFiv=(titulo,nomeCol,lista,mais,rotulo)=>{const vis=dashMore[mais]?lista:lista.slice(0,10);
+  const tabelaPorFiv=(titulo,nomeCol,lista,mais,rotulo)=>{const vis=dashMore[mais]?lista:lista.slice(0,25);
     return `<div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">${titulo}</div></div>
-    ${lista.length?`<div style="overflow-x:auto"><table class="dtable"><thead><tr><th>${nomeCol}</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Geral P / Total</th><th class="num">Transf.</th><th style="min-width:150px">% de prenhez (geral)</th></tr></thead><tbody>${vis.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>{const rs=b.rows.filter(r=>fivCol(r)===c.k);return `<td class="num">${rs.length?pvCel(rs):''}</td>`}).join('')}<td class="num">${pvCel(b.rows)}</td><td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
-    ${lista.length>10?`<button class="dmore" onclick="dashToggle('${mais}')">${dashMore[mais]?'− Mostrar só 10':`+ Ver ${rotulo} (${lista.length})`}</button>`:''}`:'<div class="dempty">Nenhuma FIV lançada nesta estação.</div>'}
+    ${lista.length?`<div style="overflow-x:auto"><table class="dtable fiv-compacta"><thead><tr><th>${nomeCol}</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Geral P / Total</th><th class="num">Transf.</th><th style="min-width:150px">% de prenhez (geral)</th></tr></thead><tbody>${vis.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>{const rs=b.rows.filter(r=>fivCol(r)===c.k);return `<td class="num">${rs.length?pvCel(rs):''}</td>`}).join('')}<td class="num">${pvCel(b.rows)}</td><td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
+    ${lista.length>25?`<button class="dmore" onclick="dashToggle('${mais}')">${dashMore[mais]?'− Mostrar só 25':`+ Ver ${rotulo} (${lista.length})`}</button>`:''}`:'<div class="dempty">Nenhuma FIV lançada nesta estação.</div>'}
   </div>`};
   const byDonor={};rows.forEach(r=>{const k=norm(r.rgdDoadora);(byDonor[k]=byDonor[k]||{name:r.rgdDoadora,rows:[]}).rows.push(r)});
   const donors=Object.values(byDonor).map(d=>({name:d.name,rows:d.rows,t:d.rows.length,...rateOf(d.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||(b.rate??-1)-(a.rate??-1)||String(a.name).localeCompare(String(b.name),'pt-BR',{numeric:true}));
