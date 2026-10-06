@@ -8,6 +8,7 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - `firestore.rules` — regras de segurança; precisam ser coladas e publicadas no console do Firebase (Firestore > Regras) sempre que mudarem.
 - `logo.webp` — marca Nelore MRA.
 - `iatf/index.html` — IATF dentro do App (cópia do repositório IATF-MRA adaptada: Firebase novo, dados em `apps/iatf`, login do portal, telas por usuário em `users/{uid}.paginas.iatf`). Guardas do navegador com prefixo `app-nelore-mra-` pra não misturar com o IATF antigo (mesmo site github.io).
+  - FIV por data (igual IATF): em cima escolhe "1ª FIV — 24/09", "+ Criar FIV" pede a data, "Data da FIV" muda a data de todas as linhas daquela FIV. Não tem mais coluna Data na tabela (o campo `data` de cada linha é a FIV dela). Datas criadas ficam em `db.fivDatas[estação]` (pra FIV vazia não sumir); linhas sem data aparecem como "Sem data". "Excluir esta FIV" só aparece se estiver vazia.
 - `custos/index.html` — Custos Safra dentro do App (dados em `apps/custos/dados/{estado-atual,diesel}`; quem só tem telas de Diesel é bloqueado pelas regras de ler os custos da safra). Diesel: IGUAL ao original (Resumo Diesel com De/Até/Estação, Estoque com estação). Única mudança pedida: no lançamento do Controle Diesel a Estação vem VAZIA (não pré-escolhe a última). O dono ficou bravo quando mexi além disso — não mudar o diesel sem pedido explícito.
 - `contabil/index.html` — Contábil dentro do App (dados em `apps/contabil/dados/{config,banco,caixa}` e `apps/contabil/partes/*`; IndexedDB `app_nelore_mra_contabil_db`).
 
