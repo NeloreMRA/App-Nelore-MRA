@@ -2347,7 +2347,7 @@ function fivPage(){
   if(excelFilters.fiv)delete excelFilters.fiv.data; // a data agora é escolhida em cima
   const lista=fivDatasLista(),atual=fivAtual();
   $('#content').innerHTML=`
-  ${bullDatalist()}${animalDatalist()}<datalist id="fivResultList"><option value="P"></option><option value="V"></option><option value="PRT"></option></datalist>
+  ${bullDatalist()}${animalDatalist()}<datalist id="fivResultList"><option value="P"></option><option value="V"></option><option value="PRT"></option></datalist><datalist id="fivTipoList"><option value="Fresco"></option><option value="VIT"></option><option value="DT"></option></datalist>
   <div class="fiv-page">
   <div class="toolbar" style="margin-bottom:9px">
     <div class="filters">
@@ -2396,15 +2396,22 @@ function renderFivTable(){
   <td><input class="cell-input nav-fiv-sire" list="bullsList" style="min-width:200px" value="${esc(r.sire)}" onkeydown="iatfEnter(event,'nav-fiv-sire')" onfocus="this.select()" onchange="editFiv('${r.id}','sire',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-recept" style="min-width:110px" value="${esc(r.receptora||'')}" onkeydown="iatfEnter(event,'nav-fiv-recept')" onchange="editFiv('${r.id}','receptora',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-abcz" style="min-width:110px" value="${esc(r.abcz||'')}" onkeydown="iatfEnter(event,'nav-fiv-abcz')" onchange="editFiv('${r.id}','abcz',this.value,this)"></td>
-  <td><select class="cell-input nav-fiv-tipo" style="min-width:90px" onkeydown="iatfEnter(event,'nav-fiv-tipo')" onchange="editFiv('${r.id}','tipo',this.value,this)"><option value="">—</option><option ${r.tipo==='Fresco'?'selected':''}>Fresco</option><option ${r.tipo==='VIT'?'selected':''}>VIT</option><option ${r.tipo==='DT'?'selected':''}>DT</option></select></td>
+  <td><input class="cell-input nav-fiv-tipo" list="fivTipoList" style="width:80px" value="${esc(r.tipo||'')}" onchange="editFiv('${r.id}','tipo',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-res" list="fivResultList" maxlength="3" style="width:70px;text-align:center" value="${esc(r.resultado||'')}" oninput="this.value=this.value.toUpperCase()" onkeydown="iatfEnter(event,'nav-fiv-res')" onchange="editFiv('${r.id}','resultado',this.value,this)"></td>
   <td><button class="mini" onclick="deleteFiv('${r.id}')">Excluir</button></td></tr>`).join('')}</tbody></table></div>`;
   restoreViewPosition(__view);
 }
+function fivTipoNorm(v){const n=norm(v);return n==='F'||n==='FRESCO'?'Fresco':n==='V'||n==='VIT'?'VIT':n==='DT'||n==='D'?'DT':''}
 function editFiv(id,key,val,el){
   const r=(db.fiv||[]).find(x=>x.id===id);if(!r)return;
   val=String(val||'').trim();
   if(key==='sire' && val && !sireExists(val)){alert(`O touro "${val}" não existe no Estoque.`);el.value=r.sire||'';return}
+  if(key==='tipo'){
+    // Tipo é digitado (dá pra colar): F/Fresco, V/VIT, DT — maiúscula ou minúscula
+    const v=fivTipoNorm(val);
+    if(val && !v){alert('Tipo deve ser Fresco, VIT ou DT.');el.value=r.tipo||'';return}
+    val=v;el.value=v;
+  }
   if(key==='resultado'){
     const v=normResult(val);
     if(val && !v){alert('Resultado deve ser P, V ou PRT.');el.value=r.resultado||'';return}
