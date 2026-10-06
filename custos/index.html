@@ -525,22 +525,27 @@ function initFirebase(){
         state.safras = normalizarEstruturaSafras(snap.data().safras);
         ultimoSalvoJSON = JSON.stringify(state.safras);
         clearUndoHistory();
+        // A Soja 2025/26 importada entra UMA vez só (marca "sojaImportada" no banco).
+        // Se depois alguém excluir essa safra, ela não volta sozinha.
         let adicionouSojaImportada = false;
-        if(!state.safras.soja2526){
+        const jaImportou = !!snap.data().sojaImportada;
+        if(!state.safras.soja2526 && !jaImportou){
           state.safras.soja2526 = criarSafraSoja2526Importada();
           adicionouSojaImportada = true;
+        } else if(!jaImportou){
+          docRef.update({sojaImportada: true}).catch(()=>{});
         }
         if(!state.safras[state.safraAtual]) state.safraAtual = Object.keys(state.safras)[0];
         render();
         suppressSave = false;
         if(adicionouSojaImportada){
           ultimoSalvoJSON = JSON.stringify(state.safras);
-          docRef.set({safras: JSON.parse(JSON.stringify(state.safras))});
+          docRef.update({'safras.soja2526': JSON.parse(JSON.stringify(state.safras.soja2526)), sojaImportada: true});
         }
       } else if(!snap.metadata.fromCache){
         // primeira vez (confirmado pelo servidor): manda os dados iniciais (milho) pro banco
         ultimoSalvoJSON = JSON.stringify(state.safras);
-        docRef.set({safras: JSON.parse(JSON.stringify(state.safras))});
+        docRef.set({safras: JSON.parse(JSON.stringify(state.safras)), sojaImportada: true});
       }
       firebaseReady = true;
       setSyncStatus('🟢 Sincronizado', 'ok');
@@ -577,10 +582,25 @@ function scheduleSave(immediate=false){
   saveTimer = setTimeout(()=>{
     const j = JSON.stringify(state.safras);
     if(j === ultimoSalvoJSON){ setSyncStatus('🟢 Sincronizado', 'ok'); return; }
+    const anterior = ultimoSalvoJSON ? JSON.parse(ultimoSalvoJSON) : null;
+    const novo = JSON.parse(j);
     ultimoSalvoJSON = j;
-    docRef.set({safras: JSON.parse(j)})
+    // Grava SÓ a safra que mudou (safras.<chave>). Assim duas pessoas mexendo em safras
+    // diferentes ao mesmo tempo não apagam o trabalho uma da outra.
+    const chaveOk = k => /^[A-Za-z_][A-Za-z0-9_]*$/.test(k);
+    let envio;
+    if(anterior && Object.keys(novo).concat(Object.keys(anterior)).every(chaveOk)){
+      const up = {};
+      Object.keys(novo).forEach(k=>{ if(JSON.stringify(novo[k]) !== JSON.stringify(anterior[k])) up['safras.'+k] = novo[k]; });
+      Object.keys(anterior).forEach(k=>{ if(!(k in novo)) up['safras.'+k] = firebase.firestore.FieldValue.delete(); });
+      if(!Object.keys(up).length){ setSyncStatus('🟢 Sincronizado', 'ok'); return; }
+      envio = docRef.update(up);
+    } else {
+      envio = docRef.set({safras: novo, sojaImportada: true});
+    }
+    envio
       .then(()=> setSyncStatus('🟢 Sincronizado', 'ok'))
-      .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao salvar', 'err'); });
+      .catch(err=>{ console.error(err); ultimoSalvoJSON = null; setSyncStatus('🔴 Erro ao salvar', 'err'); });
   }, immediate ? 0 : 600);
 }
 
@@ -2031,7 +2051,7 @@ function dieselLancamentosFiltrados(){
 function agruparDiesel(lancs, chave){
   const m = {};
   lancs.forEach(l=>{
-    const nome = String(l[chave]||'').trim() || '(sem informação)';
+    const nome = String(l[chave]||'').trim() || '—';
     if(!m[nome]) m[nome] = {nome, qtd:0, litros:0};
     m[nome].qtd += 1;
     m[nome].litros += Number(l.litros||0);
