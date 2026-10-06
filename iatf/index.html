@@ -280,7 +280,8 @@ function migrate(x){
   x.cycleDates=x.cycleDates||{};
   x.iatfCycleCategories=x.iatfCycleCategories||{};
   x.iatfMaxCycles=x.iatfMaxCycles||{};
-  x.fivDatas=x.fivDatas||{}; // FIVs criadas (por data) em cada estação
+  x.fivDatas=x.fivDatas||{};
+  x.fivLocais=x.fivLocais||{}; // Local de cada FIV: fivLocais[estação][data] // FIVs criadas (por data) em cada estação
   x.animals=x.animals||[];x.semen=x.semen||[];x.iatf=x.iatf||[];
   x.deletedAnimals=x.deletedAnimals||[];
   x.acasalamentos=x.acasalamentos||[];
@@ -758,6 +759,8 @@ function restoreViewPosition(pos){
   };
   apply();requestAnimationFrame(()=>{apply();requestAnimationFrame(apply)});
 }
+// Recarrega a tela sem pular pro topo (usado ao excluir linhas)
+function manterTela(fn){const v=captureViewPosition();fn();restoreViewPosition(v)}
 function render(){
   const __view=captureViewPosition();
   renderSeasonSelector();
@@ -811,6 +814,16 @@ function gridJump(table,r,c,dr,dc){
 }
 // Tab/Enter nunca saem da tabela: Enter desce, Shift+Enter sobe, Tab vai pra direita (no fim da
 // linha, começo da próxima), Shift+Tab volta. Sem célula pra ir, fica na mesma.
+// Touro digitado pela metade ("OURO FINO") + Tab/Enter: completa com o nome da lista do Estoque
+// (o primeiro que aparece embaixo: primeiro os que começam com o texto, depois os que contêm).
+// Só na lista de touros — RGD continua livre.
+function completarTouro(el){
+  if(el.tagName!=='INPUT'||el.getAttribute('list')!=='bullsList')return;
+  const v=norm(el.value);if(!v)return;
+  const nomes=sireNames();if(nomes.some(n=>norm(n)===v))return;
+  const achou=nomes.find(n=>norm(n).startsWith(v))||nomes.find(n=>norm(n).includes(v));
+  if(achou)el.value=achou;
+}
 function gridNextCell(table,r,c,isTab,back){
   if(!isTab)return gridCellInputAt(table,back?r-1:r+1,c);
   const rows=table.tBodies[0].children;
@@ -828,6 +841,7 @@ document.addEventListener('keydown',e=>{
   const info=gridInfo(el);if(!info)return;
   e.preventDefault();e.stopPropagation();
   const hostId=gridHostId(info.table),{r,c}=info,isTab=e.key==='Tab',back=e.shiftKey;
+  completarTouro(el);
   el.blur(); // grava a célula (dispara o change)
   setTimeout(()=>{
     const table=gridTableOf(hostId,info.table);
@@ -1423,7 +1437,7 @@ function archiveAnimal(a){
   db.animals=db.animals.filter(x=>x.id!==a.id);
   db.iatf=db.iatf.filter(r=>!(r.seasonId===a.seasonId&&norm(r.rgd)===norm(a.rgd)));
 }
-function deleteSelectedAnimals(){if(!animalSelected.size)return alert('Selecione pelo menos uma matriz.');if(!confirm(`Excluir ${animalSelected.size} matrizes e mover para Exclusões? Você poderá recuperá-las depois.`))return;const list=db.animals.filter(a=>animalSelected.has(a.id));list.forEach(archiveAnimal);animalSelected.clear();animalSelecting=false;save();animals()} window.deleteSelectedAnimals=deleteSelectedAnimals;
+function deleteSelectedAnimals(){if(!animalSelected.size)return alert('Selecione pelo menos uma matriz.');if(!confirm(`Excluir ${animalSelected.size} matrizes e mover para Exclusões? Você poderá recuperá-las depois.`))return;const list=db.animals.filter(a=>animalSelected.has(a.id));list.forEach(archiveAnimal);animalSelected.clear();animalSelecting=false;save();manterTela(animals)} window.deleteSelectedAnimals=deleteSelectedAnimals;
 function modalAnimal(id=''){
   const a0=id?db.animals.find(x=>x.id===id):null;const a=a0?{...a0,firstSire:currentSire(a0)}:null;
   openModal(`<h2>${a?'Editar matriz':'Cadastrar matriz'}</h2>${bullDatalist()}<div class="form-grid">
@@ -1443,7 +1457,7 @@ function saveAnimal(id){
   else db.animals.push({id:uid('a'),seasonId:db.meta.activeSeasonId,rgd,firstSire:sire,category:cat,active:true,createdAt:todayISO()});
   save();closeModal();page==='animals'?animals():render()
 } window.saveAnimal=saveAnimal;
-function deleteAnimal(id){const a=db.animals.find(x=>x.id===id);if(!a)return;if(!confirm(`Excluir ${a.rgd} e mover para Exclusões? Os lançamentos de IATF também serão guardados para recuperação.`))return;archiveAnimal(a);save();closeModal();animals()} window.deleteAnimal=deleteAnimal;
+function deleteAnimal(id){const a=db.animals.find(x=>x.id===id);if(!a)return;if(!confirm(`Excluir ${a.rgd} e mover para Exclusões? Os lançamentos de IATF também serão guardados para recuperação.`))return;archiveAnimal(a);save();closeModal();manterTela(animals)} window.deleteAnimal=deleteAnimal;
 
 /* MATRIZES EXCLUÍDAS / RECUPERAÇÃO */
 function deletedAnimalsPage(){
@@ -1815,7 +1829,7 @@ function deleteIatf(id){
   if(!db.iatfExcluded.some(x=>x.seasonId===r.seasonId&&Number(x.cycle)===Number(r.cycle)&&x.rgd===r.rgd)){
     db.iatfExcluded.unshift({id:uid('ix'),seasonId:r.seasonId,cycle:Number(r.cycle),rgd:r.rgd,category:r.category,excludedAt:new Date().toISOString()});
   }
-  db.iatf=db.iatf.filter(x=>x.id!==id);save();iatfPage();
+  db.iatf=db.iatf.filter(x=>x.id!==id);save();manterTela(iatfPage);
 } window.deleteIatf=deleteIatf;
 function openIatfOutput(mode){
   openModal(`<h2>${mode==='print'?'Imprimir':'Exportar'} IATF</h2><div class="form-grid">
@@ -1903,7 +1917,7 @@ function editAcasalCell(id,key,val,el){
 function deleteAcasal(id){
   if(!confirm('Excluir esta linha de acasalamento?'))return;
   db.acasalamentos=(db.acasalamentos||[]).filter(x=>x.id!==id);
-  save();acasalPage();
+  save();manterTela(acasalPage);
 } window.deleteAcasal=deleteAcasal;
 function exportAcasalToMatrizesTemplate(){
   if(!needXLSX())return;
@@ -2174,7 +2188,7 @@ function editEmbriao(id,key,val,el){
 function deleteEmbriao(id){
   if(!confirm('Excluir esta linha de embriões?'))return;
   db.embrioes=(db.embrioes||[]).filter(x=>x.id!==id);
-  save();embrioesPage();
+  save();manterTela(embrioesPage);
 } window.deleteEmbriao=deleteEmbriao;
 function exportEmbrioes(){
   if(!needXLSX())return;
@@ -2277,6 +2291,13 @@ function fivAtual(){
 }
 const fivNome=d=>{const l=fivDatasLista().filter(Boolean);return d?`${l.indexOf(d)+1}ª FIV — ${fmtDate(d)}`:'Sem data'};
 function fivDaData(){const d=fivAtual();return d===null?[]:seasonFiv().filter(r=>(r.data||'')===d)}
+function fivLocal(d){return (((db.fivLocais||{})[db.meta.activeSeasonId])||{})[d||'']||''}
+function setFivLocal(v){
+  const d=fivAtual();if(d===null)return;const sid=db.meta.activeSeasonId;
+  db.fivLocais=db.fivLocais||{};db.fivLocais[sid]=db.fivLocais[sid]||{};
+  v=String(v||'').trim();if(v)db.fivLocais[sid][d]=v;else delete db.fivLocais[sid][d];
+  save();
+} window.setFivLocal=setFivLocal;
 function selectFiv(v){fivData=v;fivPage()} window.selectFiv=selectFiv;
 function openCriarFiv(){
   openModal(`<h2>Criar FIV</h2>
@@ -2297,6 +2318,7 @@ function mudarDataFiv(nova,el){
   const sid=db.meta.activeSeasonId;db.fivDatas=db.fivDatas||{};
   db.fivDatas[sid]=[...((db.fivDatas[sid])||[]).filter(x=>x!==velha),nova];
   seasonFiv().forEach(r=>{if((r.data||'')===velha)r.data=nova});
+  const loc=(db.fivLocais||{})[sid];if(loc&&loc[velha||'']!==undefined){loc[nova]=loc[velha||''];delete loc[velha||'']}
   fivData=nova;save();fivPage();
 } window.mudarDataFiv=mudarDataFiv;
 function excluirFivVazia(){
@@ -2310,6 +2332,7 @@ function excluirFivVazia(){
   }
   const sid=db.meta.activeSeasonId;
   if(db.fivDatas&&db.fivDatas[sid])db.fivDatas[sid]=db.fivDatas[sid].filter(x=>x!==d);
+  if(db.fivLocais&&db.fivLocais[sid])delete db.fivLocais[sid][d||''];
   fivData=null;save();fivPage();
 } window.excluirFivVazia=excluirFivVazia;
 function fivRowsFiltered(){
@@ -2329,7 +2352,7 @@ function fivPage(){
   <div class="toolbar" style="margin-bottom:9px">
     <div class="filters">
       ${lista.length?`<select id="fivSel" onchange="selectFiv(this.value)">${lista.map(d=>`<option value="${esc(d)}" ${d===atual?'selected':''}>${esc(fivNome(d))}</option>`).join('')}</select>`:''}<button class="ghost" onclick="openCriarFiv()">+ Criar FIV</button>
-      ${atual!==null?`<div class="date-box"><label>Data da FIV</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)"></div>`:''}
+      ${atual!==null?`<div class="date-box"><label>Data da FIV</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)"></div><div class="date-box"><label>Local</label><input class="input" id="fivLocal" style="min-width:180px" value="${esc(fivLocal(atual))}" onchange="setFivLocal(this.value)" onkeydown="if(event.key==='Enter')this.blur()"></div>`:''}
       ${atual!==null?`<button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirFivVazia()">Excluir esta FIV</button>`:''}
     </div>
     <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="exportFiv()">⬇ Excel</button><button class="ghost" onclick="printFiv()">🖨 Imprimir</button></div>
@@ -2393,20 +2416,20 @@ function editFiv(id,key,val,el){
 function deleteFiv(id){
   if(!confirm('Excluir esta linha de FIV?'))return;
   db.fiv=(db.fiv||[]).filter(x=>x.id!==id);
-  save();fivPage();
+  save();manterTela(fivPage);
 } window.deleteFiv=deleteFiv;
 function exportFiv(){
   if(!needXLSX())return;
   const rows=fivRowsFiltered().filter(r=>String(r.rgdDoadora||'').trim());
   if(!rows.length)return alert('Nenhuma linha pra exportar.');
-  const out=rows.map(r=>({RGD_DOADORA:r.rgdDoadora,'1_ACASALAMENTO':r.sire||'',N_RECEPTORA:r.receptora||'',N_ABCZ:r.abcz||'',TIPO:r.tipo||'',DATA:r.data||'',RESULTADO:r.resultado||''}));
+  const out=rows.map(r=>({RGD_DOADORA:r.rgdDoadora,'1_ACASALAMENTO':r.sire||'',N_RECEPTORA:r.receptora||'',N_ABCZ:r.abcz||'',TIPO:r.tipo||'',DATA:r.data||'',LOCAL:fivLocal(r.data),RESULTADO:r.resultado||''}));
   jsonToXlsx(out,'fiv.xlsx','FIV');
 } window.exportFiv=exportFiv;
 function printFiv(){
   const rows=fivRowsFiltered().filter(r=>String(r.rgdDoadora||'').trim());
   if(!rows.length)return alert('Nenhuma linha pra imprimir.');
   const trs=rows.map(r=>`<tr><td>${esc(r.rgdDoadora)}</td><td>${esc(r.sire||'')}</td><td>${esc(r.receptora||'')}</td><td>${esc(r.abcz||'')}</td><td>${esc(r.tipo||'')}</td><td>${fmtDate(r.data||'')}</td><td>${esc(r.resultado||'')}</td></tr>`).join('');
-  printHTML(fivNome(fivAtual()),`<table><thead><tr><th>RGD Doadora</th><th>1º Acasalamento</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Data</th><th>Resultado</th></tr></thead><tbody>${trs}</tbody></table>`);
+  printHTML(fivNome(fivAtual())+(fivLocal(fivAtual())?' — '+fivLocal(fivAtual()):''),`<table><thead><tr><th>RGD Doadora</th><th>1º Acasalamento</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Data</th><th>Resultado</th></tr></thead><tbody>${trs}</tbody></table>`);
 } window.printFiv=printFiv;
 
 /* Ficha de cadastro da FIV em tela (alternativa ao "+ Linha em branco") — mesmas regras de
@@ -2721,6 +2744,7 @@ function deleteSeason(id){
   db.iatf=db.iatf.filter(r=>r.seasonId!==id);
   if(db.cycleDates)delete db.cycleDates[id];
   if(db.fivDatas)delete db.fivDatas[id];
+  if(db.fivLocais)delete db.fivLocais[id];
   if(db.meta.activeSeasonId===id)db.meta.activeSeasonId=db.seasons[0].id;
   save();settings();renderSeasonSelector();
   alert(`Estação "${s.name}" excluída.`)
