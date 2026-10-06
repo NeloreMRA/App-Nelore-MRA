@@ -156,7 +156,7 @@ td.csel{background:#dcebe2!important;box-shadow:inset 0 0 0 1px #72a386}
     <button class="aba" data-aba="dash" onclick="irAba('dash')">📊 Dashboard</button>
   </div>
   <div class="barra-f">
-    <div class="campo"><label>Mês</label><select id="selMes" onchange="mes=this.value;filtrosCol={};ordemCol=null;desenhar()"></select></div>
+    <div class="campo"><label>Mês</label><select id="selMes" onchange="mes=this.value;desenhar()"></select></div>
     <button class="btn btn-primary" style="padding:8px 14px" onclick="novoMes()" title="Criar outro mês (pode ser do passado)">+ Mês</button>
     <div class="acoes-f so-desk"><button class="btn btn-ghost" onclick="exportar()">⬇ Excel</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div>
   </div>
@@ -248,7 +248,7 @@ function novoMes(){
 }
 function criarMes(){
   const v=$('#novoMesV').value;if(!/^\d{4}-\d{2}$/.test(v)){toast('Escolha o mês.');return}
-  fecharJanela();mes=v;filtrosCol={};ordemCol=null;
+  fecharJanela();mes=v;
   if(linhasDo(v).length)toast(nomeMes(v)+' já existe. Abri ele pra você.');
   aba='estoque';irAba('estoque');
 }
@@ -290,7 +290,11 @@ function atualizarIniciais(){
 
 /* ---------- filtro ▾ por coluna, ordem, largura (igual às outras tabelas do App) ---------- */
 const COLS=[['classificacao','Classificação',20],['inicial','Qtd Inicial',9,1],['entrada','Entrada',9,1],['saida','Saída',9,1],['morte','Morte',9,1],['abate','Abate',9,1],['total','Total',9,1],['obs','Observação',18]];
+// filtros da tabela ficam guardados no aparelho (não somem ao trocar de mês nem ao recarregar)
+const FILTRO_KEY='app-nelore-mra-estoque-filtros';
 let filtrosCol={},ordemCol=null;
+try{const f=JSON.parse(localStorage.getItem(FILTRO_KEY)||'{}');filtrosCol=f.filtros||{};ordemCol=f.ordem||null}catch(e){}
+const guardarFiltros=()=>{try{localStorage.setItem(FILTRO_KEY,JSON.stringify({filtros:filtrosCol,ordem:ordemCol}))}catch(e){}};
 const NOMES_COR=['🟩 Verde','🟨 Amarelo','🟦 Azul','🟧 Laranja','🟥 Vermelho','🟪 Roxo','⬜ Cinza'];
 const nomeCor=c=>{const i=CORES.indexOf(c||'');return c?(i>-1?NOMES_COR[i]:'🎨 Outra'):'(sem cor)'};
 const valCampo=(l,k)=>k==='cor'?nomeCor(l.cor):k==='total'?total(l):(k==='classificacao'||k==='obs')?(l[k]||''):num(l[k]);
@@ -381,6 +385,7 @@ const digitando=()=>!!(document.activeElement&&document.activeElement.classList.
 document.addEventListener('focusout',e=>{if(e.relatedTarget&&e.relatedTarget.classList&&e.relatedTarget.classList.contains('cel'))return;
   setTimeout(function tenta(){if(!redesenharDepois)return;if(digitando()){setTimeout(tenta,400);return}redesenharDepois=false;desenhar()},150)});
 function desenhar(){
+  guardarFiltros();
   montarMeses();desenharAviso();
   if(aba==='dash'){desenharDash();return}
   limparSel();
