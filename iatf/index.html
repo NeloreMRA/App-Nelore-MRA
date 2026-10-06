@@ -1205,7 +1205,7 @@ const MRA_LOGO='data:image/webp;base64,UklGRvYnAABXRUJQVlA4WAoAAAAwAAAAvwAAvwAAS
 const CAT_BAR_COLORS=['#2a78d6','#e08a1e','#7a52c7','#1b9e8f','#a08a10','#d2559a'];
 function catBarColor(c){const i=categories().findIndex(x=>x===c);return i<0?'#8a958d':CAT_BAR_COLORS[i%CAT_BAR_COLORS.length]}
 const DASH_GREEN='#14804a', DASH_GOLD='#a08a10';
-let dashMore={bulls:false,stock:false,donors:false};
+let dashMore={bulls:false,stock:false,donors:false,fivBulls:false};
 function dashToggle(k){dashMore[k]=!dashMore[k];dashboard()} window.dashToggle=dashToggle;
 const pctTxt=v=>v===null?'—':(Math.round(v*10)/10).toLocaleString('pt-BR')+'%';
 function rateOf(rows,get){const d=rows.filter(r=>isDiagnosed(get(r)));const p=d.filter(r=>normResult(get(r))==='P').length;return {n:d.length,p,rate:d.length?p/d.length*100:null}}
@@ -1259,14 +1259,19 @@ function fivSection(){
   const aguard=rows.filter(r=>!normResult(r.resultado)).length;
   const doadoras=new Set(rows.map(r=>norm(r.rgdDoadora))).size;
   const tipos=['Fresco','VIT','DT'];
-  // saldo de embriões (estoque + saída − usados) por tipo, igual à tela Embriões
-  const saldo={Fresco:0,VIT:0,DT:0};
-  (db.embrioes||[]).forEach(e=>{const c=embRowCalc(e);saldo.Fresco+=c.saldoFresco;saldo.VIT+=c.saldoVit;saldo.DT+=c.saldoDt});
+  // tudo aqui vem só das linhas da FIV (Embriões está em espera e não entra no dashboard)
+  const datas=fivDatasLista().filter(Boolean);
+  const fivCol=r=>{const i=datas.indexOf(r.data||'');return i<0?'s':i}; // coluna da 1ª, 2ª... FIV ('s' = sem data)
+  const temSemData=rows.some(r=>!r.data);
+  const byBull={};rows.forEach(r=>{const nm=String(r.sire||'').trim()||'(sem touro)';const k=norm(nm);const b=byBull[k]=byBull[k]||{name:nm,t:0,por:{},rows:[]};b.t++;b.rows.push(r);const c=fivCol(r);b.por[c]=(b.por[c]||0)+1});
+  const bulls=Object.values(byBull).map(b=>({...b,...rateOf(b.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||String(a.name).localeCompare(String(b.name),'pt-BR'));
+  const bl=dashMore.fivBulls?bulls:bulls.slice(0,10);
+  const cols=[...datas.map((d,i)=>({k:i,l:`${i+1}ª`,tt:fmtDate(d)})),...(temSemData?[{k:'s',l:'Sem data',tt:''}]:[])];
   const kpi=(l,v)=>`<div class="dkpi" style="--k:#b39a3b"><div class="l">${l}</div><div class="v">${v}</div></div>`;
   const byDonor={};rows.forEach(r=>{const k=norm(r.rgdDoadora);(byDonor[k]=byDonor[k]||{name:r.rgdDoadora,rows:[]}).rows.push(r)});
   const donors=Object.values(byDonor).map(d=>({name:d.name,t:d.rows.length,...rateOf(d.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||(b.rate??-1)-(a.rate??-1)||String(a.name).localeCompare(String(b.name),'pt-BR',{numeric:true}));
   const dl=dashMore.donors?donors:donors.slice(0,10);
-  return `<div class="dash-kpis">${kpi('Transferências',rows.length)}${kpi('Prenhez FIV',pctTxt(g.rate))}${kpi('Prenhas',g.p)}${kpi('Aguardando resultado',aguard)}${kpi('Doadoras',doadoras)}${kpi('Embriões em saldo',saldo.Fresco+saldo.VIT+saldo.DT)}</div>
+  return `<div class="dash-kpis">${kpi('Transferências',rows.length)}${kpi('Prenhez FIV',pctTxt(g.rate))}${kpi('Prenhas',g.p)}${kpi('Aguardando resultado',aguard)}${kpi('Doadoras',doadoras)}${kpi('FIVs feitas',datas.length)}</div>
   <div class="dash-2" style="margin-top:12px">
     <div class="dcard"><div class="hd"><div class="t">% de prenhez por doadora</div></div>
       ${donors.length?`<table class="dtable"><thead><tr><th>Doadora</th><th>% de prenhez</th><th class="num">Prenhas</th><th class="num">Transferências</th></tr></thead><tbody>${dl.map(d=>`<tr><td><strong>${esc(d.name)}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${d.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(d.rate)}</b></div></td><td class="num">${d.p}/${d.n}</td><td class="num"><strong>${d.t}</strong></td></tr>`).join('')}</tbody></table>
@@ -1274,8 +1279,11 @@ function fivSection(){
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div class="dcard"><div class="hd"><div class="t">% de prenhez por tipo</div></div>${tipos.map(t=>barRow(t,DASH_GOLD,rateOf(rows.filter(r=>r.tipo===t),r=>r.resultado))).join('')}</div>
-      <div class="dcard"><div class="hd"><div class="t">Embriões em saldo por tipo</div></div>${tipos.map(t=>`<div class="inline-stat"><span>${t}</span><strong>${saldo[t]}</strong></div>`).join('')}</div>
     </div>
+  </div>
+  <div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">Touros mais usados na FIV</div></div>
+    ${bulls.length?`<div style="overflow-x:auto"><table class="dtable"><thead><tr><th>Touro</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Total</th><th>% de prenhez</th></tr></thead><tbody>${bl.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>`<td class="num">${b.por[c.k]||'—'}</td>`).join('')}<td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
+    ${bulls.length>10?`<button class="dmore" onclick="dashToggle('fivBulls')">${dashMore.fivBulls?'− Mostrar só os 10 primeiros':`+ Ver todos os touros (${bulls.length})`}</button>`:''}`:'<div class="dempty">Nenhuma FIV lançada nesta estação.</div>'}
   </div>`;
 }
 function dashboard(){
@@ -1295,7 +1303,7 @@ function dashboard(){
     <div class="dcard"><div class="hd"><div class="t">Estoque de sêmen</div></div>${stockSection()}</div>
   </div>
   <hr class="dash-split">
-  <div class="dash-h fiv">FIV e Embriões</div>
+  <div class="dash-h fiv">FIV</div>
   ${fivSection()}`;
 }
 function printDashboard(){printHTML('Dashboard - '+activeSeason().name,$('#content').innerHTML,document.querySelector('style').textContent)}
