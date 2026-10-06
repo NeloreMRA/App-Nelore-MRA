@@ -363,12 +363,16 @@ function migrate(x){
   (x.animals||[]).forEach(a=>{
     const rows=(x.iatf||[]).filter(r=>r.seasonId===a.seasonId&&norm(r.rgd)===norm(a.rgd));
     if(!rows.length)return;
-    if(!a.firstSire){
-      const withSire=rows.find(r=>r.firstSire);
-      if(withSire)a.firstSire=withSire.firstSire;
+    // Cada IATF guarda o seu touro: só empresta o da matriz se NENHUMA IATF dela tiver touro
+    // (dados importados). Se tiver, não mexe — senão uma IATF nova deixada em branco (ex.: 5ª)
+    // voltava com o touro da 1ª ao recarregar.
+    const algumTouro=rows.some(r=>r.firstSire);
+    if(!a.firstSire&&algumTouro){
+      const top=rows.slice().sort((p,q)=>Number(q.cycle)-Number(p.cycle))[0];
+      a.firstSire=top.returnSire||top.firstSire||'';
     }
     rows.forEach(r=>{
-      if(!r.firstSire && a.firstSire)r.firstSire=a.firstSire;
+      if(!algumTouro && !r.firstSire && a.firstSire)r.firstSire=a.firstSire;
       if(a.category)r.category=a.category;
     });
   });
