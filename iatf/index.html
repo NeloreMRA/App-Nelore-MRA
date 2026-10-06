@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IATF MRA</title>
+<title>Cobertura MRA</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -189,7 +189,7 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
 <script src="../barra-app.js" data-alvo=".sidebar"></script>
 <div id="loginScreen">
   <form id="loginForm" class="login-card" autocomplete="on">
-    <div class="login-brand"><div class="logo">MRA</div><div><strong>IATF MRA</strong><span>Gestão reprodutiva</span></div></div>
+    <div class="login-brand"><div class="logo">MRA</div><div><strong>Cobertura MRA</strong><span>Gestão reprodutiva</span></div></div>
     <h2>Entrar</h2>
     <p>Use o e-mail e a senha cadastrados no Firebase.</p>
     <div class="login-field"><label for="loginEmail">E-mail</label><input id="loginEmail" type="email" autocomplete="username" required></div>
@@ -200,7 +200,7 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
 </div>
 <div class="app">
 <aside class="sidebar">
-  <div class="brand"><div class="logo">MRA</div><div><strong>IATF MRA</strong><span>Gestão reprodutiva</span></div></div>
+  <div class="brand"><div class="logo">MRA</div><div><strong>Cobertura MRA</strong><span>Gestão reprodutiva</span></div></div>
   <nav>
     <button data-page="dashboard" class="nav active">▦ <span>Dashboard</span></button>
     <button data-page="animals" class="nav">◉ <span>Matrizes</span></button>
@@ -733,7 +733,7 @@ function colResizeStart(e,id,lab,th){
    os filtros ▼ e o A→Z/Z→A de cada tabela. Filtros e IATF só voltam se for a mesma estação. */
 const VIEW_KEY='app-nelore-mra-iatf-view-state';
 function saveViewState(){
-  try{localStorage.setItem(VIEW_KEY,JSON.stringify({seasonId:db&&db.meta?db.meta.activeSeasonId:'',page,iatfCycle,excelFilters,
+  try{localStorage.setItem(VIEW_KEY,JSON.stringify({seasonId:db&&db.meta?db.meta.activeSeasonId:'',page,iatfCycle,fivData,excelFilters,
     sorts:{animalSort,iatfSort,stockSort,acasalSort,embrioesSort,fivSort}}))}catch(e){}
 }
 function loadViewState(){
@@ -745,6 +745,7 @@ function loadViewState(){
   animalSort=ok(so.animalSort);iatfSort=ok(so.iatfSort);stockSort=ok(so.stockSort);acasalSort=ok(so.acasalSort);embrioesSort=ok(so.embrioesSort);fivSort=ok(so.fivSort);
   if(v.seasonId===db.meta.activeSeasonId){
     if(Number(v.iatfCycle)>=1)iatfCycle=Number(v.iatfCycle);
+    if(typeof v.fivData==='string')fivData=v.fivData; // FIV que estava aberta (se ainda existir; senão fivAtual escolhe outra)
     if(v.excelFilters&&typeof v.excelFilters==='object')Object.keys(excelFilters).forEach(k=>{const f=v.excelFilters[k];excelFilters[k]=f&&typeof f==='object'?f:{}});
   }
 }
@@ -2316,7 +2317,7 @@ function setFivLocal(v){
   v=String(v||'').trim();if(v)db.fivLocais[sid][d]=v;else delete db.fivLocais[sid][d];
   save();
 } window.setFivLocal=setFivLocal;
-function selectFiv(v){fivData=v;fivPage()} window.selectFiv=selectFiv;
+function selectFiv(v){fivData=v;fivPage();saveViewState()} window.selectFiv=selectFiv;
 function openCriarFiv(){
   openModal(`<h2>Criar FIV</h2>
   <div class="form-grid"><div class="field full"><label>Data da FIV</label><input id="fivNovaData" type="date" class="input" value="${todayISO()}"></div></div>
@@ -2751,7 +2752,7 @@ function saveSettings(){db.settings.bullMinUses=Math.max(1,Number($('#cfgMin').v
 function downloadFullBackup(){
   const payload={
     exportedAt:new Date().toISOString(),
-    exportedFrom:'IATF MRA - backup manual',
+    exportedFrom:'Cobertura MRA - backup manual',
     db:deepClone(db)
   };
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -2769,7 +2770,7 @@ function restoreFullBackup(file){
     let parsed;
     try{parsed=JSON.parse(fr.result)}catch(e){alert('Esse arquivo não é um backup válido (JSON inválido).');return}
     const raw=parsed&&parsed.db?parsed.db:parsed;
-    if(!raw||!Array.isArray(raw.animals)||!Array.isArray(raw.seasons)){alert('Esse arquivo não parece ser um backup do IATF MRA.');return}
+    if(!raw||!Array.isArray(raw.animals)||!Array.isArray(raw.seasons)){alert('Esse arquivo não parece ser um backup do Cobertura MRA.');return}
     const nSeasons=raw.seasons.length,nAnimals=raw.animals.length,nIatf=(raw.iatf||[]).length,nSemen=(raw.semen||[]).length;
     const dataInfo=parsed.exportedAt?new Date(parsed.exportedAt).toLocaleString('pt-BR'):'(data desconhecida)';
     openModal(`<h2>⚠️ Restaurar backup</h2>
