@@ -581,7 +581,7 @@ async function init(){
       applyingRemote=false;
       render();
       setSyncStatus('ok','Sincronizado');
-    }else if(!hadPendingWrite){
+    }else if(!hadPendingWrite&&snap&&!snap.metadata.fromCache){
       // Primeira abertura: envia a base atual da V6 ao Firestore.
       await stateRef.set({db:deepClone(db),updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
       lastRemoteJSON=JSON.stringify(deepClone(db));

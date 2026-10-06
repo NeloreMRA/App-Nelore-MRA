@@ -117,7 +117,7 @@
   .side-tool:disabled{opacity:.45; cursor:not-allowed;}
   .logout-btn{margin-top:auto;}
   body.perfil-diesel .admin-only{display:none !important;}
-  body.pagina-diesel #undoBtn, body.pagina-diesel #safra-selector{display:none !important;}
+  body.pagina-diesel #undoBtn{display:none !important;}
   .user-badge{font-size:11px; color:#cfc9b5; margin:-4px 0 12px; word-break:break-all;}
   .nav-sep{height:1px; background:rgba(255,255,255,.15); margin:8px 4px;}
   .lista-cad{border:1px solid var(--line); border-radius:8px; max-height:220px; overflow-y:auto;}
@@ -301,7 +301,7 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
   <div class="nav-sep admin-only"></div>
   <button class="navbtn" data-page="diesel-controle">⛽ Controle Diesel</button>
   <button class="navbtn" data-page="diesel-estoque">🛢️ Estoque Diesel</button>
-  <button class="navbtn" data-page="diesel-resumo">📈 Dashboard Diesel</button>
+  <button class="navbtn" data-page="diesel-resumo">📈 Resumo Diesel</button>
   <div class="nav-sep admin-only"></div>
   <button class="side-tool admin-only" type="button" onclick="exportBackupCompleto()">💾 Backup completo (Excel)</button>
   <button id="logoutBtn" class="side-tool logout-btn" type="button">Sair</button>
@@ -535,8 +535,8 @@ function initFirebase(){
         if(adicionouSojaImportada){
           docRef.set({safras: JSON.parse(JSON.stringify(state.safras))});
         }
-      } else {
-        // primeira vez: manda os dados iniciais (milho) pro banco
+      } else if(!snap.metadata.fromCache){
+        // primeira vez (confirmado pelo servidor): manda os dados iniciais (milho) pro banco
         docRef.set({safras: JSON.parse(JSON.stringify(state.safras))});
       }
       firebaseReady = true;
@@ -858,7 +858,7 @@ function getFilteredRows(cfg, excludeKey){
   let rows = cfg.rows.slice();
   const ts = tableState[cfg.tableKey];
   Object.entries(ts.colFilters||{}).forEach(([key,set])=>{
-    if(key===excludeKey || !set || !cfg.columns.some(c=>c.key===key)) return;
+    if(key===excludeKey || !set) return;
     rows = rows.filter(r=> set.has(displayValueForFilter(cfg,r,key)));
   });
   return rows;
@@ -866,7 +866,6 @@ function getFilteredRows(cfg, excludeKey){
 function computeVisibleRows(cfg){
   const ts = tableState[cfg.tableKey];
   let rows = getFilteredRows(cfg, null);
-  if(ts.sortKey && !cfg.columns.some(c=>c.key===ts.sortKey)) ts.sortKey = null;
   if(ts.sortKey){
     const col = cfg.columns.find(c=>c.key===ts.sortKey);
     rows.sort((a,b)=>{
@@ -1831,8 +1830,7 @@ let diesel = {maquinas:[...DIESEL_PADRAO.maquinas], areas:[...DIESEL_PADRAO.area
 let dieselRef = null, dieselUnsub = null, dieselPronto = false;
 const dieselTimers = {}, dieselPendentes = new Set();
 let dieselConfigAberto = false;
-const mesAtualISO = ()=>hojeISO().slice(0,7);
-let dieselFiltro = {mes: null, estacao:''}; // mes: null = mês atual, '' = todos os meses
+let dieselFiltro = {de:'', ate:'', estacao:''};
 
 function paginaDiesel(p){ return String(p||'').startsWith('diesel-'); }
 function hojeISO(){ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); }
@@ -1868,7 +1866,10 @@ function iniciarDiesel(){
   dieselRef = firebase.firestore().collection('apps').doc('custos').collection('dados').doc('diesel');
   dieselUnsub = dieselRef.onSnapshot(snap=>{
     if(!snap.exists){
-      dieselRef.set({...DIESEL_PADRAO, lancamentos:{}, estoque:{}}, {merge:true})
+      // SEGURANÇA: só cria quando o SERVIDOR confirma que o diesel não existe (sem internet o Firebase
+      // pode dizer "não existe" pelo cache) e nunca grava lancamentos/estoque vazios (isso apagava tudo).
+      if(snap.metadata.fromCache) return;
+      dieselRef.set({...DIESEL_PADRAO}, {merge:true})
         .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao criar diesel', 'err'); });
       return;
     }
@@ -1996,24 +1997,22 @@ function buildDieselControleCfg(){
       {key:'litros', label:'Qtd Litros', type:'number', unit:'L', brDecimal:true},
       {key:'servico', label:'Serviço Realizado', type:'text'},
       {key:'area', label:'Área', type:'select', optionsFn: r=>opcoesDiesel('areas', r, 'area')},
-      // a estação começa vazia: quem lança escolhe (não vem pronta)
-      {key:'estacao', label:'Estação', type:'select', optionsFn: r=>opcoesDiesel('estacoes', r, 'estacao'), formDefault: ()=>''},
+      {key:'estacao', label:'Estação', type:'select', optionsFn: r=>opcoesDiesel('estacoes', r, 'estacao'),
+        formDefault: ()=>'' }, // vem vazia: quem lança escolhe a estação
     ],
     newRow: ()=>({id:novoIdDiesel('l'), data:hojeISO(), maquina:'', litros:'', servico:'', area:'', estacao:'', criadoEm:Date.now(), criadoPor:usuarioAtual()}),
-    validate: r=> !r.data ? 'Informe a data.' : !r.maquina ? 'Escolha a máquina.' : !(Number(r.litros)>0) ? 'Informe a quantidade de litros.' : !r.area ? 'Escolha a área.' : !r.estacao ? 'Escolha a estação.' : '',
+    validate: r=> !r.data ? 'Informe a data.' : !r.maquina ? 'Escolha a máquina.' : !(Number(r.litros)>0) ? 'Informe a quantidade de litros.' : !r.area ? 'Escolha a área.' : '',
     prepareRow: r=>{ r.id = novoIdDiesel('l'); r.criadoEm = Date.now(); r.criadoPor = usuarioAtual(); },
+    afterAdd: r=>{ if(r.estacao) lsSet('app-nelore-mra-custos-dieselUltimaEstacao', r.estacao); },
     onRowChange: (r, imediato)=>salvarLinhaDiesel('lancamentos', r, imediato),
     onRowDelete: r=>excluirLinhaDiesel('lancamentos', r),
   };
 }
-function mesFiltroDiesel(){ return dieselFiltro.mes===null ? mesAtualISO() : dieselFiltro.mes; }
 function dieselLancamentosFiltrados(){
-  const m = mesFiltroDiesel();
-  const e = dieselFiltro.estacao;
-  return diesel.lancamentos.filter(l=> (!m || String(l.data||'').slice(0,7)===m) && (!e || l.estacao===e));
+  const f = dieselFiltro;
+  return diesel.lancamentos.filter(l=>
+    (!f.de || (l.data||'')>=f.de) && (!f.ate || (l.data||'')<=f.ate) && (!f.estacao || l.estacao===f.estacao));
 }
-const MESES_DIESEL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-function nomeMesDiesel(m){ const [a,n] = m.split('-').map(Number); return `${MESES_DIESEL[n-1]} de ${a}`; }
 function agruparDiesel(lancs, chave){
   const m = {};
   lancs.forEach(l=>{
@@ -2025,8 +2024,15 @@ function agruparDiesel(lancs, chave){
   const total = lancs.reduce((s,l)=>s+Number(l.litros||0),0);
   return Object.values(m).map(r=>({...r, pct: total ? r.litros/total : 0})).sort((a,b)=>b.litros-a.litros);
 }
-function descricaoFiltroDiesel(){ const m = mesFiltroDiesel(); return (m ? nomeMesDiesel(m) : 'Todos os meses') + ' · Estação: ' + (dieselFiltro.estacao || 'todas'); }
+function descricaoFiltroDiesel(){
+  const f = dieselFiltro, p = [];
+  if(f.de || f.ate) p.push(`Período: ${f.de?fmtData(f.de):'início'} a ${f.ate?fmtData(f.ate):'hoje'}`);
+  else p.push('Período: todos os lançamentos');
+  p.push(`Estação: ${f.estacao || 'todas'}`);
+  return p.join(' · ');
+}
 function setFiltroDiesel(campo, valor){ dieselFiltro[campo] = valor; render(); }
+function limparFiltroDiesel(){ dieselFiltro = {de:'', ate:'', estacao:''}; render(); }
 
 function tabelaResumoDiesel(chave, titulo, rotulo, linhas){
   const tk = 'resumo-'+chave;
@@ -2100,10 +2106,10 @@ function selectEstacaoDiesel(id){
 function pageDieselEstoque(){
   const est = calcEstoqueDiesel();
   const tk = 'diesel-extrato';
-  const mostrarEstacao = false; // estoque não tem estação
+  const mostrarEstacao = extratoMostrarEstacao();
   const todasColunas = [
     {key:'data', label:'Data', type:'date'}, {key:'tipoNome', label:'Tipo', type:'text'}, {key:'area', label:'Área', type:'text'},
-    {key:'litros', label:'Litros', type:'number'}, {key:'saldo', label:'Saldo', type:'number'},
+    {key:'litros', label:'Litros', type:'number'}, {key:'saldo', label:'Saldo', type:'number'}, {key:'estacao', label:'Estação', type:'text'},
   ];
   const colunas = mostrarEstacao ? todasColunas : todasColunas.filter(c=>c.key!=='estacao');
   // sempre em ordem de data (mais antiga em cima); no mesmo dia: entrada, saída, acerto
@@ -2111,8 +2117,7 @@ function pageDieselEstoque(){
   const ts = tableState[tk];
   const visiveis = (!ts.sortKey || ts.sortKey==='data') ? est.movs.filter(m=>filtradas.includes(m)) : filtradas;
   // filtrando por estação, o saldo é recalculado só com as linhas dessas estações
-  if(ts.colFilters.estacao) ts.colFilters.estacao = null;
-  const filtroEst = null;
+  const filtroEst = ts.colFilters.estacao;
   const saldoDe = {};
   let saldoFinal = est.saldoAtual;
   if(filtroEst){
@@ -2153,6 +2158,7 @@ function pageDieselEstoque(){
         <div class="grid cols-3">
           <div><label>Data</label><input type="date" id="ent-data" value="${hojeISO()}"></div>
           <div><label>Litros que entraram</label><input type="text" inputmode="decimal" id="ent-litros" placeholder="Ex: 5.500"></div>
+          <div><label>Estação</label>${selectEstacaoDiesel('ent-estacao')}</div>
         </div>
         <button class="primary" type="button" style="margin-top:12px;" onclick="salvarEntradaDiesel()">Lançar entrada</button>
       </div>
@@ -2161,6 +2167,7 @@ function pageDieselEstoque(){
         <div class="grid cols-3">
           <div><label>Data da medição</label><input type="date" id="ace-data" value="${hojeISO()}"></div>
           <div><label>Quanto tem no tanque (medido)</label><input type="text" inputmode="decimal" id="ace-medido" placeholder="Ex: 5.400" oninput="previaAcertoDiesel()"></div>
+          <div><label>Estação</label>${selectEstacaoDiesel('ace-estacao')}</div>
         </div>
         <div id="ace-previa" class="previa-acerto">Digite o valor medido para ver o acerto.</div>
         <button class="btn-acerto" type="button" onclick="salvarAcertoDiesel()">Lançar acerto</button>
@@ -2170,6 +2177,7 @@ function pageDieselEstoque(){
     <div class="toolbar no-print">
       <button class="secondary" onclick="exportEstoqueDiesel()">⬇️ Exportar Excel</button>
       <button class="secondary" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="secondary" onclick="toggleColunaEstacaoExtrato()">${mostrarEstacao ? 'Esconder coluna Estação' : 'Mostrar coluna Estação'}</button>
     </div>
     <p class="section-title">Extrato do tanque</p>
     ${filtroEst ? `<div class="aviso-filtro no-print">Filtrando estação: <b>${esc(nomeFiltroEst)}</b> · o saldo mostra só essa estação <button class="ghost" type="button" onclick="limparFiltroEstacaoExtrato()">limpar</button></div>` : ''}
@@ -2198,7 +2206,10 @@ function salvarEntradaDiesel(){
   const litros = parseNumBR(document.getElementById('ent-litros').value);
   if(!data){ alert('Informe a data.'); return; }
   if(!(Number(litros)>0)){ alert('Informe quantos litros entraram no tanque.'); return; }
-  const row = {id:novoIdDiesel('e'), tipo:'entrada', data, entrada:litros, criadoEm:Date.now(), criadoPor:usuarioAtual()};
+  const estacao = document.getElementById('ent-estacao').value;
+  if(!estacao){ alert('Escolha a estação.'); return; }
+  lsSet('app-nelore-mra-custos-dieselUltimaEstacao', estacao);
+  const row = {id:novoIdDiesel('e'), tipo:'entrada', data, entrada:litros, estacao, criadoEm:Date.now(), criadoPor:usuarioAtual()};
   diesel.estoque.push(row);
   salvarLinhaDiesel('estoque', row, true);
   render();
@@ -2218,11 +2229,14 @@ function salvarAcertoDiesel(){
   const medido = parseNumBR(document.getElementById('ace-medido').value);
   if(!data){ alert('Informe a data da medição.'); return; }
   if(medido==='' || medido<0){ alert('Informe quanto tem no tanque.'); return; }
+  const estacao = document.getElementById('ace-estacao').value;
+  if(!estacao){ alert('Escolha a estação.'); return; }
   const sistema = calcEstoqueDiesel().saldoAtual;
   const dif = Math.round((medido - sistema)*100)/100;
   if(dif===0){ alert('O saldo do sistema já bate com a medição. Nenhum acerto necessário.'); return; }
   if(!confirm(`Lançar acerto de ${dif>0?'+':''}${fmt(dif,1)} L?\n\nSistema: ${fmt(sistema,1)} L\nMedido: ${fmt(medido,1)} L`)) return;
-  const row = {id:novoIdDiesel('a'), tipo:'acerto', data, entrada:dif, medido, saldoSistema:sistema, criadoEm:Date.now(), criadoPor:usuarioAtual()};
+  lsSet('app-nelore-mra-custos-dieselUltimaEstacao', estacao);
+  const row = {id:novoIdDiesel('a'), tipo:'acerto', data, entrada:dif, medido, saldoSistema:sistema, estacao, criadoEm:Date.now(), criadoPor:usuarioAtual()};
   diesel.estoque.push(row);
   salvarLinhaDiesel('estoque', row, true);
   render();
@@ -2235,7 +2249,7 @@ function excluirMovEstoque(id){
 }
 const COLS_EXTRATO = [
   {key:'data', label:'Data', type:'date'}, {key:'tipoNome', label:'Tipo'}, {key:'area', label:'Área'},
-  {key:'litros', label:'Litros', type:'number'}, {key:'saldo', label:'Saldo', type:'number'},
+  {key:'litros', label:'Litros', type:'number'}, {key:'saldo', label:'Saldo', type:'number'}, {key:'estacao', label:'Estação'},
 ];
 async function addExtratoSheet(wb, nome){
   const movs = calcEstoqueDiesel().movs;
@@ -2245,7 +2259,7 @@ async function addExtratoSheet(wb, nome){
     const cor = m.tipo==='entrada' ? 'FFE3F0DA' : m.tipo==='acerto' ? 'FFFCE5CC' : 'FFFDEEEC';
     if(cor) ws.getRow(i+2).eachCell(c=>{ c.fill = {type:'pattern', pattern:'solid', fgColor:{argb:cor}}; });
   });
-  addLinhaTotal(ws, ['SALDO ATUAL', '', '', '', movs.length ? movs[movs.length-1].saldo : 0]);
+  addLinhaTotal(ws, ['SALDO ATUAL', '', '', '', movs.length ? movs[movs.length-1].saldo : 0, '']);
   return ws;
 }
 async function exportEstoqueDiesel(){
@@ -2258,20 +2272,21 @@ function pageDieselResumo(){
   const lancs = dieselLancamentosFiltrados();
   const total = lancs.reduce((s,l)=>s+Number(l.litros||0),0);
   const media = lancs.length ? total/lancs.length : 0;
-  const mesSel = mesFiltroDiesel();
   const estacoes = [...new Set([...diesel.estacoes, ...diesel.lancamentos.map(l=>l.estacao).filter(Boolean)])];
-  const meses = [...new Set([mesAtualISO(), ...diesel.lancamentos.map(l=>String(l.data||'').slice(0,7)).filter(m=>/^\d{4}-\d{2}$/.test(m))])].sort().reverse();
+  const temFiltro = dieselFiltro.de || dieselFiltro.ate || dieselFiltro.estacao;
   return `
     <div class="toolbar no-print" style="justify-content:flex-end;">
       <button class="secondary" onclick="window.print()">🖨️ Imprimir</button>
       <button class="secondary" onclick="exportResumoDiesel()">⬇️ Exportar Excel</button>
     </div>
-    <h2>📈 Dashboard Diesel</h2>
+    <h2>📈 Resumo Diesel</h2>
     <div class="caption">${esc(descricaoFiltroDiesel())}</div>
     <div class="panel no-print">
       <div class="filtros-resumo">
-        <div><label>Mês</label><select onchange="setFiltroDiesel('mes', this.value)"><option value="" ${!mesSel?'selected':''}>Todos os meses</option>${meses.map(m=>`<option value="${m}" ${m===mesSel?'selected':''}>${nomeMesDiesel(m)}</option>`).join('')}</select></div>
+        <div><label>De</label><input type="date" value="${esc(dieselFiltro.de)}" onchange="setFiltroDiesel('de', this.value)"></div>
+        <div><label>Até</label><input type="date" value="${esc(dieselFiltro.ate)}" onchange="setFiltroDiesel('ate', this.value)"></div>
         <div><label>Estação</label><select onchange="setFiltroDiesel('estacao', this.value)"><option value="">Todas</option>${estacoes.map(e=>`<option value="${esc(e)}" ${e===dieselFiltro.estacao?'selected':''}>${esc(e)}</option>`).join('')}</select></div>
+        ${temFiltro ? `<div style="flex:0 0 auto;"><button class="ghost" style="padding:8px 12px;" onclick="limparFiltroDiesel()">Limpar filtros</button></div>` : ''}
       </div>
     </div>
     <div class="resumo-kpis">
@@ -2312,7 +2327,7 @@ async function exportResumoDiesel(){
   const wb = new ExcelJS.Workbook();
   await addResumoDieselSheets(wb, dieselLancamentosFiltrados(), t=>`Diesel ${t}`);
   const buf = await wb.xlsx.writeBuffer();
-  downloadBuffer(buf, `Dashboard_Diesel_${mesFiltroDiesel()||'todos'}.xlsx`);
+  downloadBuffer(buf, `Resumo_Diesel_${hojeISO()}.xlsx`);
 }
 
 // ---------- Backup completo (todas as abas, todas as safras) ----------
