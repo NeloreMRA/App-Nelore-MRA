@@ -291,7 +291,9 @@ function atualizarIniciais(){
 /* ---------- filtro ▾ por coluna, ordem, largura (igual às outras tabelas do App) ---------- */
 const COLS=[['classificacao','Classificação',20],['inicial','Qtd Inicial',9,1],['entrada','Entrada',9,1],['saida','Saída',9,1],['morte','Morte',9,1],['abate','Abate',9,1],['total','Total',9,1],['obs','Observação',18]];
 let filtrosCol={},ordemCol=null;
-const valCampo=(l,k)=>k==='total'?total(l):(k==='classificacao'||k==='obs')?(l[k]||''):num(l[k]);
+const NOMES_COR=['🟩 Verde','🟨 Amarelo','🟦 Azul','🟧 Laranja','🟥 Vermelho','🟪 Roxo','⬜ Cinza'];
+const nomeCor=c=>{const i=CORES.indexOf(c||'');return c?(i>-1?NOMES_COR[i]:'🎨 Outra'):'(sem cor)'};
+const valCampo=(l,k)=>k==='cor'?nomeCor(l.cor):k==='total'?total(l):(k==='classificacao'||k==='obs')?(l[k]||''):num(l[k]);
 const txtCampo=(l,k)=>{const v=valCampo(l,k);return v===''?'(vazio)':typeof v==='number'?fmt(v):String(v)};
 const temFiltro=()=>Object.values(filtrosCol).some(Boolean);
 function filtradas(ls,exceto){return ls.filter(l=>Object.entries(filtrosCol).every(([k,vs])=>k===exceto||!vs||vs.includes(txtCampo(l,k))))}
@@ -302,7 +304,7 @@ function fecharFiltro(){const p=$('.fpainel');if(p)p.remove()}
 document.addEventListener('click',fecharFiltro);
 function abrirFiltro(ev,k){
   ev.stopPropagation();const aberto=$('.fpainel');if(aberto&&aberto.dataset.k===k){fecharFiltro();return}fecharFiltro();
-  const num1=COLS.find(c=>c[0]===k)[3];
+  const c0=COLS.find(c=>c[0]===k),num1=c0&&c0[3];
   const vals=[...new Set(filtradas(linhasDo(mes),k).map(l=>txtCampo(l,k)))].sort((a,b)=>num1?num(a)-num(b):a.localeCompare(b,'pt-BR',{numeric:true}));
   const ativo=filtrosCol[k];
   const p=document.createElement('div');p.className='fpainel';p.dataset.k=k;p.onclick=e=>e.stopPropagation();
@@ -364,7 +366,12 @@ function abrirPaleta(ev,id){
   let top=r.bottom+6;if(top+p.offsetHeight>innerHeight-8)top=Math.max(8,r.top-p.offsetHeight-6);p.style.top=top+'px';
 }
 function pintar(ids,cor){
-  ids.forEach(id=>{const l=todos.find(x=>x.id===id);if(l)l.cor=cor;colM.doc(id).update({cor,...carimbo()}).catch(e=>toast('Não salvou: '+e.message))});
+  // pinta a linha e a MESMA classificação nos meses seguintes (a cor acompanha o mês a mês)
+  const alvo=new Set();
+  ids.forEach(id=>{const l=todos.find(x=>x.id===id);if(!l)return;alvo.add(l.id);
+    todos.filter(x=>x.mes>l.mes&&chave(x.classificacao)&&chave(x.classificacao)===chave(l.classificacao)).forEach(x=>alvo.add(x.id))});
+  alvo.forEach(id=>{const l=todos.find(x=>x.id===id);if(l)l.cor=cor;colM.doc(id).update({cor,...carimbo()}).catch(e=>toast('Não salvou: '+e.message))});
+  const extra=alvo.size-ids.length;if(extra>0)toast(`Pintado também nos meses seguintes (${extra}).`);
   desenhar();
 }
 
@@ -392,7 +399,7 @@ function desenhar(){
   const ativo=document.activeElement&&document.activeElement.closest&&document.activeElement.closest('tr.rapido')?document.activeElement.id:null;
   const guardado=ativo?[...document.querySelectorAll('tr.rapido input')].map(i=>[i.id,i.value]):null;
   $('#tabd').innerHTML=`<table><colgroup><col style="width:20%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:18%"><col style="width:8%"></colgroup>
-    <thead><tr>${COLS.map(c=>`<th class="${c[3]?'n':''}"><div class="thf"><span>${c[1]}</span><button class="fbtn ${filtrosCol[c[0]]||(ordemCol&&ordemCol.k===c[0])?'on':''}" onclick="abrirFiltro(event,'${c[0]}')" title="Filtrar / ordenar">▾</button></div></th>`).join('')}<th></th></tr>
+    <thead><tr>${COLS.map(c=>`<th class="${c[3]?'n':''}"><div class="thf"><span>${c[1]}</span><button class="fbtn ${filtrosCol[c[0]]||(ordemCol&&ordemCol.k===c[0])?'on':''}" onclick="abrirFiltro(event,'${c[0]}')" title="Filtrar / ordenar">▾</button></div></th>`).join('')}<th><div class="thf"><span>Cor</span><button class="fbtn ${filtrosCol.cor?'on':''}" onclick="abrirFiltro(event,'cor')" title="Filtrar por cor">▾</button></div></th></tr>
     <tr class="rapido"><td><input id="nC" list="dlClass" placeholder="Classificação"></td>${CAMPOS.map(k=>`<td><input id="n_${k}" class="num" inputmode="numeric" placeholder="0"></td>`).join('')}
       <td></td><td><input id="nObs" placeholder="Observação"></td><td><button class="lancar" onclick="lancarRapido()" title="Adicionar (Enter)">+ Lançar</button></td></tr></thead>
     <tbody>${corpo}</tbody>
