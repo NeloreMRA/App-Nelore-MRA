@@ -260,6 +260,7 @@ let acasalSort={key:'',dir:1};
 let embrioesSort={key:'',dir:1};
 let fivSort={key:'',dir:1};
 let fivData=null; // FIV (data) aberta na tela
+let acasalData=null; // data aberta em Acasalamentos
 let excelFilterContext=null;
 
 const $=s=>document.querySelector(s);
@@ -282,6 +283,7 @@ function migrate(x){
   x.iatfCycleCategories=x.iatfCycleCategories||{};
   x.iatfMaxCycles=x.iatfMaxCycles||{};
   x.fivDatas=x.fivDatas||{};
+  x.acasalDatas=x.acasalDatas||{}; // datas criadas em Acasalamentos (por estação)
   x.fivLocais=x.fivLocais||{}; // Local de cada FIV: fivLocais[estação][data] // FIVs criadas (por data) em cada estação
   x.animals=x.animals||[];x.semen=x.semen||[];x.iatf=x.iatf||[];
   x.deletedAnimals=x.deletedAnimals||[];
@@ -733,7 +735,7 @@ function colResizeStart(e,id,lab,th){
    os filtros ▼ e o A→Z/Z→A de cada tabela. Filtros e IATF só voltam se for a mesma estação. */
 const VIEW_KEY='app-nelore-mra-iatf-view-state';
 function saveViewState(){
-  try{localStorage.setItem(VIEW_KEY,JSON.stringify({seasonId:db&&db.meta?db.meta.activeSeasonId:'',page,iatfCycle,fivData,excelFilters,
+  try{localStorage.setItem(VIEW_KEY,JSON.stringify({seasonId:db&&db.meta?db.meta.activeSeasonId:'',page,iatfCycle,fivData,acasalData,excelFilters,
     sorts:{animalSort,iatfSort,stockSort,acasalSort,embrioesSort,fivSort}}))}catch(e){}
 }
 function loadViewState(){
@@ -745,6 +747,7 @@ function loadViewState(){
   animalSort=ok(so.animalSort);iatfSort=ok(so.iatfSort);stockSort=ok(so.stockSort);acasalSort=ok(so.acasalSort);embrioesSort=ok(so.embrioesSort);fivSort=ok(so.fivSort);
   if(v.seasonId===db.meta.activeSeasonId){
     if(Number(v.iatfCycle)>=1)iatfCycle=Number(v.iatfCycle);
+    if(typeof v.acasalData==='string')acasalData=v.acasalData;
     if(typeof v.fivData==='string')fivData=v.fivData; // FIV que estava aberta (se ainda existir; senão fivAtual escolhe outra)
     if(v.excelFilters&&typeof v.excelFilters==='object')Object.keys(excelFilters).forEach(k=>{const f=v.excelFilters[k];excelFilters[k]=f&&typeof f==='object'?f:{}});
   }
@@ -794,7 +797,7 @@ const GRID_ADD_ROWS={
   fivTable:n=>{const d=fivAtual();if(d===null)return;fivSort={key:'',dir:1};
     for(let i=0;i<n;i++)db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,n:fivProxN(d),rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});renderFivTable()},
   acasalTable:n=>{acasalSort={key:'',dir:1};
-    for(let i=0;i<n;i++)db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:todayISO()});renderAcasalTable()},
+    for(let i=0;i<n;i++)db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:acasalAtual()||todayISO()});renderAcasalTable()},
   embrioesTable:n=>{embrioesSort={key:'',dir:1};
     for(let i=0;i<n;i++)db.embrioes.push({id:uid('emb'),rgd:'',touro:'',estFresco:0,estVit:0,estDt:0,saidaFresco:0,saidaVit:0,saidaDt:0});renderEmbrioesTable()}
 };
@@ -1115,7 +1118,7 @@ function rawRowsForExcel(kind){
   if(kind==='animals')return seasonAnimals().map(a=>({...a,firstSire:currentSire(a),status:latestStatus(a.rgd),curCycle:matrizCurrentCycle(a.rgd)}));
   if(kind==='iatf')return seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle));
   if(kind==='stock')return db.semen.map(s=>({...s,used:usedEffective(s),saldo:stockBalance(s)}));
-  if(kind==='acasal')return seasonAcasal();
+  if(kind==='acasal')return acasalDaData();
   if(kind==='embrioes')return (db.embrioes||[]).map(e=>({...e,...embRowCalc(e)}));
   if(kind==='fiv')return fivDaData();
   return []
@@ -1885,8 +1888,46 @@ function runIatfOutput(mode){const rows=outputIatfRows();if(!rows.length)return 
 
 /* ACASALAMENTOS — planejamento independente, não mexe em Matrizes nem IATF. Pertence à estação. */
 const ACASAL_COLS=[['iatf1','1º IATF'],['iatf2','2º IATF'],['iatf3','3º IATF'],['iatf4','4º IATF'],['fiv1','1º FIV'],['fiv2','2º FIV']];
+/* Acasalamentos por data (igual FIV): a data fica em cima (campo createdAt de cada linha); a tabela mostra
+   só a data escolhida. Datas criadas ficam em db.acasalDatas[estação] pra data vazia não sumir. */
+function acasalDatasLista(){
+  const sid=db.meta.activeSeasonId;
+  const ds=new Set([...((db.acasalDatas||{})[sid]||[]),...seasonAcasal().map(a=>a.createdAt||'').filter(Boolean)]);
+  const l=[...ds].sort();if(seasonAcasal().some(a=>!a.createdAt))l.push('');return l;
+}
+function acasalAtual(){const l=acasalDatasLista();if(acasalData===null||!l.includes(acasalData))acasalData=l.length?l.filter(Boolean).slice(-1)[0]??l[0]:null;return acasalData}
+function acasalDaData(){const d=acasalAtual();return d===null?[]:seasonAcasal().filter(a=>(a.createdAt||'')===d)}
+function selectAcasalData(v){acasalData=v;acasalPage();saveViewState()} window.selectAcasalData=selectAcasalData;
+function openCriarAcasalData(){
+  openModal(`<h2>Criar data</h2><div class="form-grid"><div class="field full"><label>Data</label><input id="acNovaData" type="date" class="input" value="${todayISO()}"></div></div>
+  <div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="primary" onclick="criarAcasalData()">Criar</button></div>`);
+} window.openCriarAcasalData=openCriarAcasalData;
+function criarAcasalData(){
+  const d=$('#acNovaData').value;if(!d)return alert('Informe a data.');const sid=db.meta.activeSeasonId;
+  if(!acasalDatasLista().includes(d)){db.acasalDatas=db.acasalDatas||{};db.acasalDatas[sid]=[...(db.acasalDatas[sid]||[]),d];save()}
+  acasalData=d;closeModal();acasalPage();saveViewState();
+} window.criarAcasalData=criarAcasalData;
+function mudarAcasalData(nova,el){
+  const velha=acasalAtual();if(nova===velha)return;
+  if(!nova){el.value=velha||'';return alert('Informe a data.')}
+  if(acasalDatasLista().includes(nova)){el.value=velha||'';return alert(`Já existe a data ${fmtDate(nova)}. Escolha ela na lista em cima.`)}
+  const sid=db.meta.activeSeasonId;db.acasalDatas=db.acasalDatas||{};
+  db.acasalDatas[sid]=[...(db.acasalDatas[sid]||[]).filter(x=>x!==velha),nova];
+  seasonAcasal().forEach(a=>{if((a.createdAt||'')===velha)a.createdAt=nova});
+  acasalData=nova;save();acasalPage();saveViewState();
+} window.mudarAcasalData=mudarAcasalData;
+function excluirAcasalData(){
+  const d=acasalAtual();if(d===null)return;const n=acasalDaData().length,nome=d?fmtDate(d):'Sem data';
+  if(n){
+    if(!confirm(`Excluir a data ${nome}?\n\nIsso apaga as ${n} linha(s) dela.`))return;
+    if(!confirm(`Confirme mais uma vez: apagar ${nome} com ${n} linha(s)?\n\n(Se errar, use o botão Desfazer.)`))return;
+    const ids=new Set(acasalDaData().map(a=>a.id));db.acasalamentos=db.acasalamentos.filter(a=>!ids.has(a.id));
+  }
+  const sid=db.meta.activeSeasonId;if(db.acasalDatas&&db.acasalDatas[sid])db.acasalDatas[sid]=db.acasalDatas[sid].filter(x=>x!==d);
+  acasalData=null;save();acasalPage();saveViewState();
+} window.excluirAcasalData=excluirAcasalData;
 function acasalRowsFiltered(){
-  let rows=seasonAcasal().filter(a=>excelPass('acasal',a));
+  let rows=acasalDaData().filter(a=>excelPass('acasal',a));
   const k=acasalSort.key,d=acasalSort.dir;
   if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);
   return rows;
@@ -1894,9 +1935,18 @@ function acasalRowsFiltered(){
 function acasalPage(){
   title('Acasalamentos','Planejamento de touros por IATF/FIV — independente das abas Matrizes e IATF. Pertence à estação '+activeSeason().name+'.');
   setActions('');
+  if(excelFilters.acasal)delete excelFilters.acasal.createdAt; // a data agora é escolhida em cima
+  const lista=acasalDatasLista(),atual=acasalAtual();
   $('#content').innerHTML=`
   ${bullDatalist()}
   <div class="animals-page">
+  <div class="toolbar" style="margin-bottom:9px">
+    <div class="filters">
+      ${lista.length?`<select id="acasalSel" onchange="selectAcasalData(this.value)">${lista.map(d=>`<option value="${esc(d)}" ${d===atual?'selected':''}>${d?fmtDate(d):'Sem data'}</option>`).join('')}</select>`:''}<button class="ghost" onclick="openCriarAcasalData()">+ Criar data</button>
+      ${atual!==null?`<div class="date-box"><label>Data</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarAcasalData(this.value,this)"></div><button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirAcasalData()">Excluir esta data</button>`:''}
+    </div>
+  </div>
+  ${atual===null?`<div class="notice">Nenhum acasalamento nesta estação. Clique em <strong>+ Criar data</strong>.</div>`:''}
   <div class="toolbar">
     <div class="quick-add">
       <button class="primary" onclick="addBlankAcasal()">+ Linha em branco</button>
@@ -1914,8 +1964,9 @@ function acasalPage(){
   renderAcasalTable();
 }
 function addBlankAcasal(){
+  const d=acasalAtual();if(d===null)return openCriarAcasalData();
   db.acasalamentos=db.acasalamentos||[];
-  db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:todayISO()});
+  db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:d});
   save();acasalPage();
   setTimeout(()=>{const els=$$('.nav-a-rgd');const last=els[els.length-1];if(last){last.scrollIntoView({block:'nearest'});last.focus()}},30)
 } window.addBlankAcasal=addBlankAcasal;
@@ -1923,15 +1974,14 @@ function renderAcasalTable(){
   const root=$('#acasalTable');if(!root)return;
   const __view=captureViewPosition();
   const rows=acasalRowsFiltered();
-  const total=seasonAcasal().length;
+  const total=acasalDaData().length;
   root.innerHTML=`<div style="display:flex;justify-content:flex-end;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c"><strong style="color:#233129;margin-right:4px">${rows.length}</strong> linha(s) exibida(s) de <strong style="color:#233129;margin:0 4px">${total}</strong></div><div class="table-wrap"><table><thead>
-  <tr><th></th><th>${excelHead('acasal','rgd','RGD')}</th><th>${excelHead('acasal','category','Categoria')}</th>${ACASAL_COLS.map(([k,l])=>`<th>${excelHead('acasal',k,l)}</th>`).join('')}<th>${excelHead('acasal','createdAt','Criada em')}</th><th></th></tr>
+  <tr><th></th><th>${excelHead('acasal','rgd','RGD')}</th><th>${excelHead('acasal','category','Categoria')}</th>${ACASAL_COLS.map(([k,l])=>`<th>${excelHead('acasal',k,l)}</th>`).join('')}<th></th></tr>
   </thead><tbody>${rows.map(a=>`<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'acasal','${a.id}')">
   ${rowHandleTd('acasal',a.id)}
   <td><input class="cell-input nav-a-rgd" style="font-weight:700;min-width:110px" value="${esc(a.rgd)}" onkeydown="iatfEnter(event,'nav-a-rgd')" onchange="editAcasalCell('${a.id}','rgd',this.value,this)"></td>
   <td><select class="cell-input category-select nav-a-cat ${catClass(a.category)}" style="min-width:120px" onkeydown="iatfEnter(event,'nav-a-cat')" onchange="editAcasalCell('${a.id}','category',this.value,this)"><option value="">—</option>${categories().map(x=>`<option ${x===a.category?'selected':''}>${x}</option>`).join('')}</select></td>
   ${ACASAL_COLS.map(([k])=>`<td><input class="cell-input nav-a-${k}" list="bullsList" style="min-width:190px" value="${esc(a[k]||'')}" onkeydown="iatfEnter(event,'nav-a-${k}')" onfocus="this.select()" onchange="editAcasalCell('${a.id}','${k}',this.value,this)"></td>`).join('')}
-  <td style="white-space:nowrap"><input class="cell-input nav-a-created" type="date" style="width:135px" value="${esc(a.createdAt||'')}" onkeydown="iatfEnter(event,'nav-a-created')" onchange="editAcasalCell('${a.id}','createdAt',this.value,this)"></td>
   <td><button class="mini" onclick="deleteAcasal('${a.id}')">Excluir</button></td></tr>`).join('')}</tbody></table></div>`;
   restoreViewPosition(__view);
 }
@@ -1961,7 +2011,7 @@ function exportAcasalFull(){
   if(!needXLSX())return;
   const rows=acasalRowsFiltered().filter(a=>String(a.rgd||'').trim());
   if(!rows.length)return alert('Nenhuma linha com RGD pra exportar (confira os filtros da tabela).');
-  const out=rows.map(a=>({RGD:a.rgd,CATEGORIA:a.category||'','1_IATF':a.iatf1||'','2_IATF':a.iatf2||'','3_IATF':a.iatf3||'','4_IATF':a.iatf4||'','1_FIV':a.fiv1||'','2_FIV':a.fiv2||'',CRIADA_EM:a.createdAt||''}));
+  const out=rows.map(a=>({RGD:a.rgd,CATEGORIA:a.category||'','1_IATF':a.iatf1||'','2_IATF':a.iatf2||'','3_IATF':a.iatf3||'','4_IATF':a.iatf4||'','1_FIV':a.fiv1||'','2_FIV':a.fiv2||'',DATA:fmtDate(a.createdAt||'')}));
   jsonToXlsx(out,'acasalamentos.xlsx','Acasalamentos');
 } window.exportAcasalFull=exportAcasalFull;
 
@@ -2043,7 +2093,7 @@ function importAcasalExcel(file){
         ACASAL_COLS.forEach(([k])=>{if(x[k])existing[k]=x[k]});
         atualizados++;
       }else{
-        const novo={id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:x.rgd,category:x.cat||'',createdAt:todayISO()};
+        const novo={id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:x.rgd,category:x.cat||'',createdAt:acasalAtual()||todayISO()};
         ACASAL_COLS.forEach(([k])=>{novo[k]=x[k]||''});
         db.acasalamentos.push(novo);
         novos++;
@@ -2830,7 +2880,7 @@ function saveSeason(id){
   save();closeModal();settings();renderSeasonSelector()
 } window.saveSeason=saveSeason;
 // Ao trocar de estação, limpa filtros/seleções da tela pra nada da estação anterior "vazar" pra nova.
-function resetSeasonView(){Object.keys(excelFilters).forEach(k=>excelFilters[k]={});iatfCycle=1;fivData=null;iatfCategory='';animalSelecting=false;animalSelected.clear()}
+function resetSeasonView(){Object.keys(excelFilters).forEach(k=>excelFilters[k]={});iatfCycle=1;fivData=null;acasalData=null;iatfCategory='';animalSelecting=false;animalSelected.clear()}
 function activateSeason(id){if(id!==db.meta.activeSeasonId)resetSeasonView();db.meta.activeSeasonId=id;save();render()} window.activateSeason=activateSeason;
 function deleteSeason(id){
   const s=db.seasons.find(x=>x.id===id);if(!s)return;
@@ -2842,6 +2892,7 @@ function deleteSeason(id){
   db.iatf=db.iatf.filter(r=>r.seasonId!==id);
   if(db.cycleDates)delete db.cycleDates[id];
   if(db.fivDatas)delete db.fivDatas[id];
+  if(db.acasalDatas)delete db.acasalDatas[id];
   if(db.fivLocais)delete db.fivLocais[id];
   if(db.meta.activeSeasonId===id)db.meta.activeSeasonId=db.seasons[0].id;
   save();settings();renderSeasonSelector();
