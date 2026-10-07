@@ -149,7 +149,7 @@ td.cell-selected{background:#dbe9ff!important}
 .crow .tr{height:10px;border-radius:5px;background:#eef1ef;overflow:hidden}.crow .fl{height:100%;border-radius:0 4px 4px 0}
 .crow .vl{text-align:right;font-weight:700}.crow .vl small{font-weight:500;color:#5d6a62}
 .dtable{width:100%;border-collapse:collapse;font-size:12.5px}.dtable th{position:static;background:none;border-bottom:1px solid #e3e7e4;padding:6px 8px;font-size:10.5px;color:#5d6a62;text-align:left}
-.dtable.fiv-compacta td{padding:3px 8px;white-space:nowrap}.dtable td{padding:7px 8px;border-bottom:1px solid #f0f2f0}.dtable tr:last-child td{border-bottom:0}.dtable .num{text-align:right;font-variant-numeric:tabular-nums}
+.estoque-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:0 18px}.estoque-grade div{display:flex;justify-content:space-between;gap:10px;padding:4px 2px;border-bottom:1px solid #f0f2f0;font-size:12.5px}.dtable.fiv-compacta td{padding:3px 8px;white-space:nowrap}.dtable td{padding:7px 8px;border-bottom:1px solid #f0f2f0}.dtable tr:last-child td{border-bottom:0}.dtable .num{text-align:right;font-variant-numeric:tabular-nums}
 .dtable .rk{width:26px;color:#5d6a62;font-variant-numeric:tabular-nums}.dtable .bar{display:flex;align-items:center;gap:8px;min-width:150px}
 .dtable .bar .tr{flex:1;height:8px;border-radius:4px;background:#eef1ef;overflow:hidden}.dtable .bar .fl{height:100%;border-radius:0 4px 4px 0}.dtable .bar b{width:44px;text-align:right}
 .dtable tr.few .fl{opacity:.4}.few-tag{font-size:10px;font-weight:700;color:#8a5919;background:#fff0da;border-radius:99px;padding:1px 6px;margin-left:4px}
@@ -1242,21 +1242,32 @@ function bullStats(){
   return Object.values(map).filter(b=>b.doses||b.n).map(b=>({...b,rate:b.n?b.p/b.n*100:null}))
     .sort((a,b)=>b.doses-a.doses||b.n-a.n||(b.rate??-1)-(a.rate??-1)||a.name.localeCompare(b.name,'pt-BR'));
 }
+// Touros por IATF (igual FIV): em cada IATF "Prenhas / Total com resultado" e a %; o retorno conta na
+// IATF de onde ele veio, no touro do retorno. Doses = Qtd da IATF + 1 por retorno.
 function bullSection(){
-  const all=bullStats();if(!all.length)return '<div class="dempty">Nenhum touro usado nas IATFs desta estação ainda.</div>';
+  const itens=[];
+  seasonRows().forEach(r=>{
+    if(String(r.firstSire||'').trim())itens.push({c:Number(r.cycle),nome:String(r.firstSire).trim(),res:r.result,doses:Number(r.qty)||0});
+    if(String(r.returnSire||'').trim())itens.push({c:Number(r.cycle),nome:String(r.returnSire).trim(),res:r.returnResult,doses:1});
+  });
+  if(!itens.length)return '<div class="dempty">Nenhum touro usado nas IATFs desta estação ainda.</div>';
+  const map={};itens.forEach(i=>{const k=norm(i.nome);const b=map[k]=map[k]||{name:i.nome,itens:[],doses:0};b.itens.push(i);b.doses+=i.doses});
+  const all=Object.values(map).map(b=>({...b,...rateOf(b.itens,i=>i.res)})).sort((a,b)=>b.doses-a.doses||b.n-a.n||(b.rate??-1)-(a.rate??-1)||a.name.localeCompare(b.name,'pt-BR'));
+  const ciclos=[...new Set(itens.map(i=>i.c))].sort((a,b)=>a-b);
   const min=Number(db.settings.bullMinUses||5);
-  const list=dashMore.bulls?all:all.slice(0,10);
-  return `<table class="dtable"><thead><tr><th class="rk">#</th><th>Touro</th><th>% de prenhez</th><th class="num">Prenhas</th><th class="num">Doses usadas</th></tr></thead><tbody>
-  ${list.map((b,i)=>`<tr class="${b.n&&b.n<min?'few':''}" title="${esc(b.name)}: ${b.p} prenha(s) em ${b.n} resultado(s), ${b.doses} dose(s)"><td class="rk">${i+1}</td><td><strong>${esc(b.name)}</strong>${b.n&&b.n<min?'<span class="few-tag">poucos dados</span>':''}</td>
-  <td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GREEN}"></div></div><b>${pctTxt(b.rate)}</b></div></td><td class="num">${b.p}/${b.n}</td><td class="num"><strong>${b.doses}</strong></td></tr>`).join('')}
-  </tbody></table>${all.length>10?`<button class="dmore" onclick="dashToggle('bulls')">${dashMore.bulls?'− Mostrar só os 10 primeiros':`+ Ver todos os touros (${all.length})`}</button>`:''}`;
+  const cel=its=>{const st=rateOf(its,i=>i.res);if(!st.n)return '—';return `<strong style="color:#216440">${st.p}</strong> / <strong>${st.n}</strong> <span style="font-size:10.5px;font-weight:700;color:#233129;display:inline-block;min-width:40px">${pctTxt(st.rate)}</span>`};
+  const list=dashMore.bulls?all:all.slice(0,25);
+  return `<div style="overflow-x:auto"><table class="dtable fiv-compacta"><thead><tr><th class="rk">#</th><th>Touro</th>${ciclos.map(c=>`<th class="num">${c}ª IATF${cycleDate(c)?`<div style="font-weight:400;font-size:10px">${fmtDate(cycleDate(c))}</div>`:''}</th>`).join('')}<th class="num">Geral P / Total</th><th class="num">Doses</th><th style="min-width:150px">% de prenhez (geral)</th></tr></thead><tbody>
+  ${list.map((b,i)=>`<tr class="${b.n&&b.n<min?'few':''}"><td class="rk">${i+1}</td><td><strong>${esc(b.name)}</strong>${b.n&&b.n<min?'<span class="few-tag">poucos dados</span>':''}</td>${ciclos.map(c=>{const its=b.itens.filter(x=>x.c===c);return `<td class="num">${its.length?cel(its):''}</td>`}).join('')}<td class="num">${cel(b.itens)}</td><td class="num"><strong>${b.doses}</strong></td>
+  <td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GREEN}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}
+  </tbody></table></div>${all.length>25?`<button class="dmore" onclick="dashToggle('bulls')">${dashMore.bulls?'− Mostrar só 25':`+ Ver todos os touros (${all.length})`}</button>`:''}`;
 }
 function stockSection(){
   const all=db.semen.map(s=>({name:s.name,b:stockBalance(s)})).filter(x=>String(x.name||'').trim()).sort((a,b)=>b.b-a.b);
   if(!all.length)return '<div class="dempty">Nenhum sêmen cadastrado.</div>';
-  const list=dashMore.stock?all:all.slice(0,10);
-  return `<table class="dtable"><thead><tr><th>Touro</th><th class="num">Saldo (doses)</th></tr></thead><tbody>${list.map(x=>`<tr><td>${esc(x.name)}</td><td class="num"><strong class="${x.b<=0?'stock-low':''}">${x.b}</strong></td></tr>`).join('')}</tbody></table>
-  ${all.length>10?`<button class="dmore" onclick="dashToggle('stock')">${dashMore.stock?'− Mostrar só os 10 maiores':`+ Ver todos (${all.length})`}</button>`:''}`;
+  const list=dashMore.stock?all:all.slice(0,24);
+  return `<div class="estoque-grade">${list.map(x=>`<div><span>${esc(x.name)}</span><strong class="${x.b<=0?'stock-low':''}">${x.b}</strong></div>`).join('')}</div>
+  ${all.length>24?`<button class="dmore" onclick="dashToggle('stock')">${dashMore.stock?'− Mostrar só os 24 maiores':`+ Ver todos (${all.length})`}</button>`:''}`;
 }
 /* ----- FIV ----- */
 function fivSection(){
@@ -1308,10 +1319,8 @@ function dashboard(){
   <div class="dash-kpis">${kpi('Matrizes',seasonAnimals().length,'#5d6a62')}${kpi('Prenhas',oc.P,'#216440')}${kpi('Vazias',oc.V,'#c08a2e')}${kpi('PRT',oc.PRT,'#b8483a')}${kpi('Sem resultado',oc.none,'#9aa49d')}${kpi('Doses em saldo',db.semen.reduce((a,s)=>a+stockBalance(s),0),'#1f6a49')}</div>
   <div class="dash-h">% de prenhez por IATF</div>
   ${iatfSection()}
-  <div class="dash-2" style="margin-top:12px">
-    <div class="dcard"><div class="hd"><div class="t">% de prenhez por touro</div></div>${bullSection()}</div>
-    <div class="dcard"><div class="hd"><div class="t">Estoque de sêmen</div></div>${stockSection()}</div>
-  </div>
+  <div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">% de prenhez por touro</div></div>${bullSection()}</div>
+  <div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">Estoque de sêmen (saldo de doses)</div></div>${stockSection()}</div>
   <hr class="dash-split">
   <div class="dash-h fiv">FIV</div>
   ${fivSection()}`;
