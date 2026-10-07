@@ -285,7 +285,8 @@ function migrate(x){
   x.iatfMaxCycles=x.iatfMaxCycles||{};
   x.fivDatas=x.fivDatas||{};
   x.acasalDatas=x.acasalDatas||{}; // datas criadas em Acasalamentos (por estação)
-  x.fivLocais=x.fivLocais||{}; // Local de cada FIV: fivLocais[estação][data] // FIVs criadas (por data) em cada estação
+  x.fivLocais=x.fivLocais||{};
+  x.fivToques=x.fivToques||{}; // Data do Toque de cada FIV: fivToques[estação][data] // Local de cada FIV: fivLocais[estação][data] // FIVs criadas (por data) em cada estação
   x.animals=x.animals||[];x.semen=x.semen||[];x.iatf=x.iatf||[];
   x.deletedAnimals=x.deletedAnimals||[];
   x.acasalamentos=x.acasalamentos||[];
@@ -2415,6 +2416,13 @@ function fivAtual(){
 const fivNome=d=>{const l=fivDatasLista().filter(Boolean);return d?`${l.indexOf(d)+1}ª FIV — ${fmtDate(d)}`:'Sem data'};
 function fivDaData(){const d=fivAtual();return d===null?[]:seasonFiv().filter(r=>(r.data||'')===d)}
 function fivLocal(d){return (((db.fivLocais||{})[db.meta.activeSeasonId])||{})[d||'']||''}
+function fivToque(d){return (((db.fivToques||{})[db.meta.activeSeasonId])||{})[d||'']||''}
+function setFivToque(v){
+  const d=fivAtual();if(d===null)return;const sid=db.meta.activeSeasonId;
+  db.fivToques=db.fivToques||{};db.fivToques[sid]=db.fivToques[sid]||{};
+  if(v)db.fivToques[sid][d]=v;else delete db.fivToques[sid][d];
+  save();
+} window.setFivToque=setFivToque;
 function setFivLocal(v){
   const d=fivAtual();if(d===null)return;const sid=db.meta.activeSeasonId;
   db.fivLocais=db.fivLocais||{};db.fivLocais[sid]=db.fivLocais[sid]||{};
@@ -2442,6 +2450,7 @@ function mudarDataFiv(nova,el){
   db.fivDatas[sid]=[...((db.fivDatas[sid])||[]).filter(x=>x!==velha),nova];
   seasonFiv().forEach(r=>{if((r.data||'')===velha)r.data=nova});
   const loc=(db.fivLocais||{})[sid];if(loc&&loc[velha||'']!==undefined){loc[nova]=loc[velha||''];delete loc[velha||'']}
+  const tq=(db.fivToques||{})[sid];if(tq&&tq[velha||'']!==undefined){tq[nova]=tq[velha||''];delete tq[velha||'']}
   fivData=nova;save();fivPage();
 } window.mudarDataFiv=mudarDataFiv;
 function excluirFivVazia(){
@@ -2456,6 +2465,7 @@ function excluirFivVazia(){
   const sid=db.meta.activeSeasonId;
   if(db.fivDatas&&db.fivDatas[sid])db.fivDatas[sid]=db.fivDatas[sid].filter(x=>x!==d);
   if(db.fivLocais&&db.fivLocais[sid])delete db.fivLocais[sid][d||''];
+  if(db.fivToques&&db.fivToques[sid])delete db.fivToques[sid][d||''];
   fivData=null;save();fivPage();
 } window.excluirFivVazia=excluirFivVazia;
 function fivRowsFiltered(){
@@ -2476,7 +2486,7 @@ function fivPage(){
   <div class="toolbar" style="margin-bottom:9px">
     <div class="filters">
       ${lista.length?`<select id="fivSel" onchange="selectFiv(this.value)">${lista.map(d=>`<option value="${esc(d)}" ${d===atual?'selected':''}>${esc(fivNome(d))}</option>`).join('')}</select>`:''}<button class="ghost" onclick="openCriarFiv()">+ Criar FIV</button>
-      ${atual!==null?`<div class="date-box"><label>Data da FIV</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)"></div><div class="date-box"><label>Local</label><input class="input" id="fivLocal" style="min-width:180px" value="${esc(fivLocal(atual))}" onchange="setFivLocal(this.value)" onkeydown="if(event.key==='Enter')this.blur()"></div>`:''}
+      ${atual!==null?`<div class="date-box"><label>Data da FIV</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)"></div><div class="date-box"><label>Data do Toque</label><input type="date" class="input" style="min-width:145px" value="${esc(fivToque(atual))}" onchange="setFivToque(this.value)"></div><div class="date-box"><label>Local</label><input class="input" id="fivLocal" style="min-width:180px" value="${esc(fivLocal(atual))}" onchange="setFivLocal(this.value)" onkeydown="if(event.key==='Enter')this.blur()"></div>`:''}
       ${atual!==null?`<button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirFivVazia()">Excluir esta FIV</button>`:''}
     </div>
     <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="openFivOutput('export')">⬇ Excel</button><button class="ghost" onclick="openFivOutput('print')">🖨 Imprimir</button></div>
@@ -2521,7 +2531,7 @@ function atualizarResumoFiv(){const el=$('#fivResumo');if(el)el.innerHTML=fivRes
 function openFivPrt(){
   const list=fivDaData().filter(r=>normResult(r.resultado)==='PRT').sort((a,b)=>(Number(a.n)||0)-(Number(b.n)||0));
   if(!list.length)return openModal(`<h2>PRTs — ${esc(fivNome(fivAtual()))}</h2><div class="notice green">Nenhuma PRT nesta FIV.</div><div class="actions"><button class="primary" onclick="closeModal()">Fechar</button></div>`);
-  openModal(`<h2>PRTs — ${esc(fivNome(fivAtual()))}</h2>
+  openModal(`<h2>PRTs — ${esc(fivNome(fivAtual()))}${fivToque(fivAtual())?` <span class="muted" style="font-size:14px;font-weight:400">· toque ${fmtDate(fivToque(fivAtual()))}</span>`:''}</h2>
   <div class="notice green">Troque o resultado pra <strong>P</strong> ou <strong>V</strong> (Enter desce pra próxima).</div>
   <div class="table-wrap" style="max-height:380px"><table><thead><tr><th>Nº</th><th>RGD Doadora</th><th>Touro</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Resultado</th></tr></thead><tbody>
   ${list.map(r=>`<tr><td>${r.n||''}</td><td><strong>${esc(r.rgdDoadora)}</strong></td><td>${esc(r.sire||'')}</td><td>${esc(r.receptora||'')}</td><td>${esc(r.abcz||'')}</td><td>${esc(r.tipo||'')}</td><td><input class="cell-input nav-fivprt-res" list="fivResultList" maxlength="3" style="width:70px;text-align:center;border:1px solid #d7ded9!important" value="${esc(r.resultado||'')}" oninput="this.value=this.value.toUpperCase()" onkeydown="iatfEnter(event,'nav-fivprt-res')" onchange="editFiv('${r.id}','resultado',this.value,this)"></td></tr>`).join('')}
@@ -2592,12 +2602,12 @@ function openFivOutput(mode){
   <div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="primary" onclick="runFivOutput('${mode}')">${mode==='print'?'Imprimir':'Exportar Excel'}</button></div>`);
 } window.openFivOutput=openFivOutput;
 function runFivOutput(mode){const comResumo=$('#fivOutResumo').checked;closeModal();if(mode==='print')printFiv(comResumo);else exportFiv(comResumo)} window.runFivOutput=runFivOutput;
-function fivTituloSaida(){const d=fivAtual(),l=fivLocal(d);return fivNome(d)+(l?' — '+l:'')+' - '+activeSeason().name}
+function fivTituloSaida(){const d=fivAtual(),l=fivLocal(d),t=fivToque(d);return fivNome(d)+(l?' — '+l:'')+(t?' — Toque '+fmtDate(t):'')+' - '+activeSeason().name}
 async function exportFiv(comResumo=true){
   const rows=fivRowsFiltered().filter(r=>String(r.rgdDoadora||'').trim());
   if(!rows.length)return alert('Nenhuma linha pra exportar.');
-  const cab=['Nº','RGD DOADORA','1º ACASALAMENTO','Nº RECEPTORA','Nº ABCZ','TIPO','DATA','LOCAL','RESULTADO'];
-  const dados=rows.map(r=>[r.n||'',r.rgdDoadora,r.sire||'',r.receptora||'',r.abcz||'',r.tipo||'',fmtDate(r.data||''),fivLocal(r.data),r.resultado||'']);
+  const cab=['Nº','RGD DOADORA','1º ACASALAMENTO','Nº RECEPTORA','Nº ABCZ','TIPO','DATA','DATA DO TOQUE','LOCAL','RESULTADO'];
+  const dados=rows.map(r=>[r.n||'',r.rgdDoadora,r.sire||'',r.receptora||'',r.abcz||'',r.tipo||'',fmtDate(r.data||''),fmtDate(fivToque(r.data)),fivLocal(r.data),r.resultado||'']);
   const q=fivResumo(fivDaData());
   const topo=comResumo?[[fivTituloSaida()],[],['PRENHA','VAZIA','PRT','TOTAL'],[q.p,q.v,q.prt,q.total],[],['% PRENHA','% VAZIA'],[pctTxt(q.pctP),pctTxt(q.pctV)],[]]:[];
   const negrito=comResumo?[1,3,6,9]:[1];
@@ -2609,7 +2619,7 @@ async function exportFiv(comResumo=true){
   }
   const wb=new ExcelJS.Workbook();const ws=wb.addWorksheet('FIV');
   linhas.forEach(l=>ws.addRow(l));negrito.forEach(i=>{ws.getRow(i).font={bold:true}});
-  ws.columns.forEach((c,i)=>{c.width=[6,16,26,14,14,9,12,18,11][i]||12});
+  ws.columns.forEach((c,i)=>{c.width=[6,16,26,14,14,9,12,14,18,11][i]||12});
   await downloadExcelJSWorkbook(wb,nome);
 } window.exportFiv=exportFiv;
 function printFiv(comResumo=true){
@@ -2936,13 +2946,14 @@ function deleteSeason(id){
   if(db.fivDatas)delete db.fivDatas[id];
   if(db.acasalDatas)delete db.acasalDatas[id];
   if(db.fivLocais)delete db.fivLocais[id];
+  if(db.fivToques)delete db.fivToques[id];
   if(db.meta.activeSeasonId===id)db.meta.activeSeasonId=db.seasons[0].id;
   save();settings();renderSeasonSelector();
   alert(`Estação "${s.name}" excluída.`)
 } window.deleteSeason=deleteSeason;
 
 /* Linhas de exportação, usadas no Excel da IATF e no Excel geral da estação */
-function iatfExportRow(r){return {DATA_IATF:fmtDate(cycleDate(r.cycle)),RGD:r.rgd,'1_ACASALAMENTO':r.firstSire,'2_ACASALAMENTO_CURRAL':r.secondSire||'',QTD:r.qty,RESULTADO:r.result,RETORNO:fmtDate(r.return),TOURO_RETORNO:r.returnSire||'',RESULTADO_RETORNO:r.returnResult||'',CATEGORIA:r.category}}
+function iatfExportRow(r){return {DATA_IATF:fmtDate(cycleDate(r.cycle)),DATA_DO_TOQUE:fmtDate(toqueDate(r.cycle)),RGD:r.rgd,'1_ACASALAMENTO':r.firstSire,'2_ACASALAMENTO_CURRAL':r.secondSire||'',QTD:r.qty,RESULTADO:r.result,RETORNO:fmtDate(r.return),TOURO_RETORNO:r.returnSire||'',RESULTADO_RETORNO:r.returnResult||'',CATEGORIA:r.category}}
 // Uma aba por IATF ("1ª IATF", "2ª IATF"...), só das IATFs que têm lançamento
 function iatfSheets(rows){
   const cycles=[...new Set(rows.map(r=>Number(r.cycle)))].sort((a,b)=>a-b);
@@ -3112,7 +3123,7 @@ function exportIatfRows(rows,comResumo){
   // cada aba (IATF) com o quadro dela nas primeiras linhas e a tabela embaixo
   const cycles=[...new Set(rows.map(r=>Number(r.cycle)))].sort((a,b)=>a-b);
   downloadSheetsComTopo(cycles.map(c=>{const rs=rows.filter(r=>Number(r.cycle)===c);
-    return [`${c}ª IATF`,resumoLinhasXlsx(iatfResumo(rs),`${c}ª IATF${cycleDate(c)?' - '+fmtDate(cycleDate(c)):''} - ${activeSeason().name}`),rs.map(iatfExportRow)]}),nome);
+    return [`${c}ª IATF`,resumoLinhasXlsx(iatfResumo(rs),`${c}ª IATF${cycleDate(c)?' - '+fmtDate(cycleDate(c)):''}${toqueDate(c)?' - Toque '+fmtDate(toqueDate(c)):''} - ${activeSeason().name}`),rs.map(iatfExportRow)]}),nome);
 }
 async function downloadSheetsComTopo(sheets,fname){
   sheets=sheets.filter(([,,rows])=>rows&&rows.length);
@@ -3178,7 +3189,7 @@ function printIatfRows(rows,comResumo){
   const ciclos=[...new Set(rows.map(r=>Number(r.cycle)))];
   const varias=ciclos.length>1;
   const ciclo=ciclos[0]||iatfCycle;
-  const titulo=varias?`IATFs ${ciclos.sort((a,b)=>a-b).map(c=>c+'ª').join(', ')} - ${activeSeason().name}`:`${ciclo}ª IATF - ${fmtDate(cycleDate(ciclo))} - ${activeSeason().name}`;
+  const titulo=varias?`IATFs ${ciclos.sort((a,b)=>a-b).map(c=>c+'ª').join(', ')} - ${activeSeason().name}`:`${ciclo}ª IATF - ${fmtDate(cycleDate(ciclo))}${toqueDate(ciclo)?' - Toque '+fmtDate(toqueDate(ciclo)):''} - ${activeSeason().name}`;
   const colIatf=varias?'<th style="width:70px">IATF</th>':'';
   const trs=rows.map(r=>`<tr>${varias?`<td>${Number(r.cycle)}ª <span style="color:#666">${fmtDate(cycleDate(r.cycle))}</span></td>`:''}<td>${esc(r.rgd)}</td><td style="min-width:170px">${esc(r.firstSire)}</td><td style="width:90px">${esc(r.secondSire||'')}</td><td style="width:45px">${esc(iatfCaneca(r))}</td><td style="width:60px">${r.qty||''}</td><td style="width:60px">${esc(r.result)}</td><td>${fmtDate(r.return)}</td><td>${esc(r.returnSire||'')}</td><td>${esc(r.category)}</td></tr>`).join('');
   const resumo=comResumo?(varias?ciclos.map(c=>`<div style="font-weight:bold;margin:4px 0">${c}ª IATF</div>${resumoPrintHTML(iatfResumo(rows.filter(r=>Number(r.cycle)===c)))}`).join(''):resumoPrintHTML(iatfResumo(rows))):'';
