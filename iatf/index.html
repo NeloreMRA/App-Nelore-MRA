@@ -457,6 +457,17 @@ function undoLastChange(){
 }
 window.undoLastChange=undoLastChange;
 let lastLocalEditAt=0;
+let remotoPendente=false; // chegou mudança de outro aparelho enquanto você digitava: redesenha ao sair da célula
+document.addEventListener('focusout',e=>{
+  if(!remotoPendente||!e.target.classList||!e.target.classList.contains('cell-input'))return;
+  setTimeout(()=>{
+    if(!remotoPendente)return;remotoPendente=false;
+    // se já entrou em outra célula (clique), volta pra ela depois de redesenhar
+    const fa=document.activeElement,fi=fa&&fa.classList&&fa.classList.contains('cell-input')?gridInfo(fa):null,fh=fi&&gridHostId(fi.table);
+    render();
+    if(fi){const t=gridCellInputAt(gridTableOf(fh,fi.table),fi.r,fi.c);if(t){t.focus();try{const n=t.value.length;t.setSelectionRange(n,n)}catch(x){}}}
+  },0);
+},true);
 let gridBatch=false, gridBatchDirty=false; // colando (Ctrl+V): junta tudo num salvamento e num Desfazer só
 const PENDING_KEY=STORE+'-pending';
 function save(renderToo=false){
@@ -637,10 +648,11 @@ async function init(){
       // Mudança realmente vinda de outro dispositivo: atualiza a base, mas NÃO apaga o histórico local.
       resetUndoBaseline(false);
       applyingRemote=false;
-      // volta o foco pra mesma célula (senão a atualização de outro aparelho "tira" você da célula)
-      const fa=document.activeElement,fi=fa&&fa.classList&&fa.classList.contains('cell-input')?gridInfo(fa):null,fh=fi&&gridHostId(fi.table);
+      // Se você está DIGITANDO numa célula, não redesenha agora (isso jogava o cursor pro começo:
+      // "MRA 9492" virava "9492MRA"). Os dados novos já estão no banco; a tela atualiza quando você sai da célula.
+      const fa=document.activeElement;
+      if(fa&&fa.classList&&fa.classList.contains('cell-input')&&!fa.closest('#modal')){remotoPendente=true;setSyncStatus('ok','Sincronizado');return}
       render();
-      if(fi){const t=gridCellInputAt(gridTableOf(fh,fi.table),fi.r,fi.c);if(t)t.focus()}
       setSyncStatus('ok','Sincronizado');
     },err=>{
       console.error('Listener Firestore:',err);
