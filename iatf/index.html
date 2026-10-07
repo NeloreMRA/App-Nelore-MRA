@@ -360,6 +360,7 @@ function migrate(x){
     r.returnResult=normResult(r.returnResult);
     r.qty=Number(r.qty||0); r.result=normResult(r.result);
   });
+  garantirNIatf(x.iatf||[]);
   // Reconciliação: se a matriz chegou sem 1º acasalamento mas já existe um lançamento de IATF dela
   // com o acasalamento preenchido (dados restaurados/importados fora do fluxo normal de edição),
   // puxa esse valor pra Matriz. O inverso também vale: matriz com acasalamento/categoria preenchidos
@@ -535,6 +536,9 @@ function setAnimalSire(a,val){
 function usedAuto(s){return usedSemen()[norm(s.name)]||0}
 function usedEffective(s){return (s.usedOverride===null||s.usedOverride===undefined)?usedAuto(s):Number(s.usedOverride||0)}
 function stockBalance(s){return Number(s.initial||0)-usedEffective(s)}
+// touro cadastrado mas sem dose no estoque (saldo 0 ou negativo) — aparece em vermelho no 1º Acasalamento da IATF
+function semSaldo(nome){const n=norm(nome);if(!n)return false;const s=(db.semen||[]).find(x=>norm(x.name)===n);return !!s&&stockBalance(s)<=0}
+const corSemSaldo=nome=>semSaldo(nome)?'color:#c0392b!important;font-weight:700':'';
 function normalizedResult(r){return normResult(r)}
 function isDiagnosed(r){return ['P','V','PRT'].includes(normResult(r))}
 function latestStatus(rgd){
@@ -843,6 +847,10 @@ function gridNextCell(table,r,c,isTab,back){
   const rr=back?r-1:r+1,cs=inputsOf(rr);
   return cs.length?gridCellInputAt(table,rr,back?cs[cs.length-1]:cs[0]):null;
 }
+// célula de Resultado: marca quando algo foi digitado (pro Enter de confirmar)
+const ehCelRes=t=>!!(t&&t.classList&&(t.classList.contains('iatf-result')||t.classList.contains('nav-fiv-res')));
+document.addEventListener('input',e=>{if(ehCelRes(e.target))e.target.dataset.digitou='1'},true);
+document.addEventListener('focusin',e=>{const t=e.target;if(t&&t.dataset&&t.dataset.digitou)delete t.dataset.digitou},true);
 document.addEventListener('keydown',e=>{
   if(e.key!=='Tab'&&e.key!=='Enter')return;
   const el=document.activeElement;
@@ -851,12 +859,16 @@ document.addEventListener('keydown',e=>{
   e.preventDefault();e.stopPropagation();
   const hostId=gridHostId(info.table),{r,c}=info,isTab=e.key==='Tab',back=e.shiftKey;
   completarTouro(el);
+  // Coluna Resultado (IATF e FIV): o 1º Enter depois de digitar só confirma e fica na célula;
+  // o próximo Enter (sem digitar nada) desce.
+  const ficar=!isTab&&ehCelRes(el)&&el.dataset.digitou==='1';
   el.blur(); // grava a célula (dispara o change)
   setTimeout(()=>{
     const table=gridTableOf(hostId,info.table);
-    const t=gridNextCell(table,r,c,isTab,back)||gridCellInputAt(table,r,c);
+    const t=ficar?gridCellInputAt(table,r,c):(gridNextCell(table,r,c,isTab,back)||gridCellInputAt(table,r,c));
     if(!t)return;
-    t.focus();if(t.tagName==='INPUT')t.select();
+    t.focus();
+    if(t.tagName==='INPUT'){if(ehCelRes(t)){const n=t.value.length;try{t.setSelectionRange(n,n)}catch(x){}}else t.select()}
     const ni=gridInfo(t);
     if(ni){gridAnchor={table,r:ni.r,c:ni.c};gridFocusCell={r:ni.r,c:ni.c};gridHighlight(table,ni.r,ni.c,ni.r,ni.c);gridScrollTo(table,ni.r,ni.c)}
   },0);
@@ -1204,6 +1216,7 @@ function createNextIatf(){
   db.iatfMaxCycles[sid]=next;
   iatfCycle=next;
   iatfCategory='';
+  excelFilters.iatf={};
   save();
   iatfPage();
 }
@@ -1522,12 +1535,20 @@ function setIatfCycleCategories(cycle,cats){
   db.iatfCycleCategories[sid]=db.iatfCycleCategories[sid]||{};
   db.iatfCycleCategories[sid][String(Number(cycle))]=[...new Set(cats)];
 }
+// Nº = ordem de lançamento dentro de cada IATF (fixo). Linhas novas ganham o próximo número.
+function garantirNIatf(lista){
+  const mx={},k=r=>r.seasonId+'|'+Number(r.cycle);
+  lista.forEach(r=>{if(Number(r.n)>0)mx[k(r)]=Math.max(mx[k(r)]||0,Number(r.n))});
+  lista.forEach(r=>{if(!(Number(r.n)>0)){mx[k(r)]=(mx[k(r)]||0)+1;r.n=mx[k(r)]}});
+}
 function iatfRowsFiltered(){
   // As caixinhas de categoria só controlam a montagem automática em massa (ver toggleIatfCategory).
   // A tabela sempre mostra TUDO que já está nesta IATF, categoria marcada ou não — inclusive uma
   // matriz que você colocou manualmente pela coluna "IATF atual" em Matrizes.
   let rows=seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle)).filter(r=>excelPass('iatf',r));
-  const k=iatfSort.key,d=iatfSort.dir;if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);return rows
+  const k=iatfSort.key,d=iatfSort.dir;
+  if(k==='n')rows.sort((a,b)=>((Number(a.n)||0)-(Number(b.n)||0))*d);
+  else if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);return rows
 }
 function sortIatf(k){if(iatfSort.key===k)iatfSort.dir*=-1;else iatfSort={key:k,dir:1};renderIatfRows()} window.sortIatf=sortIatf;
 function iff(k,v){iatfFilters[k]=v;renderIatfRows()} window.iff=iff;
@@ -1575,7 +1596,7 @@ function toggleIatfCategory(cat,checked){
   if(checked)prepareIatfCategories();else save();
   renderIatfRows();
 } window.toggleIatfCategory=toggleIatfCategory;
-function selectIatfCycle(v){iatfCycle=Number(v);iatfCategory='';iatfPage()} window.selectIatfCycle=selectIatfCycle;
+function selectIatfCycle(v){iatfCycle=Number(v);iatfCategory='';excelFilters.iatf={};iatfPage()} window.selectIatfCycle=selectIatfCycle;
 function iatfPage(){
   title('IATF','Lançamentos da '+activeSeason().name);setActions('');
   $('#content').innerHTML=`
@@ -1608,16 +1629,18 @@ function prtAnimals(){
 function renderIatfRows(){
   const root=$('#iatfTable');if(!root)return;
   const __view=captureViewPosition();
+  garantirNIatf(db.iatf);
   atualizarResumoIatf();
   const rows=iatfRowsFiltered();
   const total=seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle)).length;
   const qtdUsada=rows.reduce((a,r)=>a+(Number(r.qty)||0),0);
   root.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin:0 2px 8px;font-size:11px;color:#69746c"><span><strong style="color:#233129">${qtdUsada}</strong> dose(s) de sêmen usadas nesta IATF</span><span><strong style="color:#233129;margin-right:4px">${rows.length}</strong> matriz(es) exibida(s) de <strong style="color:#233129;margin:0 4px">${total}</strong> nesta IATF</span></div><div class="table-wrap"><table><thead>
-  <tr><th></th><th>${excelHead('iatf','rgd','RGD')}</th><th>${excelHead('iatf','firstSire','1º Acasalamento')}</th><th style="width:125px;min-width:125px;max-width:125px">${excelHead('iatf','secondSire','2º Acasal. (curral)')}</th><th style="width:52px;min-width:52px;max-width:52px;text-align:center;padding-left:2px;padding-right:2px">Nº Caneca</th><th style="width:64px;min-width:64px;max-width:64px;text-align:center;padding-left:8px">${excelHead('iatf','qty','Qtd')}</th><th>${excelHead('iatf','result','Result.')}</th><th>${excelHead('iatf','return','Retorno (data)')}</th><th>${excelHead('iatf','returnSire','Touro Retorno')}</th><th>${excelHead('iatf','category','Categoria')}</th><th></th></tr>
+  <tr><th></th><th style="width:44px;min-width:44px">${excelHead('iatf','n','Nº')}</th><th>${excelHead('iatf','rgd','RGD')}</th><th>${excelHead('iatf','firstSire','1º Acasalamento')}</th><th style="width:125px;min-width:125px;max-width:125px">${excelHead('iatf','secondSire','2º Acasal. (curral)')}</th><th style="width:52px;min-width:52px;max-width:52px;text-align:center;padding-left:2px;padding-right:2px">Nº Caneca</th><th style="width:64px;min-width:64px;max-width:64px;text-align:center;padding-left:8px">${excelHead('iatf','qty','Qtd')}</th><th>${excelHead('iatf','result','Result.')}</th><th>${excelHead('iatf','return','Retorno (data)')}</th><th>${excelHead('iatf','returnSire','Touro Retorno')}</th><th>${excelHead('iatf','category','Categoria')}</th><th></th></tr>
   </thead><tbody>${rows.map((r,i)=>`<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'iatf','${r.id}')">
   ${rowHandleTd('iatf',r.id)}
+  <td style="text-align:center;color:#69746c;font-size:10.5px">${r.n||''}</td>
   <td><strong>${esc(r.rgd)}</strong></td>
-  <td><input class="cell-input iatf-sire" list="bullsList" data-id="${r.id}" data-prev="${esc(r.firstSire)}" value="${esc(r.firstSire)}" onfocus="this.select()" onchange="updateIatfSire(this)"></td>
+  <td><input class="cell-input iatf-sire" list="bullsList" data-id="${r.id}" data-prev="${esc(r.firstSire)}" value="${esc(r.firstSire)}" style="${corSemSaldo(r.firstSire)}" title="${semSaldo(r.firstSire)?'Sem sêmen no estoque':''}" onfocus="this.select()" onchange="updateIatfSire(this)"></td>
 <td><input class="cell-input iatf-sire2" data-id="${r.id}" value="${esc(r.secondSire||'')}" placeholder="—" autocomplete="off" onchange="updateIatfCell('${r.id}','secondSire',this.value)"></td>
 <td><input class="cell-input iatf-caneca nav-caneca" type="text" value="${esc(iatfCaneca(r))}" style="${r.caneca?'':'color:#7a857d'}" title="${r.caneca?'Digitado':'Puxado do Estoque (pode digitar por cima)'}" onkeydown="iatfEnter(event,'nav-caneca')" onchange="updateIatfCaneca('${r.id}',this.value,this)"></td>
 <td><input class="cell-input nav-qtd iatf-qty" inputmode="decimal" data-id="${r.id}" value="${r.qty||''}" onkeydown="iatfEnter(event,'nav-qtd')" onchange="updateIatfCell('${r.id}','qty',this.value)"></td>
@@ -1638,6 +1661,7 @@ function updateIatfSire(el){
   const r=db.iatf.find(x=>x.id===el.dataset.id);
   if(r){
     r.firstSire=val;
+    el.style.cssText=corSemSaldo(val);el.title=semSaldo(val)?'Sem sêmen no estoque':'';
     // cada IATF tem o seu touro; a aba Matrizes mostra o da última inseminação
     syncAnimalSire(r.seasonId,r.rgd);
     // touro novo = caneca nova: volta a puxar a do Estoque
@@ -1782,9 +1806,14 @@ function returnPrts(){
 } window.returnPrts=returnPrts;
 function quickAddAnimalToCycle(){
   const jaNaIatf=new Set(seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle)).map(r=>r.rgd));
-  const disponiveis=seasonAnimals().filter(a=>!jaNaIatf.has(a.rgd)).map(a=>({...a,status:latestStatus(a.rgd)})).sort((a,b)=>a.rgd.localeCompare(b.rgd,'pt-BR',{numeric:true}));
+  const disponiveis=seasonAnimals().filter(a=>!jaNaIatf.has(a.rgd)).map(a=>{
+    // resultado e retorno em cada IATF (pra filtrar "resultado só da 1ª IATF", por exemplo)
+    const por={};seasonRows().filter(r=>r.rgd===a.rgd).forEach(r=>{por[Number(r.cycle)]={s:normResult(r.result),ret:hasReturn(r)?1:0}});
+    return {...a,status:latestStatus(a.rgd),ret:seasonRows().some(r=>r.rgd===a.rgd&&hasReturn(r))?1:0,por};
+  }).sort((a,b)=>a.rgd.localeCompare(b.rgd,'pt-BR',{numeric:true}));
   if(!disponiveis.length)return alert('Todas as matrizes cadastradas já estão nesta IATF.');
-  const linhas=disponiveis.map(a=>`<label class="excel-value qa-row" data-cat="${esc(a.category)}" data-status="${a.status}" data-search="${esc(norm(a.rgd)).toLowerCase()}" style="padding:6px 2px;border-bottom:1px solid #edf0ee"><input type="checkbox" class="qa-pick" value="${esc(a.rgd)}"><span><strong>${esc(a.rgd)}</strong> <span class="badge ${catClass(a.category)}" style="margin-left:6px">${esc(a.category)}</span> <span class="badge ${resClass(a.status)}" style="margin-left:4px">${statusLabel(a.status)}</span></span></label>`).join('');
+  const ciclosQa=[...new Set(seasonRows().map(r=>Number(r.cycle)))].filter(c=>c!==Number(iatfCycle)).sort((a,b)=>a-b);
+  const linhas=disponiveis.map(a=>`<label class="excel-value qa-row" data-cat="${esc(a.category)}" data-status="${a.status}" data-ret="${a.ret}" data-por='${esc(JSON.stringify(a.por))}' data-search="${esc(norm(a.rgd)).toLowerCase()}" style="padding:6px 2px;border-bottom:1px solid #edf0ee"><input type="checkbox" class="qa-pick" value="${esc(a.rgd)}"><span><strong>${esc(a.rgd)}</strong> <span class="badge ${catClass(a.category)}" style="margin-left:6px">${esc(a.category)}</span> <span class="badge qa-st ${resClass(a.status)}" style="margin-left:4px">${statusLabel(a.status)}</span>${a.ret?' <span class="badge qa-ret" style="margin-left:4px;background:#e8eefb;color:#2c4a86">Retorno</span>':''}</span></label>`).join('');
   openModal(`<h2>Adicionar na ${iatfCycle}ª IATF</h2>
   <div class="notice green">Só aparecem aqui as matrizes que ainda <strong>não</strong> estão nesta IATF. Filtra por categoria e situação, depois marca quem entra.</div>
   <div class="form-grid" style="margin-bottom:10px">
@@ -1799,7 +1828,11 @@ function quickAddAnimalToCycle(){
         <label class="iatf-cat-check" style="background:#fff1dc;color:#875716"><input type="checkbox" class="qa-status" value="V" checked onchange="qaApplyFilters()"> Vazia</label>
         <label class="iatf-cat-check" style="background:#fde7e5;color:#9b3127"><input type="checkbox" class="qa-status" value="PRT" onchange="qaApplyFilters()"> PRT</label>
         <label class="iatf-cat-check" style="background:#e5f5eb;color:#216440"><input type="checkbox" class="qa-status" value="P" onchange="qaApplyFilters()"> Prenha</label>
+        <label class="iatf-cat-check" style="background:#e8eefb;color:#2c4a86"><input type="checkbox" id="qaRet" checked onchange="qaApplyFilters()"> Com retorno</label>
       </div>
+    </div>
+    <div class="field"><label>Resultado de qual IATF</label>
+      <select id="qaCiclo" onchange="qaApplyFilters()"><option value="">Último resultado</option>${ciclosQa.map(c=>`<option value="${c}">${c}ª IATF${cycleDate(c)?' — '+fmtDate(cycleDate(c)):''}</option>`).join('')}</select>
     </div>
   </div>
   <input class="input" style="width:100%;margin-bottom:10px" id="qaSearch" placeholder="Buscar por RGD..." oninput="qaApplyFilters()">
@@ -1812,9 +1845,14 @@ function qaApplyFilters(){
   const cats=new Set($$('.qa-cat:checked').map(x=>x.value));
   const stats=new Set($$('.qa-status:checked').map(x=>x.value));
   const q=norm(($('#qaSearch')||{value:''}).value).toLowerCase();
+  const ciclo=($('#qaCiclo')||{value:''}).value,comRet=!!($('#qaRet')||{checked:true}).checked;
   let visiveis=0;
   $$('.qa-row').forEach(x=>{
-    const ok=cats.has(x.dataset.cat)&&stats.has(x.dataset.status)&&(!q||x.dataset.search.includes(q));
+    let st=x.dataset.status,ret=x.dataset.ret==='1',dentro=true;
+    if(ciclo){const p=(JSON.parse(x.dataset.por||'{}'))[ciclo];dentro=!!p;st=p?p.s:'';ret=!!(p&&p.ret)}
+    const b=x.querySelector('.qa-st');if(b){b.className='badge qa-st '+resClass(st);b.textContent=statusLabel(st)}
+    const rb=x.querySelector('.qa-ret');if(rb)rb.style.display=ret?'':'none';
+    const ok=dentro&&cats.has(x.dataset.cat)&&stats.has(st)&&(comRet||!ret)&&(!q||x.dataset.search.includes(q));
     x.classList.toggle('hidden',!ok);
     if(ok)visiveis++;
   });
@@ -3138,9 +3176,9 @@ function printIatfRows(rows,comResumo){
   const ciclo=ciclos[0]||iatfCycle;
   const titulo=varias?`IATFs ${ciclos.sort((a,b)=>a-b).map(c=>c+'ª').join(', ')} - ${activeSeason().name}`:`${ciclo}ª IATF - ${fmtDate(cycleDate(ciclo))} - ${activeSeason().name}`;
   const colIatf=varias?'<th style="width:70px">IATF</th>':'';
-  const trs=rows.map(r=>`<tr>${varias?`<td>${Number(r.cycle)}ª <span style="color:#666">${fmtDate(cycleDate(r.cycle))}</span></td>`:''}<td>${esc(r.rgd)}</td><td>${esc(r.firstSire)}</td><td style="min-width:120px">${esc(r.secondSire||'')}</td><td style="width:45px">${esc(iatfCaneca(r))}</td><td style="width:60px">${r.qty||''}</td><td style="width:60px">${esc(r.result)}</td><td>${fmtDate(r.return)}</td><td>${esc(r.returnSire||'')}</td><td>${esc(r.category)}</td></tr>`).join('');
+  const trs=rows.map(r=>`<tr>${varias?`<td>${Number(r.cycle)}ª <span style="color:#666">${fmtDate(cycleDate(r.cycle))}</span></td>`:''}<td>${esc(r.rgd)}</td><td style="min-width:170px">${esc(r.firstSire)}</td><td style="width:90px">${esc(r.secondSire||'')}</td><td style="width:45px">${esc(iatfCaneca(r))}</td><td style="width:60px">${r.qty||''}</td><td style="width:60px">${esc(r.result)}</td><td>${fmtDate(r.return)}</td><td>${esc(r.returnSire||'')}</td><td>${esc(r.category)}</td></tr>`).join('');
   const resumo=comResumo?(varias?ciclos.map(c=>`<div style="font-weight:bold;margin:4px 0">${c}ª IATF</div>${resumoPrintHTML(iatfResumo(rows.filter(r=>Number(r.cycle)===c)))}`).join(''):resumoPrintHTML(iatfResumo(rows))):'';
-  printHTML(titulo,`${resumo}<table><thead><tr>${colIatf}<th>RGD</th><th>1º Acasalamento</th><th>2º Acasal. (curral)</th><th style="width:45px">Nº Caneca</th><th style="width:60px">Qtd</th><th style="width:60px">Result.</th><th>Retorno</th><th>Touro Retorno</th><th>Categoria</th></tr></thead><tbody>${trs}</tbody></table>`)
+  printHTML(titulo,`${resumo}<table><thead><tr>${colIatf}<th>RGD</th><th style="min-width:170px">1º Acasalamento</th><th style="width:90px">2º Acasal. (curral)</th><th style="width:45px">Nº Caneca</th><th style="width:60px">Qtd</th><th style="width:60px">Result.</th><th>Retorno</th><th>Touro Retorno</th><th>Categoria</th></tr></thead><tbody>${trs}</tbody></table>`)
 }
 function openStockPrint(){
   openModal(`<h2>Imprimir estoque</h2><div class="form-grid">
