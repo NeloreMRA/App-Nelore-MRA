@@ -280,6 +280,7 @@ function migrate(x){
   if(!Array.isArray(x.settings.destinos)||!x.settings.destinos.length)x.settings.destinos=DEFAULT_DESTINOS.slice();
   x.meta=x.meta||{};x.meta.activeSeasonId=x.meta.activeSeasonId||x.seasons[0].id;
   x.cycleDates=x.cycleDates||{};
+  x.toqueDates=x.toqueDates||{}; // Data do Toque de cada IATF: toqueDates[estação][ciclo]
   x.iatfCycleCategories=x.iatfCycleCategories||{};
   x.iatfMaxCycles=x.iatfMaxCycles||{};
   x.fivDatas=x.fivDatas||{};
@@ -501,6 +502,8 @@ function seasonAcasal(sid=db.meta.activeSeasonId){return (db.acasalamentos||[]).
 function seasonNaoUtil(sid=db.meta.activeSeasonId){return (db.naoUtilizadas||[]).filter(a=>a.seasonId===sid)}
 function seasonFiv(sid=db.meta.activeSeasonId){return (db.fiv||[]).filter(a=>a.seasonId===sid)}
 function cycleDate(c){return ((db.cycleDates||{})[db.meta.activeSeasonId]||{})[Number(c)]||''}
+function toqueDate(c){return ((db.toqueDates||{})[db.meta.activeSeasonId]||{})[Number(c)]||''}
+function setToqueDate(c,v){db.toqueDates=db.toqueDates||{};const sid=db.meta.activeSeasonId;db.toqueDates[sid]=db.toqueDates[sid]||{};if(v)db.toqueDates[sid][Number(c)]=v;else delete db.toqueDates[sid][Number(c)];save()} window.setToqueDate=setToqueDate;
 function setCycleDate(c,v){db.cycleDates[db.meta.activeSeasonId]=db.cycleDates[db.meta.activeSeasonId]||{};db.cycleDates[db.meta.activeSeasonId][Number(c)]=v;save()}
 function sireNames(){return [...new Set(db.semen.map(s=>String(s.name||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'))}
 function sireExists(name){const n=norm(name);return sireNames().some(x=>norm(x)===n)}
@@ -1605,7 +1608,7 @@ function iatfPage(){
   <div class="toolbar" style="margin-bottom:9px">
     <div class="filters">
       <select id="cycleSel" onchange="selectIatfCycle(this.value)">${Array.from({length:maxIatfCycle()},(_,i)=>i+1).map(c=>`<option value="${c}" ${c===iatfCycle?'selected':''}>${c}ª IATF</option>`).join('')}</select><button class="ghost" onclick="createNextIatf()">+ Criar IATF</button>
-      <div class="date-box"><label>Data da ${iatfCycle}ª IATF</label><input type="date" class="input" style="min-width:145px" value="${esc(cycleDate(iatfCycle))}" onchange="setCycleDate(${iatfCycle},this.value)"></div>
+      <div class="date-box"><label>Data da ${iatfCycle}ª IATF</label><input type="date" class="input" style="min-width:145px" value="${esc(cycleDate(iatfCycle))}" onchange="setCycleDate(${iatfCycle},this.value)"></div><div class="date-box"><label>Data do Toque</label><input type="date" class="input" style="min-width:145px" value="${esc(toqueDate(iatfCycle))}" onchange="setToqueDate(${iatfCycle},this.value)"></div>
     </div>
     <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="openIatfOutput('export')">⬇ Excel</button><button class="ghost" onclick="openIatfOutput('print')">🖨 Imprimir</button></div>
   </div>
@@ -1737,7 +1740,7 @@ function openPrtPanel(){
     const l=list.filter(a=>a.category===cat);
     if(!l.length)return '';
     return `<div style="margin-bottom:14px"><div class="sub" style="font-weight:700;margin-bottom:6px"><span class="badge ${catClass(cat)}">${cat}</span> — ${l.length}</div>
-    ${l.map(a=>`<label class="excel-value" style="padding:6px 2px;border-bottom:1px solid #edf0ee"><input type="checkbox" class="prt-pick" value="${esc(a.rgd)}"><span><strong>${esc(a.rgd)}</strong> <span class="muted">— PRT na ${a.prtCycle}ª IATF</span></span></label>`).join('')}</div>`
+    ${l.map(a=>`<label class="excel-value" style="padding:6px 2px;border-bottom:1px solid #edf0ee"><input type="checkbox" class="prt-pick" value="${esc(a.rgd)}"><span><strong>${esc(a.rgd)}</strong> <span class="muted">— PRT na ${a.prtCycle}ª IATF</span>${toqueDate(a.prtCycle)?` <span class="muted">· toque ${fmtDate(toqueDate(a.prtCycle))}</span>`:''}</span></label>`).join('')}</div>`
   }).join('');
   openModal(`<h2>PRTs — devolver para uma IATF</h2>
   <div class="notice green">Marque as matrizes que voltam a ser trabalhadas e escolha em qual IATF elas devem reaparecer para você classificar de novo.</div>
@@ -2929,6 +2932,7 @@ function deleteSeason(id){
   db.seasons=db.seasons.filter(x=>x.id!==id);
   db.iatf=db.iatf.filter(r=>r.seasonId!==id);
   if(db.cycleDates)delete db.cycleDates[id];
+  if(db.toqueDates)delete db.toqueDates[id];
   if(db.fivDatas)delete db.fivDatas[id];
   if(db.acasalDatas)delete db.acasalDatas[id];
   if(db.fivLocais)delete db.fivLocais[id];
