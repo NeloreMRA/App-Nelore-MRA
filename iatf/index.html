@@ -149,7 +149,7 @@ td.cell-selected{background:#dbe9ff!important}
 .crow .tr{height:10px;border-radius:5px;background:#eef1ef;overflow:hidden}.crow .fl{height:100%;border-radius:0 4px 4px 0}
 .crow .vl{text-align:right;font-weight:700}.crow .vl small{font-weight:500;color:#5d6a62}
 .dtable{width:100%;border-collapse:collapse;font-size:12.5px}.dtable th{position:static;background:none;border-bottom:1px solid #e3e7e4;padding:6px 8px;font-size:10.5px;color:#5d6a62;text-align:left}
-.dtable.fiv-compacta td{padding:3px 8px;white-space:nowrap}.dtable td{padding:7px 8px;border-bottom:1px solid #f0f2f0}.dtable tr:last-child td{border-bottom:0}.dtable .num{text-align:right;font-variant-numeric:tabular-nums}
+.estoque-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:0 18px}.estoque-grade div{display:flex;justify-content:space-between;gap:10px;padding:4px 2px;border-bottom:1px solid #f0f2f0;font-size:12.5px}.dtable.fiv-compacta td{padding:3px 8px;white-space:nowrap}.dtable td{padding:7px 8px;border-bottom:1px solid #f0f2f0}.dtable tr:last-child td{border-bottom:0}.dtable .num{text-align:right;font-variant-numeric:tabular-nums}
 .dtable .rk{width:26px;color:#5d6a62;font-variant-numeric:tabular-nums}.dtable .bar{display:flex;align-items:center;gap:8px;min-width:150px}
 .dtable .bar .tr{flex:1;height:8px;border-radius:4px;background:#eef1ef;overflow:hidden}.dtable .bar .fl{height:100%;border-radius:0 4px 4px 0}.dtable .bar b{width:44px;text-align:right}
 .dtable tr.few .fl{opacity:.4}.few-tag{font-size:10px;font-weight:700;color:#8a5919;background:#fff0da;border-radius:99px;padding:1px 6px;margin-left:4px}
@@ -1242,21 +1242,32 @@ function bullStats(){
   return Object.values(map).filter(b=>b.doses||b.n).map(b=>({...b,rate:b.n?b.p/b.n*100:null}))
     .sort((a,b)=>b.doses-a.doses||b.n-a.n||(b.rate??-1)-(a.rate??-1)||a.name.localeCompare(b.name,'pt-BR'));
 }
+// Touros por IATF (igual FIV): em cada IATF "Prenhas / Total com resultado" e a %; o retorno conta na
+// IATF de onde ele veio, no touro do retorno. Doses = Qtd da IATF + 1 por retorno.
 function bullSection(){
-  const all=bullStats();if(!all.length)return '<div class="dempty">Nenhum touro usado nas IATFs desta estação ainda.</div>';
+  const itens=[];
+  seasonRows().forEach(r=>{
+    if(String(r.firstSire||'').trim())itens.push({c:Number(r.cycle),nome:String(r.firstSire).trim(),res:r.result,doses:Number(r.qty)||0});
+    if(String(r.returnSire||'').trim())itens.push({c:Number(r.cycle),nome:String(r.returnSire).trim(),res:r.returnResult,doses:1});
+  });
+  if(!itens.length)return '<div class="dempty">Nenhum touro usado nas IATFs desta estação ainda.</div>';
+  const map={};itens.forEach(i=>{const k=norm(i.nome);const b=map[k]=map[k]||{name:i.nome,itens:[],doses:0};b.itens.push(i);b.doses+=i.doses});
+  const all=Object.values(map).map(b=>({...b,...rateOf(b.itens,i=>i.res)})).sort((a,b)=>b.doses-a.doses||b.n-a.n||(b.rate??-1)-(a.rate??-1)||a.name.localeCompare(b.name,'pt-BR'));
+  const ciclos=[...new Set(itens.map(i=>i.c))].sort((a,b)=>a-b);
   const min=Number(db.settings.bullMinUses||5);
-  const list=dashMore.bulls?all:all.slice(0,10);
-  return `<table class="dtable"><thead><tr><th class="rk">#</th><th>Touro</th><th>% de prenhez</th><th class="num">Prenhas</th><th class="num">Doses usadas</th></tr></thead><tbody>
-  ${list.map((b,i)=>`<tr class="${b.n&&b.n<min?'few':''}" title="${esc(b.name)}: ${b.p} prenha(s) em ${b.n} resultado(s), ${b.doses} dose(s)"><td class="rk">${i+1}</td><td><strong>${esc(b.name)}</strong>${b.n&&b.n<min?'<span class="few-tag">poucos dados</span>':''}</td>
-  <td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GREEN}"></div></div><b>${pctTxt(b.rate)}</b></div></td><td class="num">${b.p}/${b.n}</td><td class="num"><strong>${b.doses}</strong></td></tr>`).join('')}
-  </tbody></table>${all.length>10?`<button class="dmore" onclick="dashToggle('bulls')">${dashMore.bulls?'− Mostrar só os 10 primeiros':`+ Ver todos os touros (${all.length})`}</button>`:''}`;
+  const cel=its=>{const st=rateOf(its,i=>i.res);if(!st.n)return '—';return `<strong style="color:#216440">${st.p}</strong> / <strong>${st.n}</strong> <span style="font-size:10.5px;font-weight:700;color:#233129;display:inline-block;min-width:40px">${pctTxt(st.rate)}</span>`};
+  const list=dashMore.bulls?all:all.slice(0,25);
+  return `<div style="overflow-x:auto"><table class="dtable fiv-compacta"><thead><tr><th class="rk">#</th><th>Touro</th>${ciclos.map(c=>`<th class="num">${c}ª IATF${cycleDate(c)?`<div style="font-weight:400;font-size:10px">${fmtDate(cycleDate(c))}</div>`:''}</th>`).join('')}<th class="num">Geral P / Total</th><th class="num">Doses</th><th style="min-width:150px">% de prenhez (geral)</th></tr></thead><tbody>
+  ${list.map((b,i)=>`<tr class="${b.n&&b.n<min?'few':''}"><td class="rk">${i+1}</td><td><strong>${esc(b.name)}</strong>${b.n&&b.n<min?'<span class="few-tag">poucos dados</span>':''}</td>${ciclos.map(c=>{const its=b.itens.filter(x=>x.c===c);return `<td class="num">${its.length?cel(its):''}</td>`}).join('')}<td class="num">${cel(b.itens)}</td><td class="num"><strong>${b.doses}</strong></td>
+  <td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GREEN}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}
+  </tbody></table></div>${all.length>25?`<button class="dmore" onclick="dashToggle('bulls')">${dashMore.bulls?'− Mostrar só 25':`+ Ver todos os touros (${all.length})`}</button>`:''}`;
 }
 function stockSection(){
   const all=db.semen.map(s=>({name:s.name,b:stockBalance(s)})).filter(x=>String(x.name||'').trim()).sort((a,b)=>b.b-a.b);
   if(!all.length)return '<div class="dempty">Nenhum sêmen cadastrado.</div>';
-  const list=dashMore.stock?all:all.slice(0,10);
-  return `<table class="dtable"><thead><tr><th>Touro</th><th class="num">Saldo (doses)</th></tr></thead><tbody>${list.map(x=>`<tr><td>${esc(x.name)}</td><td class="num"><strong class="${x.b<=0?'stock-low':''}">${x.b}</strong></td></tr>`).join('')}</tbody></table>
-  ${all.length>10?`<button class="dmore" onclick="dashToggle('stock')">${dashMore.stock?'− Mostrar só os 10 maiores':`+ Ver todos (${all.length})`}</button>`:''}`;
+  const list=dashMore.stock?all:all.slice(0,24);
+  return `<div class="estoque-grade">${list.map(x=>`<div><span>${esc(x.name)}</span><strong class="${x.b<=0?'stock-low':''}">${x.b}</strong></div>`).join('')}</div>
+  ${all.length>24?`<button class="dmore" onclick="dashToggle('stock')">${dashMore.stock?'− Mostrar só os 24 maiores':`+ Ver todos (${all.length})`}</button>`:''}`;
 }
 /* ----- FIV ----- */
 function fivSection(){
@@ -1308,10 +1319,8 @@ function dashboard(){
   <div class="dash-kpis">${kpi('Matrizes',seasonAnimals().length,'#5d6a62')}${kpi('Prenhas',oc.P,'#216440')}${kpi('Vazias',oc.V,'#c08a2e')}${kpi('PRT',oc.PRT,'#b8483a')}${kpi('Sem resultado',oc.none,'#9aa49d')}${kpi('Doses em saldo',db.semen.reduce((a,s)=>a+stockBalance(s),0),'#1f6a49')}</div>
   <div class="dash-h">% de prenhez por IATF</div>
   ${iatfSection()}
-  <div class="dash-2" style="margin-top:12px">
-    <div class="dcard"><div class="hd"><div class="t">% de prenhez por touro</div></div>${bullSection()}</div>
-    <div class="dcard"><div class="hd"><div class="t">Estoque de sêmen</div></div>${stockSection()}</div>
-  </div>
+  <div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">% de prenhez por touro</div></div>${bullSection()}</div>
+  <div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">Estoque de sêmen (saldo de doses)</div></div>${stockSection()}</div>
   <hr class="dash-split">
   <div class="dash-h fiv">FIV</div>
   ${fivSection()}`;
@@ -1576,6 +1585,7 @@ function iatfPage(){
     </div>
     <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="openIatfOutput('export')">⬇ Excel</button><button class="ghost" onclick="openIatfOutput('print')">🖨 Imprimir</button></div>
   </div>
+  <div id="iatfResumo" class="fiv-resumo"></div>
   <div class="toolbar">
     <div class="filters">
       <button class="primary" onclick="quickAddAnimalToCycle()">+ Matriz(es) nesta IATF</button><button class="ghost" onclick="openIatfExcluded()">Excluídas desta IATF (${iatfExcludedCurrent().length})</button><button class="ghost" onclick="openPrtPanel()">⟳ PRTs (${prtAnimals().length})</button><button class="ghost" onclick="openReturnsPanel()">↩ Retornos (${returnRows().length})</button>
@@ -1595,6 +1605,7 @@ function prtAnimals(){
 function renderIatfRows(){
   const root=$('#iatfTable');if(!root)return;
   const __view=captureViewPosition();
+  atualizarResumoIatf();
   const rows=iatfRowsFiltered();
   const total=seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle)).length;
   const qtdUsada=rows.reduce((a,r)=>a+(Number(r.qty)||0),0);
@@ -1676,6 +1687,7 @@ function updateIatfResult(id,val,el){
   if(el.value.trim() && !val){alert('Resultado deve ser P, V ou PRT.');el.value='';return}
   const r=db.iatf.find(x=>x.id===id);if(!r)return;
   r.result=val; el.value=val;
+  atualizarResumoIatf();
   // Na nova lógica, nenhuma matriz é lançada automaticamente na próxima IATF.
   const before=db.iatf.length;
   if(val!=='V')removeEmptyFollowUps(r);
@@ -1855,6 +1867,7 @@ function openIatfOutput(mode){
   <div class="field"><label>Número da IATF</label><select id="outCycle"><option value="">Todas</option>${Array.from({length:maxIatfCycle()},(_,i)=>i+1).map(c=>`<option value="${c}" ${c===iatfCycle?'selected':''}>${c}ª IATF</option>`).join('')}</select></div>
   <div class="field"><label>Resultado</label><select id="outResult"><option value="">Todos</option><option>P</option><option>V</option><option>PRT</option></select></div>
   <div class="field"><label>Filtros da tela</label><select id="outCurrent"><option value="yes">Respeitar filtros das colunas (▼)</option><option value="no">Ignorar filtros da tabela</option></select></div></div>
+  <label class="excel-value" style="padding:10px 2px;font-size:14px"><input type="checkbox" id="outResumo" checked> <span>Incluir o quadro de resultados (Prenha, Vazia, PRT, Total e %)</span></label>
   <div class="help">No Excel, cada IATF vira uma aba.</div>
   <div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="primary" onclick="runIatfOutput('${mode}')">${mode==='print'?'Imprimir':'Exportar Excel'}</button></div>`)
 } window.openIatfOutput=openIatfOutput;
@@ -1868,7 +1881,7 @@ function outputIatfRows(){
   const rows=seasonRows().filter(r=>(!current||excelPass('iatf',r))&&(!cat||r.category===cat)&&(!cy||Number(r.cycle)===Number(cy))&&(!res||normResult(r.result)===res));
   return rows.sort((a,b)=>Number(a.cycle)-Number(b.cycle)||String(a.category).localeCompare(String(b.category))||String(a.rgd).localeCompare(String(b.rgd),'pt-BR',{numeric:true}))
 }
-function runIatfOutput(mode){const rows=outputIatfRows();if(!rows.length)return alert('Nenhum registro para esta seleção.');if(mode==='export')exportIatfRows(rows);else printIatfRows(rows);closeModal()} window.runIatfOutput=runIatfOutput;
+function runIatfOutput(mode){const rows=outputIatfRows();if(!rows.length)return alert('Nenhum registro para esta seleção.');const q=!!($('#outResumo')||{}).checked;if(mode==='export')exportIatfRows(rows,q);else printIatfRows(rows,q);closeModal()} window.runIatfOutput=runIatfOutput;
 
 /* ACASALAMENTOS — planejamento independente, não mexe em Matrizes nem IATF. Pertence à estação. */
 const ACASAL_COLS=[['iatf1','1º IATF'],['iatf2','2º IATF'],['iatf3','3º IATF'],['iatf4','4º IATF'],['fiv1','1º FIV'],['fiv2','2º FIV']];
@@ -2394,19 +2407,25 @@ function addBlankFiv(){
   setTimeout(()=>{const els=$$('.nav-fiv-rgd');const last=els[els.length-1];if(last){last.scrollIntoView({block:'nearest'});last.focus()}},30)
 } window.addBlankFiv=addBlankFiv;
 // Quadro da FIV: quantidades e % (PRT conta como vazia). % sobre as que já têm resultado.
-function fivResumo(rows){
-  rows=rows.filter(r=>String(r.rgdDoadora||'').trim());
-  const c=k=>rows.filter(r=>normResult(r.resultado)===k).length;
+// Quadro Prenha/Vazia/PRT/Total + % (PRT conta como vazia; % sobre as que têm resultado) — FIV e IATF
+function resumoRes(rows,get){
+  const c=k=>rows.filter(r=>normResult(get(r))===k).length;
   const p=c('P'),v=c('V'),prt=c('PRT'),diag=p+v+prt;
   return {p,v,prt,total:rows.length,sem:rows.length-diag,diag,pctP:diag?p/diag*100:null,pctV:diag?(v+prt)/diag*100:null};
 }
-function fivResumoHTML(){
-  const q=fivResumo(fivDaData());
+function fivResumo(rows){return resumoRes(rows.filter(r=>String(r.rgdDoadora||'').trim()),r=>r.resultado)}
+function iatfResumo(rows){return resumoRes(rows,r=>r.result)}
+// linhas do quadro pro Excel (planilha comum) e tabela pra impressão
+const resumoLinhasXlsx=(q,titulo)=>[[titulo],[],['PRENHA','VAZIA','PRT','TOTAL'],[q.p,q.v,q.prt,q.total],[],['% PRENHA','% VAZIA'],[pctTxt(q.pctP),pctTxt(q.pctV)],[]];
+const resumoPrintHTML=q=>`<div style="display:flex;gap:14px;margin:0 0 14px"><table style="width:auto"><thead><tr><th>Prenha</th><th>Vazia</th><th>PRT</th><th>Total</th></tr></thead><tbody><tr><td>${q.p}</td><td>${q.v}</td><td>${q.prt}</td><td><b>${q.total}</b></td></tr></tbody></table><table style="width:auto"><thead><tr><th>% Prenha</th><th>% Vazia</th></tr></thead><tbody><tr><td><b>${pctTxt(q.pctP)}</b></td><td><b>${pctTxt(q.pctV)}</b></td></tr></tbody></table></div>`;
+function resumoHTML(q){
   const box=(t,cells)=>`<div class="fiv-q"><div class="fiv-q-t">${t}</div><div class="fiv-q-c">${cells.map(([l,v,cor])=>`<div><span>${l}</span><strong style="color:${cor||'#233129'}">${v}</strong></div>`).join('')}</div></div>`;
   return box('Quantidade',[['Prenha',q.p,'#216440'],['Vazia',q.v,'#c08a2e'],['PRT',q.prt,'#b8483a'],['Total',q.total]])
-    +box('Resultado',[['% Prenha',pctTxt(q.pctP),'#216440'],['% Vazia',pctTxt(q.pctV),'#c08a2e']])
-;
+    +box('Resultado',[['% Prenha',pctTxt(q.pctP),'#216440'],['% Vazia',pctTxt(q.pctV),'#c08a2e']]);
 }
+function fivResumoHTML(){return resumoHTML(fivResumo(fivDaData()))}
+function iatfCicloRows(){return seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle))}
+function atualizarResumoIatf(){const el=$('#iatfResumo');if(el)el.innerHTML=resumoHTML(iatfResumo(iatfCicloRows()))}
 function atualizarResumoFiv(){const el=$('#fivResumo');if(el)el.innerHTML=fivResumoHTML();const b=$('#fivPrtBtn');if(b)b.textContent=`⟳ PRTs (${fivDaData().filter(r=>normResult(r.resultado)==='PRT').length})`}
 function openFivPrt(){
   const list=fivDaData().filter(r=>normResult(r.resultado)==='PRT').sort((a,b)=>(Number(a.n)||0)-(Number(b.n)||0));
@@ -2506,7 +2525,7 @@ function printFiv(comResumo=true){
   const rows=fivRowsFiltered().filter(r=>String(r.rgdDoadora||'').trim());
   if(!rows.length)return alert('Nenhuma linha pra imprimir.');
   const q=fivResumo(fivDaData());
-  const resumo=comResumo?`<div style="display:flex;gap:14px;margin:0 0 14px"><table style="width:auto"><thead><tr><th>Prenha</th><th>Vazia</th><th>PRT</th><th>Total</th></tr></thead><tbody><tr><td>${q.p}</td><td>${q.v}</td><td>${q.prt}</td><td><b>${q.total}</b></td></tr></tbody></table><table style="width:auto"><thead><tr><th>% Prenha</th><th>% Vazia</th></tr></thead><tbody><tr><td><b>${pctTxt(q.pctP)}</b></td><td><b>${pctTxt(q.pctV)}</b></td></tr></tbody></table></div>`:'';
+  const resumo=comResumo?resumoPrintHTML(q):'';
   const trs=rows.map(r=>`<tr><td style="width:34px">${r.n||''}</td><td>${esc(r.rgdDoadora)}</td><td>${esc(r.sire||'')}</td><td>${esc(r.receptora||'')}</td><td>${esc(r.abcz||'')}</td><td>${esc(r.tipo||'')}</td><td>${esc(r.resultado||'')}</td></tr>`).join('');
   printHTML(fivTituloSaida(),`${resumo}<table><thead><tr><th>Nº</th><th>RGD Doadora</th><th>1º Acasalamento</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Resultado</th></tr></thead><tbody>${trs}</tbody></table>`);
 } window.printFiv=printFiv;
@@ -2994,7 +3013,30 @@ function importStockExcel(file){
 }
 function showImportErrors(titleText,sub,errs){openModal(`<h2>${esc(titleText)}</h2><div class="notice">${esc(sub)}</div><div class="error-list">${errs.map(e=>`<div>• ${esc(e)}</div>`).join('')}</div><div class="actions"><button class="primary" onclick="closeModal()">Entendi</button></div>`)}
 function exportAnimals(){if(!needXLSX())return;const rows=animalRowsFiltered().map(a=>({RGD:a.rgd,'1_ACASALAMENTO':a.firstSire,CATEGORIA:a.category,SITUACAO:statusLabel(a.status)}));jsonToXlsx(rows,'matrizes_'+fileSafe(activeSeason().name)+'.xlsx','Matrizes')} window.exportAnimals=exportAnimals;
-function exportIatfRows(rows){downloadSheets(iatfSheets(rows),'iatf_'+fileSafe(activeSeason().name)+'.xlsx')}
+function exportIatfRows(rows,comResumo){
+  const nome='iatf_'+fileSafe(activeSeason().name)+'.xlsx';
+  if(!comResumo)return downloadSheets(iatfSheets(rows),nome);
+  // cada aba (IATF) com o quadro dela nas primeiras linhas e a tabela embaixo
+  const cycles=[...new Set(rows.map(r=>Number(r.cycle)))].sort((a,b)=>a-b);
+  downloadSheetsComTopo(cycles.map(c=>{const rs=rows.filter(r=>Number(r.cycle)===c);
+    return [`${c}ª IATF`,resumoLinhasXlsx(iatfResumo(rs),`${c}ª IATF${cycleDate(c)?' - '+fmtDate(cycleDate(c)):''} - ${activeSeason().name}`),rs.map(iatfExportRow)]}),nome);
+}
+async function downloadSheetsComTopo(sheets,fname){
+  sheets=sheets.filter(([,,rows])=>rows&&rows.length);
+  if(!sheets.length)return alert('Nenhuma linha pra exportar.');
+  const aoa=(topo,rows)=>{const ks=Object.keys(rows[0]);return [...topo,ks.map(k=>k.replace(/_/g,' ')),...rows.map(r=>ks.map(k=>r[k]??''))]};
+  if(typeof ExcelJS==='undefined'){
+    if(!needXLSX())return;
+    const wb=XLSX.utils.book_new();
+    sheets.forEach(([nome,topo,rows])=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa(topo,rows)),nome));
+    downloadWorkbook(wb,fname);return;
+  }
+  const wb=new ExcelJS.Workbook();
+  sheets.forEach(([nome,topo,rows])=>{const ws=wb.addWorksheet(nome);const linhas=aoa(topo,rows);linhas.forEach(l=>ws.addRow(l));
+    [1,3,6,topo.length+1].forEach(i=>{ws.getRow(i).font={bold:true}});
+    const cols=xlsxColumnsFor(rows);cols.forEach((c,i)=>{ws.getColumn(i+1).width=c.width})});
+  await downloadExcelJSWorkbook(wb,fname);
+}
 function exportStock(){if(!needXLSX())return;const out=stockRowsFiltered().map(s=>({TOURO:s.name,RGD_TOURO:s.rgdTouro||'',BOTIJAO:s.tank,CANECA:s.caneca,QTD_DOSES:s.initial,UTILIZADO:s.used,SALDO:s.saldo,DATA_ENTRADA:s.addedDate}));jsonToXlsx(out,'estoque_semen.xlsx','Estoque')} window.exportStock=exportStock;
 /* Excel "normal": só o cabeçalho em negrito e a largura das colunas ajustada. Sem cor, sem
    zebra, sem borda, sem filtro e sem congelar — planilha comum, livre pra formatar/editar como
@@ -3039,14 +3081,15 @@ function printHTML(titleText,body,extraCss=''){
   const w=window.open('','_blank','width=1100,height=800');if(!w)return alert('O navegador bloqueou a janela de impressão.');
   w.document.open();w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(titleText)}</title><style>${extraCss}body{font-family:Arial,sans-serif;color:#111;padding:24px}h1{font-size:20px}table{border-collapse:collapse;width:100%;font-size:11px}th,td{border:1px solid #bbb;padding:6px;text-align:left}.card,.chart{border:1px solid #ddd;border-radius:8px;padding:12px;margin:10px 0}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.kpi .value{font-size:20px;font-weight:bold}.sub,.muted{font-size:10px;color:#666}.bar-track{height:8px;background:#eee}.bar-fill{height:100%;background:#555}.rank-row,.inline-stat,.bar-row{display:flex;justify-content:space-between;gap:10px;padding:5px;border-bottom:1px solid #eee}.actions,.quick-add,.toolbar,.filter-row,button,input,select{display:none!important}html,body{height:auto!important;overflow:visible!important;background:#fff}.dash-hero,.dkpi,.dcard,.crow .fl,.dtable .fl{-webkit-print-color-adjust:exact;print-color-adjust:exact}.dcard,.dash-hero{break-inside:avoid}@media print{body{padding:0}}</style></head><body><h1>${esc(titleText)}</h1>${body}</body></html>`);w.document.close();setTimeout(()=>{w.focus();w.print()},200)
 }
-function printIatfRows(rows){
+function printIatfRows(rows,comResumo){
   const ciclos=[...new Set(rows.map(r=>Number(r.cycle)))];
   const varias=ciclos.length>1;
   const ciclo=ciclos[0]||iatfCycle;
   const titulo=varias?`IATFs ${ciclos.sort((a,b)=>a-b).map(c=>c+'ª').join(', ')} - ${activeSeason().name}`:`${ciclo}ª IATF - ${fmtDate(cycleDate(ciclo))} - ${activeSeason().name}`;
   const colIatf=varias?'<th style="width:70px">IATF</th>':'';
   const trs=rows.map(r=>`<tr>${varias?`<td>${Number(r.cycle)}ª <span style="color:#666">${fmtDate(cycleDate(r.cycle))}</span></td>`:''}<td>${esc(r.rgd)}</td><td>${esc(r.firstSire)}</td><td style="min-width:120px">${esc(r.secondSire||'')}</td><td style="width:45px">${esc(iatfCaneca(r))}</td><td style="width:60px">${r.qty||''}</td><td style="width:60px">${esc(r.result)}</td><td>${fmtDate(r.return)}</td><td>${esc(r.returnSire||'')}</td><td>${esc(r.category)}</td></tr>`).join('');
-  printHTML(titulo,`<table><thead><tr>${colIatf}<th>RGD</th><th>1º Acasalamento</th><th>2º Acasal. (curral)</th><th style="width:45px">Nº Caneca</th><th style="width:60px">Qtd</th><th style="width:60px">Result.</th><th>Retorno</th><th>Touro Retorno</th><th>Categoria</th></tr></thead><tbody>${trs}</tbody></table>`)
+  const resumo=comResumo?(varias?ciclos.map(c=>`<div style="font-weight:bold;margin:4px 0">${c}ª IATF</div>${resumoPrintHTML(iatfResumo(rows.filter(r=>Number(r.cycle)===c)))}`).join(''):resumoPrintHTML(iatfResumo(rows))):'';
+  printHTML(titulo,`${resumo}<table><thead><tr>${colIatf}<th>RGD</th><th>1º Acasalamento</th><th>2º Acasal. (curral)</th><th style="width:45px">Nº Caneca</th><th style="width:60px">Qtd</th><th style="width:60px">Result.</th><th>Retorno</th><th>Touro Retorno</th><th>Categoria</th></tr></thead><tbody>${trs}</tbody></table>`)
 }
 function openStockPrint(){
   openModal(`<h2>Imprimir estoque</h2><div class="form-grid">
