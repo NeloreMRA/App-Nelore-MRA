@@ -1381,7 +1381,7 @@ function dashboard(){
   const kpi=(l,v,c)=>`<div class="dkpi" style="--k:${c}"><div class="l">${l}</div><div class="v">${v}</div></div>`;
   $('#content').innerHTML=`
   <div class="dash-hero"><img src="${MRA_LOGO}" alt="Nelore MRA"><div><div class="bt">Nelore MRA</div><div class="bs">Fazenda Paraíso · ${esc(activeSeason().name)}</div></div>
-    <div class="hn"><div class="v">${pctTxt(tudo.rate)}</div><div class="l">Prenhez geral (IATF + FIV) · ${tudo.p} de ${tudo.n}</div><div class="l" style="opacity:.8;margin-top:2px">IATF ${pctTxt(g.rate)} (${g.p} de ${g.n}) · FIV ${pctTxt(gf.rate)} (${gf.p} de ${gf.n})</div></div></div>
+    <div class="hn"><div class="v">${pctTxt(tudo.rate)}</div><div class="l">${tudo.p} de ${tudo.n}</div></div></div>
   <div class="dash-kpis">${kpi('Matrizes',seasonAnimals().length,'#5d6a62')}${kpi('Prenhas',oc.P,'#216440')}${kpi('Vazias',oc.V,'#c08a2e')}${kpi('PRT',oc.PRT,'#b8483a')}${kpi('Sem resultado',oc.none,'#9aa49d')}${kpi('Doses em saldo',db.semen.reduce((a,s)=>a+stockBalance(s),0),'#1f6a49')}</div>
   <div class="dash-h">% de prenhez por IATF</div>
   ${iatfSection()}
