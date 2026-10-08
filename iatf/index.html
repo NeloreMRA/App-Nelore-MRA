@@ -151,7 +151,7 @@ td.cell-selected{background:#dbe9ff!important}
 .dtable{width:100%;border-collapse:collapse;font-size:12.5px}.dtable th{position:static;background:none;border-bottom:1px solid #e3e7e4;padding:6px 8px;font-size:10.5px;color:#5d6a62;text-align:left}
 .estoque-grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:0 18px}.estoque-grade div{display:flex;justify-content:space-between;gap:10px;padding:4px 2px;border-bottom:1px solid #f0f2f0;font-size:12.5px}.dtable.fiv-compacta td{padding:3px 8px;white-space:nowrap}.dtable td{padding:7px 8px;border-bottom:1px solid #f0f2f0}.dtable tr:last-child td{border-bottom:0}.dtable .num{text-align:right;font-variant-numeric:tabular-nums}
 .dtable .rk{width:26px;color:#5d6a62;font-variant-numeric:tabular-nums}.dtable .bar{display:flex;align-items:center;gap:8px;min-width:150px}
-.dtable .bar .tr{flex:1;height:8px;border-radius:4px;background:#eef1ef;overflow:hidden}.dtable .bar .fl{height:100%;border-radius:0 4px 4px 0}.dtable .bar b{width:44px;text-align:right}
+.dtable.tab-abas{width:auto;min-width:620px;max-width:860px}.dtable.tab-abas .bar{min-width:0}.dtable.tab-abas .bar .tr{flex:none;width:170px}.dtable.tab-abas td,.dtable.tab-abas th{padding-left:10px;padding-right:10px}.dtable .bar .tr{flex:1;height:8px;border-radius:4px;background:#eef1ef;overflow:hidden}.dtable .bar .fl{height:100%;border-radius:0 4px 4px 0}.dtable .bar b{width:44px;text-align:right}
 .dtable tr.few .fl{opacity:.4}.few-tag{font-size:10px;font-weight:700;color:#8a5919;background:#fff0da;border-radius:99px;padding:1px 6px;margin-left:4px}
 .dmore{margin-top:10px;border:1px dashed #b7c9bd;background:#fff;color:#1f6a49;border-radius:8px;padding:7px 12px;font-weight:700;cursor:pointer;width:100%;font-size:12.5px}.dmore:hover{background:#f5faf7}
 .dempty{padding:18px;text-align:center;color:#6c776f;font-size:12.5px}
@@ -1321,7 +1321,7 @@ function tabelaAbas(id,abas,itens,o){
     .sort((a,b)=>b.x-a.x||b.n-a.n||(b.rate??-1)-(a.rate??-1)||String(a.name).localeCompare(String(b.name),'pt-BR',{numeric:true}));
   const lista=dashMore[id]?all:all.slice(0,25);const min=o.min||0;
   return `<div class="abas-t">${abas.map(a=>`<button class="${String(a.k)===k?'on':''}" onclick="setDashAba('${id}','${esc(String(a.k))}')">${esc(a.l)}${a.d?`<small>${esc(a.d)}</small>`:''}</button>`).join('')}</div>
-  ${all.length?`<table class="dtable fiv-compacta"><thead><tr><th class="rk">#</th><th>${o.nomeCol}</th><th class="num">Prenhas / Total</th><th style="min-width:150px">% de prenhez</th><th class="num">${o.xLabel}</th></tr></thead><tbody>
+  ${all.length?`<table class="dtable fiv-compacta tab-abas"><thead><tr><th class="rk">#</th><th>${o.nomeCol}</th><th class="num">Prenhas / Total</th><th>% de prenhez</th><th class="num">${o.xLabel}</th></tr></thead><tbody>
   ${lista.map((b,i)=>`<tr class="${min&&b.n&&b.n<min?'few':''}"><td class="rk">${i+1}</td><td><strong>${esc(b.name)}</strong>${min&&b.n&&b.n<min?'<span class="few-tag">poucos dados</span>':''}</td><td class="num">${b.n?`<strong style="color:#216440">${b.p}</strong> / <strong>${b.n}</strong>`:'—'}</td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${o.cor}"></div></div><b>${pctTxt(b.rate)}</b></div></td><td class="num"><strong>${b.x}</strong></td></tr>`).join('')}
   </tbody></table>${all.length>25?`<button class="dmore" onclick="dashToggle('${id}')">${dashMore[id]?'− Mostrar só 25':`+ Ver todos (${all.length})`}</button>`:''}`:`<div class="dempty">${o.vazio}</div>`}`;
 }
