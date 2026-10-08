@@ -2,7 +2,7 @@
    Páginas: tenta a internet primeiro (pega a versão nova) e cai pro guardado se estiver sem sinal.
    Bibliotecas (Firebase, Excel): usa o guardado e atualiza quando der. Dados do Firebase NÃO passam por aqui
    (o próprio Firebase guarda e envia quando a internet volta). */
-const CACHE = 'app-nelore-mra-v41';
+const CACHE = 'app-nelore-mra-v42';
 const PAGINAS = ['./', './index.html', './logo.webp', './icon-192.png', './manifest.webmanifest',
   './barra-app.js', './teclado.js', './caderneta/index.html', './estoque/index.html', './iatf/index.html', './custos/index.html', './contabil/index.html'];
 const LIBS = [
