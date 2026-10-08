@@ -2197,19 +2197,17 @@ function pageDieselEstoque(){
     <div class="grid cols-2 no-print estoque-forms">
       <div class="panel form-entrada">
         <p class="section-title">🟢 Entrada de diesel</p>
-        <div class="grid cols-3">
+        <div class="grid cols-2">
           <div><label>Data</label><input type="date" id="ent-data" value="${hojeISO()}"></div>
           <div><label>Litros que entraram</label><input type="text" inputmode="decimal" id="ent-litros" placeholder="Ex: 5.500"></div>
-          <div><label>Estação</label>${selectEstacaoDiesel('ent-estacao')}</div>
         </div>
         <button class="primary" type="button" style="margin-top:12px;" onclick="salvarEntradaDiesel()">Lançar entrada</button>
       </div>
       <div class="panel form-acerto">
         <p class="section-title">🟠 Acerto de diesel (medição)</p>
-        <div class="grid cols-3">
+        <div class="grid cols-2">
           <div><label>Data da medição</label><input type="date" id="ace-data" value="${hojeISO()}"></div>
           <div><label>Quanto tem no tanque (medido)</label><input type="text" inputmode="decimal" id="ace-medido" placeholder="Ex: 5.400" oninput="previaAcertoDiesel()"></div>
-          <div><label>Estação</label>${selectEstacaoDiesel('ace-estacao')}</div>
         </div>
         <div id="ace-previa" class="previa-acerto">Digite o valor medido para ver o acerto.</div>
         <button class="btn-acerto" type="button" onclick="salvarAcertoDiesel()">Lançar acerto</button>
@@ -2248,10 +2246,7 @@ function salvarEntradaDiesel(){
   const litros = parseNumBR(document.getElementById('ent-litros').value);
   if(!data){ alert('Informe a data.'); return; }
   if(!(Number(litros)>0)){ alert('Informe quantos litros entraram no tanque.'); return; }
-  const estacao = document.getElementById('ent-estacao').value;
-  if(!estacao){ alert('Escolha a estação.'); return; }
-  lsSet('app-nelore-mra-custos-dieselUltimaEstacao', estacao);
-  const row = {id:novoIdDiesel('e'), tipo:'entrada', data, entrada:litros, estacao, criadoEm:Date.now(), criadoPor:usuarioAtual()};
+  const row = {id:novoIdDiesel('e'), tipo:'entrada', data, entrada:litros, criadoEm:Date.now(), criadoPor:usuarioAtual()};
   diesel.estoque.push(row);
   salvarLinhaDiesel('estoque', row, true);
   render();
@@ -2271,14 +2266,11 @@ function salvarAcertoDiesel(){
   const medido = parseNumBR(document.getElementById('ace-medido').value);
   if(!data){ alert('Informe a data da medição.'); return; }
   if(medido==='' || medido<0){ alert('Informe quanto tem no tanque.'); return; }
-  const estacao = document.getElementById('ace-estacao').value;
-  if(!estacao){ alert('Escolha a estação.'); return; }
   const sistema = calcEstoqueDiesel().saldoAtual;
   const dif = Math.round((medido - sistema)*100)/100;
   if(dif===0){ alert('O saldo do sistema já bate com a medição. Nenhum acerto necessário.'); return; }
   if(!confirm(`Lançar acerto de ${dif>0?'+':''}${fmt(dif,1)} L?\n\nSistema: ${fmt(sistema,1)} L\nMedido: ${fmt(medido,1)} L`)) return;
-  lsSet('app-nelore-mra-custos-dieselUltimaEstacao', estacao);
-  const row = {id:novoIdDiesel('a'), tipo:'acerto', data, entrada:dif, medido, saldoSistema:sistema, estacao, criadoEm:Date.now(), criadoPor:usuarioAtual()};
+  const row = {id:novoIdDiesel('a'), tipo:'acerto', data, entrada:dif, medido, saldoSistema:sistema, criadoEm:Date.now(), criadoPor:usuarioAtual()};
   diesel.estoque.push(row);
   salvarLinhaDiesel('estoque', row, true);
   render();
