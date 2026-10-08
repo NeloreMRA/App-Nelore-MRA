@@ -58,7 +58,7 @@ td{padding:8px 10px;border-bottom:1px solid #edf0ee;white-space:nowrap}tbody tr:
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .out-actions{display:flex;gap:8px;align-items:center;margin-left:auto;padding-left:12px;border-left:1px solid #e1e6e2}
 @media(max-width:700px){.out-actions{margin-left:0;border-left:0;padding-left:0}}
-#pageActions{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}#pageActions .ghost{padding:8px 12px;font-size:13px}.abas-t{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 10px}.abas-t button{border:1px solid #d9e4dc;background:#f6f8f6;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;color:#4a5850;cursor:pointer}.abas-t button.on{background:#1f6a49;color:#fff;border-color:#1f6a49}.abas-t button small{font-weight:400;opacity:.8;margin-left:4px}.fiv-resumo{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 10px}.fiv-resumo.inline{margin:0 0 0 6px;gap:6px}.fiv-resumo.inline .fiv-q{padding:4px 14px}.fiv-resumo.inline .fiv-q-t{display:none}.fiv-resumo.inline .fiv-q-c{gap:18px}.fiv-resumo.inline .fiv-q-c div{min-width:50px}.fiv-resumo.inline .fiv-q-c span{font-size:12px}.fiv-resumo.inline .fiv-q-c strong{font-size:20px}.fiv-q{border:1px solid #d9e4dc;background:#fff;border-radius:10px;padding:7px 12px}.fiv-q-t{font-size:10px;font-weight:800;color:#69746c;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}.fiv-q-c{display:flex;gap:16px}.fiv-q-c div{display:flex;flex-direction:column;align-items:center;min-width:44px}.fiv-q-c span{font-size:11px;color:#4a5850}.fiv-q-c strong{font-size:19px;line-height:1.15}
+#pageActions{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}#pageActions .ghost{padding:8px 12px;font-size:13px}.abas-t{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 10px}.abas-t button{border:1px solid #d9e4dc;background:#f6f8f6;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;color:#4a5850;cursor:pointer}.abas-t button.on{background:#1f6a49;color:#fff;border-color:#1f6a49}.abas-t button small{font-weight:400;opacity:.8;margin-left:4px}.dash-lado{display:grid;grid-template-columns:auto minmax(280px,1fr);gap:12px;align-items:start}.dash-lado>div>.dcard:first-child{margin-top:0!important}.lado-cards .dash-grid{grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}@media(max-width:1100px){.dash-lado{grid-template-columns:1fr}}.fiv-resumo{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 10px}.fiv-resumo.inline{margin:0 0 0 6px;gap:6px}.fiv-resumo.inline .fiv-q{padding:4px 14px}.fiv-resumo.inline .fiv-q-t{display:none}.fiv-resumo.inline .fiv-q-c{gap:18px}.fiv-resumo.inline .fiv-q-c div{min-width:50px}.fiv-resumo.inline .fiv-q-c span{font-size:12px}.fiv-resumo.inline .fiv-q-c strong{font-size:20px}.fiv-q{border:1px solid #d9e4dc;background:#fff;border-radius:10px;padding:7px 12px}.fiv-q-t{font-size:10px;font-weight:800;color:#69746c;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}.fiv-q-c{display:flex;gap:16px}.fiv-q-c div{display:flex;flex-direction:column;align-items:center;min-width:44px}.fiv-q-c span{font-size:11px;color:#4a5850}.fiv-q-c strong{font-size:19px;line-height:1.15}
 .date-box{display:flex;align-items:center;gap:7px;background:#edf6f0;border:1px solid #cfe3d5;border-radius:8px;padding:3px 8px}.date-box .input{padding:5px 7px;min-height:0}.date-box label{font-size:12px;font-weight:650}
 .iatf-category-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid #d9dfda;border-radius:8px;padding:6px 9px}.iatf-category-box>span{font-size:11px;font-weight:700;color:#657169;margin-right:2px}.iatf-cat-check{display:flex;align-items:center;gap:5px;padding:4px 7px;border-radius:7px;cursor:pointer;font-size:12px;user-select:none}.iatf-cat-check input{margin:0}.iatf-cat-check.vacas{background:#e7f0ff;color:#245a9c}.iatf-cat-check.primi{background:#fff0da;color:#8a5919}.iatf-cat-check.preco{background:#efe8ff;color:#6743a0}
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.clickable{cursor:pointer}
@@ -1336,7 +1336,7 @@ function bullSection(){
   if(!itens.length)return '<div class="dempty">Nenhum touro usado nas IATFs desta estação ainda.</div>';
   const ciclos=[...new Set(itens.map(i=>i.c))].sort((a,b)=>a-b);
   const abas=[{k:'g',l:'Geral'},...ciclos.map(c=>({k:c,l:`${c}ª IATF`,d:cycleDate(c)?fmtDate(cycleDate(c)).slice(0,5):''}))];
-  return tabelaAbas('bulls',abas,itens,{nomeCol:'Touro',xLabel:'Doses',cor:DASH_GREEN,min:Number(db.settings.bullMinUses||5),vazio:'Sem resultado ainda.'});
+  return tabelaAbas('bulls',abas,itens,{nomeCol:'Touro',xLabel:'Doses',cor:DASH_GREEN,vazio:'Sem resultado ainda.'});
 }
 function stockSection(){
   const all=db.semen.map(s=>({name:s.name,b:stockBalance(s)})).filter(x=>String(x.name||'').trim()).sort((a,b)=>b.b-a.b);
@@ -1359,12 +1359,11 @@ function fivSection(){
   const fivCard=(titulo,data,rs,total)=>{const g=rateOf(rs,r=>r.resultado);const ts=tipos.map(t=>[t,rateOf(rs.filter(r=>r.tipo===t),r=>r.resultado)]).filter(([,st])=>st.n);
     return `<div class="dcard${total?' total':''}"><div class="hd"><div><div class="t">${esc(titulo)}</div>${data?`<div class="d">${esc(data)}</div>`:''}</div><div class="big">${pctTxt(g.rate)}<small>${g.p} de ${g.n} prenhas</small></div></div>
     ${ts.map(([t,st])=>barRow(t,DASH_GOLD,st)).join('')||'<div class="dempty">Sem resultado ainda</div>'}</div>`};
-  const cards=`<div class="dash-grid" style="margin-top:12px">${fivCard('Todas as FIVs','',rows,true)}${datas.map((d,i)=>{const l=fivLocal(d);return fivCard(`${i+1}ª FIV`,fmtDate(d)+(l?' · '+l:''),rows.filter(r=>r.data===d),false)}).join('')}</div>`;
+  const cards=`<div class="dash-grid">${fivCard('Todas as FIVs','',rows,true)}${datas.map((d,i)=>{const l=fivLocal(d);return fivCard(`${i+1}ª FIV`,fmtDate(d)+(l?' · '+l:''),rows.filter(r=>r.data===d),false)}).join('')}</div>`;
   const kpi=(l,v)=>`<div class="dkpi" style="--k:#b39a3b"><div class="l">${l}</div><div class="v">${v}</div></div>`;
   const cardAbas=(titulo,id,campo)=>`<div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">${titulo}</div></div>${tabelaAbas(id,abasFiv,rows.map(r=>({c:r.data||'',nome:String(r[campo]||'').trim()||'(sem touro)',res:r.resultado,x:1})),{nomeCol:campo==='sire'?'Touro':'Doadora',xLabel:'Transf.',cor:DASH_GOLD,vazio:'Sem resultado ainda.'})}</div>`;
   return `<div class="dash-kpis">${kpi('Transferências',rows.length)}${kpi('Prenhez FIV',pctTxt(g.rate))}${kpi('Prenhas',g.p)}${kpi('Aguardando resultado',aguard)}${kpi('Doadoras',doadoras)}${kpi('FIVs feitas',datas.length)}</div>
-  ${rows.length?cards:''}
-  ${rows.length?cardAbas('% de prenhez por touro — FIV','fivBulls','sire')+cardAbas('% de prenhez por doadora','donors','rgdDoadora'):''}`;
+  ${rows.length?`<div class="dash-lado" style="margin-top:12px"><div>${cardAbas('% de prenhez por touro — FIV','fivBulls','sire')}${cardAbas('% de prenhez por doadora','donors','rgdDoadora')}</div><div class="lado-cards">${cards}</div></div>`:''}`;
 }
 function dashboard(){
   title('Dashboard','Resumo da '+activeSeason().name);
@@ -1380,8 +1379,7 @@ function dashboard(){
     <div class="hn"><div class="v">${pctTxt(tudo.rate)}</div><div class="l">${tudo.p} de ${tudo.n}</div></div></div>
   <div class="dash-kpis">${kpi('Matrizes',seasonAnimals().length,'#5d6a62')}${kpi('Prenhas',oc.P,'#216440')}${kpi('Vazias',oc.V,'#c08a2e')}${kpi('PRT',oc.PRT,'#b8483a')}${kpi('Sem resultado',oc.none,'#9aa49d')}${kpi('Doses em saldo',db.semen.reduce((a,s)=>a+stockBalance(s),0),'#1f6a49')}</div>
   <div class="dash-h">% de prenhez por IATF</div>
-  ${iatfSection()}
-  <div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">% de prenhez por touro</div></div>${bullSection()}</div>
+  <div class="dash-lado"><div class="dcard"><div class="hd"><div class="t">% de prenhez por touro</div></div>${bullSection()}</div><div class="lado-cards">${iatfSection()}</div></div>
   <hr class="dash-split">
   <div class="dash-h fiv">FIV</div>
   ${fivSection()}`;
@@ -2848,7 +2846,7 @@ function settings(){
   title('Configurações','Estações e cadastros');setActions('');
   $('#content').innerHTML=`<div class="settings-grid">
   <div class="card"><h3>Estações de monta</h3>${db.seasons.map(s=>`<div class="inline-stat"><div><strong>${esc(s.name)}</strong><div class="muted">${fmtDate(s.startDate)} → ${fmtDate(s.endDate)} · ${seasonAnimals(s.id).length} matriz(es) · ${seasonAcasal(s.id).length} acasalamento(s) · ${seasonFiv(s.id).length} FIV</div></div><div class="mini-actions"><button class="mini" onclick="activateSeason('${s.id}')">${s.id===db.meta.activeSeasonId?'Atual':'Usar'}</button><button class="mini" onclick="modalSeason('${s.id}')">Editar</button>${db.seasons.length>1?`<button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="deleteSeason('${s.id}')">Excluir</button>`:''}</div></div>`).join('')}<div class="actions" style="justify-content:flex-start;gap:8px;flex-wrap:wrap"><button class="primary" onclick="modalSeason()">+ Nova estação</button><button class="ghost" onclick="exportSeasonAll()">⬇ Exportar estação (Excel)</button></div></div>
-  <div class="card"><h3>Dashboard</h3><div class="form-grid"><div class="field"><label>Touro com menos resultados que isso aparece como "poucos dados"</label><input id="cfgMin" class="input" type="number" min="1" value="${db.settings.bullMinUses}"></div></div><div class="actions"><button class="primary" onclick="saveSettings()">Salvar</button></div></div></div>
+</div>
   <div class="settings-grid section"><div class="card"><h3>Matrizes</h3><div class="quick-add" style="margin-top:12px"><button class="ghost" onclick="go('animals')">Abrir Matrizes</button><button class="ghost" onclick="document.getElementById('animalImportFile').click()">⬆ Subir Excel</button><button class="ghost" onclick="downloadAnimalTemplate()">⬇ Modelo</button></div></div>
   <div class="card"><h3>Estoque - Sêmen / Touros</h3><div class="quick-add" style="margin-top:12px"><button class="ghost" onclick="modalStock()">+ Sêmen manual</button><button class="ghost" onclick="document.getElementById('stockImportFile').click()">⬆ Subir Excel</button><button class="ghost" onclick="downloadStockTemplate()">⬇ Modelo</button></div></div>
   <div class="card"><h3>Backup e restauração</h3>
