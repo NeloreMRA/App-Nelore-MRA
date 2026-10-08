@@ -58,7 +58,7 @@ td{padding:8px 10px;border-bottom:1px solid #edf0ee;white-space:nowrap}tbody tr:
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .out-actions{display:flex;gap:8px;align-items:center;margin-left:auto;padding-left:12px;border-left:1px solid #e1e6e2}
 @media(max-width:700px){.out-actions{margin-left:0;border-left:0;padding-left:0}}
-#pageActions{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}#pageActions .ghost{padding:8px 12px;font-size:13px}.fiv-resumo{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 10px}.fiv-resumo.inline{margin:0 0 0 6px;gap:6px}.fiv-resumo.inline .fiv-q{padding:4px 14px}.fiv-resumo.inline .fiv-q-t{display:none}.fiv-resumo.inline .fiv-q-c{gap:18px}.fiv-resumo.inline .fiv-q-c div{min-width:50px}.fiv-resumo.inline .fiv-q-c span{font-size:12px}.fiv-resumo.inline .fiv-q-c strong{font-size:20px}.fiv-q{border:1px solid #d9e4dc;background:#fff;border-radius:10px;padding:7px 12px}.fiv-q-t{font-size:10px;font-weight:800;color:#69746c;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}.fiv-q-c{display:flex;gap:16px}.fiv-q-c div{display:flex;flex-direction:column;align-items:center;min-width:44px}.fiv-q-c span{font-size:11px;color:#4a5850}.fiv-q-c strong{font-size:19px;line-height:1.15}
+#pageActions{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}#pageActions .ghost{padding:8px 12px;font-size:13px}.abas-t{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 10px}.abas-t button{border:1px solid #d9e4dc;background:#f6f8f6;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;color:#4a5850;cursor:pointer}.abas-t button.on{background:#1f6a49;color:#fff;border-color:#1f6a49}.abas-t button small{font-weight:400;opacity:.8;margin-left:4px}.fiv-resumo{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 10px}.fiv-resumo.inline{margin:0 0 0 6px;gap:6px}.fiv-resumo.inline .fiv-q{padding:4px 14px}.fiv-resumo.inline .fiv-q-t{display:none}.fiv-resumo.inline .fiv-q-c{gap:18px}.fiv-resumo.inline .fiv-q-c div{min-width:50px}.fiv-resumo.inline .fiv-q-c span{font-size:12px}.fiv-resumo.inline .fiv-q-c strong{font-size:20px}.fiv-q{border:1px solid #d9e4dc;background:#fff;border-radius:10px;padding:7px 12px}.fiv-q-t{font-size:10px;font-weight:800;color:#69746c;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}.fiv-q-c{display:flex;gap:16px}.fiv-q-c div{display:flex;flex-direction:column;align-items:center;min-width:44px}.fiv-q-c span{font-size:11px;color:#4a5850}.fiv-q-c strong{font-size:19px;line-height:1.15}
 .date-box{display:flex;align-items:center;gap:7px;background:#edf6f0;border:1px solid #cfe3d5;border-radius:8px;padding:3px 8px}.date-box .input{padding:5px 7px;min-height:0}.date-box label{font-size:12px;font-weight:650}
 .iatf-category-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid #d9dfda;border-radius:8px;padding:6px 9px}.iatf-category-box>span{font-size:11px;font-weight:700;color:#657169;margin-right:2px}.iatf-cat-check{display:flex;align-items:center;gap:5px;padding:4px 7px;border-radius:7px;cursor:pointer;font-size:12px;user-select:none}.iatf-cat-check input{margin:0}.iatf-cat-check.vacas{background:#e7f0ff;color:#245a9c}.iatf-cat-check.primi{background:#fff0da;color:#8a5919}.iatf-cat-check.preco{background:#efe8ff;color:#6743a0}
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.clickable{cursor:pointer}
@@ -208,6 +208,7 @@ body.authenticated #loginScreen{display:none}
   .nav span{display:block!important;font-size:9.5px;white-space:nowrap;line-height:1.1}
   .modal{padding:8px}.modal-card{padding:16px 14px;max-height:94vh}
   .dash-hero .hn .v{font-size:40px}
+  .dtable.fiv-compacta .bar .tr{display:none}.dtable.fiv-compacta .rk{display:none}.dtable.fiv-compacta td,.dtable.fiv-compacta th{white-space:normal}
 }
 @media(max-width:600px){.sidebar>.voltar-app{margin:0 4px 0 0;padding:9px 10px;align-self:center}.sidebar>.voltar-app .va-txt{display:none}.sidebar nav{min-width:0;overflow-x:auto;scrollbar-width:none}}
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
@@ -1305,25 +1306,37 @@ function bullStats(){
   return Object.values(map).filter(b=>b.doses||b.n).map(b=>({...b,rate:b.n?b.p/b.n*100:null}))
     .sort((a,b)=>b.doses-a.doses||b.n-a.n||(b.rate??-1)-(a.rate??-1)||a.name.localeCompare(b.name,'pt-BR'));
 }
-// Touros por IATF (igual FIV): em cada IATF "Prenhas / Total com resultado" e a %; o retorno conta na
-// IATF de onde ele veio, no touro do retorno. Doses = Qtd da IATF + 1 por retorno.
+// Tabela do dashboard com ABAS em cima (Geral · 1ª · 2ª...): a tabela não cresce pro lado quando
+// cria IATF/FIV nova. Itens = {c:aba, nome, res, x}. Cada aba só mostra quem tem resultado nela (0% aparece; sem resultado nenhum não).
+// Impressão "todas as abas": dashImprimirTudo=true desenha uma tabela por aba, sem botões e sem limite.
+let dashAba={},dashImprimirTudo=false;
+function setDashAba(id,k){dashAba[id]=k;manterTela(dashboard)} window.setDashAba=setDashAba;
+function tabelaAbas(id,abas,itens,o){
+  const ks=abas.map(a=>String(a.k));if(!ks.includes(String(dashAba[id])))dashAba[id]='g';
+  if(dashImprimirTudo){const salvo=dashAba[id];dashImprimirTudo=false;const out=abas.map(a=>{dashAba[id]=a.k;dashMore[id]=true;return `<div style="font-weight:800;margin:10px 0 4px">${esc(a.l)}${a.d?' — '+esc(a.d):''}</div>`+tabelaAbas(id,abas,itens,o).replace(/<div class="abas-t">[\s\S]*?<\/div>/,'')}).join('');dashAba[id]=salvo;dashMore[id]=false;dashImprimirTudo=true;return out}
+  const k=String(dashAba[id]);
+  const its=k==='g'?itens:itens.filter(i=>String(i.c)===k);
+  const m={};its.forEach(i=>{const kk=norm(i.nome);const b=m[kk]=m[kk]||{name:i.nome,its:[],x:0};b.its.push(i);b.x+=i.x});
+  const all=Object.values(m).map(b=>({...b,...rateOf(b.its,i=>i.res)})).filter(b=>b.n>0) // sem resultado não aparece; 0% aparece
+    .sort((a,b)=>b.x-a.x||b.n-a.n||(b.rate??-1)-(a.rate??-1)||String(a.name).localeCompare(String(b.name),'pt-BR',{numeric:true}));
+  const lista=dashMore[id]?all:all.slice(0,25);const min=o.min||0;
+  return `<div class="abas-t">${abas.map(a=>`<button class="${String(a.k)===k?'on':''}" onclick="setDashAba('${id}','${esc(String(a.k))}')">${esc(a.l)}${a.d?`<small>${esc(a.d)}</small>`:''}</button>`).join('')}</div>
+  ${all.length?`<table class="dtable fiv-compacta"><thead><tr><th class="rk">#</th><th>${o.nomeCol}</th><th class="num">Prenhas / Total</th><th style="min-width:150px">% de prenhez</th><th class="num">${o.xLabel}</th></tr></thead><tbody>
+  ${lista.map((b,i)=>`<tr class="${min&&b.n&&b.n<min?'few':''}"><td class="rk">${i+1}</td><td><strong>${esc(b.name)}</strong>${min&&b.n&&b.n<min?'<span class="few-tag">poucos dados</span>':''}</td><td class="num">${b.n?`<strong style="color:#216440">${b.p}</strong> / <strong>${b.n}</strong>`:'—'}</td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${o.cor}"></div></div><b>${pctTxt(b.rate)}</b></div></td><td class="num"><strong>${b.x}</strong></td></tr>`).join('')}
+  </tbody></table>${all.length>25?`<button class="dmore" onclick="dashToggle('${id}')">${dashMore[id]?'− Mostrar só 25':`+ Ver todos (${all.length})`}</button>`:''}`:`<div class="dempty">${o.vazio}</div>`}`;
+}
+// % de prenhez por touro na IATF: o retorno conta na IATF de onde veio, no touro do retorno.
+// Doses = Qtd da IATF + 1 por retorno.
 function bullSection(){
   const itens=[];
   seasonRows().forEach(r=>{
-    if(String(r.firstSire||'').trim())itens.push({c:Number(r.cycle),nome:String(r.firstSire).trim(),res:r.result,doses:Number(r.qty)||0});
-    if(String(r.returnSire||'').trim())itens.push({c:Number(r.cycle),nome:String(r.returnSire).trim(),res:r.returnResult,doses:1});
+    if(String(r.firstSire||'').trim())itens.push({c:Number(r.cycle),nome:String(r.firstSire).trim(),res:r.result,x:Number(r.qty)||0});
+    if(String(r.returnSire||'').trim())itens.push({c:Number(r.cycle),nome:String(r.returnSire).trim(),res:r.returnResult,x:1});
   });
   if(!itens.length)return '<div class="dempty">Nenhum touro usado nas IATFs desta estação ainda.</div>';
-  const map={};itens.forEach(i=>{const k=norm(i.nome);const b=map[k]=map[k]||{name:i.nome,itens:[],doses:0};b.itens.push(i);b.doses+=i.doses});
-  const all=Object.values(map).map(b=>({...b,...rateOf(b.itens,i=>i.res)})).sort((a,b)=>b.doses-a.doses||b.n-a.n||(b.rate??-1)-(a.rate??-1)||a.name.localeCompare(b.name,'pt-BR'));
   const ciclos=[...new Set(itens.map(i=>i.c))].sort((a,b)=>a-b);
-  const min=Number(db.settings.bullMinUses||5);
-  const cel=its=>{const st=rateOf(its,i=>i.res);if(!st.n)return '—';return `<strong style="color:#216440">${st.p}</strong> / <strong>${st.n}</strong> <span style="font-size:10.5px;font-weight:700;color:#233129;display:inline-block;min-width:40px">${pctTxt(st.rate)}</span>`};
-  const list=dashMore.bulls?all:all.slice(0,25);
-  return `<div style="overflow-x:auto"><table class="dtable fiv-compacta"><thead><tr><th class="rk">#</th><th>Touro</th>${ciclos.map(c=>`<th class="num">${c}ª IATF${cycleDate(c)?`<div style="font-weight:400;font-size:10px">${fmtDate(cycleDate(c))}</div>`:''}</th>`).join('')}<th class="num">Geral P / Total</th><th class="num">Doses</th><th style="min-width:150px">% de prenhez (geral)</th></tr></thead><tbody>
-  ${list.map((b,i)=>`<tr class="${b.n&&b.n<min?'few':''}"><td class="rk">${i+1}</td><td><strong>${esc(b.name)}</strong>${b.n&&b.n<min?'<span class="few-tag">poucos dados</span>':''}</td>${ciclos.map(c=>{const its=b.itens.filter(x=>x.c===c);return `<td class="num">${its.length?cel(its):''}</td>`}).join('')}<td class="num">${cel(b.itens)}</td><td class="num"><strong>${b.doses}</strong></td>
-  <td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GREEN}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}
-  </tbody></table></div>${all.length>25?`<button class="dmore" onclick="dashToggle('bulls')">${dashMore.bulls?'− Mostrar só 25':`+ Ver todos os touros (${all.length})`}</button>`:''}`;
+  const abas=[{k:'g',l:'Geral'},...ciclos.map(c=>({k:c,l:`${c}ª IATF`,d:cycleDate(c)?fmtDate(cycleDate(c)).slice(0,5):''}))];
+  return tabelaAbas('bulls',abas,itens,{nomeCol:'Touro',xLabel:'Doses',cor:DASH_GREEN,min:Number(db.settings.bullMinUses||5),vazio:'Sem resultado ainda.'});
 }
 function stockSection(){
   const all=db.semen.map(s=>({name:s.name,b:stockBalance(s)})).filter(x=>String(x.name||'').trim()).sort((a,b)=>b.b-a.b);
@@ -1341,34 +1354,17 @@ function fivSection(){
   const tipos=['Fresco','VIT','DT'];
   // tudo aqui vem só das linhas da FIV (Embriões está em espera e não entra no dashboard)
   const datas=fivDatasLista().filter(Boolean);
-  const fivCol=r=>{const i=datas.indexOf(r.data||'');return i<0?'s':i}; // coluna da 1ª, 2ª... FIV ('s' = sem data)
-  const temSemData=rows.some(r=>!r.data);
-  const byBull={};rows.forEach(r=>{const nm=String(r.sire||'').trim()||'(sem touro)';const k=norm(nm);const b=byBull[k]=byBull[k]||{name:nm,t:0,por:{},rows:[]};b.t++;b.rows.push(r);const c=fivCol(r);b.por[c]=(b.por[c]||0)+1});
-  const bulls=Object.values(byBull).map(b=>({...b,...rateOf(b.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||String(a.name).localeCompare(String(b.name),'pt-BR'));
-  const bl=dashMore.fivBulls?bulls:bulls.slice(0,10);
-  const cols=[...datas.map((d,i)=>({k:i,l:`${i+1}ª`,tt:fmtDate(d)})),...(temSemData?[{k:'s',l:'Sem data',tt:''}]:[])];
-  // célula do touro/doadora numa FIV: Prenhas / Total com resultado e a % embaixo
-  const pvCel=rs=>{const st=rateOf(rs,r=>r.resultado);
-    if(!st.n)return '—';
-    return `<strong style="color:#216440">${st.p}</strong><span> / </span><strong>${st.n}</strong> <span style="font-size:10.5px;font-weight:700;color:#233129;display:inline-block;min-width:40px">${pctTxt(st.rate)}</span>`};
+  const abasFiv=[{k:'g',l:'Geral'},...datas.map((d,i)=>({k:d,l:`${i+1}ª FIV`,d:fmtDate(d).slice(0,5)})),...(rows.some(r=>!r.data)?[{k:'',l:'Sem data'}]:[])];
   // um quadrinho por FIV (igual IATF): % geral grande + barra por tipo
   const fivCard=(titulo,data,rs,total)=>{const g=rateOf(rs,r=>r.resultado);const ts=tipos.map(t=>[t,rateOf(rs.filter(r=>r.tipo===t),r=>r.resultado)]).filter(([,st])=>st.n);
     return `<div class="dcard${total?' total':''}"><div class="hd"><div><div class="t">${esc(titulo)}</div>${data?`<div class="d">${esc(data)}</div>`:''}</div><div class="big">${pctTxt(g.rate)}<small>${g.p} de ${g.n} prenhas</small></div></div>
     ${ts.map(([t,st])=>barRow(t,DASH_GOLD,st)).join('')||'<div class="dempty">Sem resultado ainda</div>'}</div>`};
   const cards=`<div class="dash-grid" style="margin-top:12px">${fivCard('Todas as FIVs','',rows,true)}${datas.map((d,i)=>{const l=fivLocal(d);return fivCard(`${i+1}ª FIV`,fmtDate(d)+(l?' · '+l:''),rows.filter(r=>r.data===d),false)}).join('')}</div>`;
   const kpi=(l,v)=>`<div class="dkpi" style="--k:#b39a3b"><div class="l">${l}</div><div class="v">${v}</div></div>`;
-  // tabela por FIV (touros e doadoras no mesmo formato): Prenhas / Vazias em cada FIV com a % embaixo
-  const tabelaPorFiv=(titulo,nomeCol,lista,mais,rotulo)=>{const vis=dashMore[mais]?lista:lista.slice(0,25);
-    return `<div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">${titulo}</div></div>
-    ${lista.length?`<div style="overflow-x:auto"><table class="dtable fiv-compacta"><thead><tr><th>${nomeCol}</th>${cols.map(c=>`<th class="num" title="${esc(c.tt)}">${c.l} FIV${c.tt?`<div style="font-weight:400;font-size:10px">${c.tt}</div>`:''}</th>`).join('')}<th class="num">Geral P / Total</th><th class="num">Transf.</th><th style="min-width:150px">% de prenhez (geral)</th></tr></thead><tbody>${vis.map(b=>`<tr><td><strong>${esc(b.name)}</strong></td>${cols.map(c=>{const rs=b.rows.filter(r=>fivCol(r)===c.k);return `<td class="num">${rs.length?pvCel(rs):''}</td>`}).join('')}<td class="num">${pvCel(b.rows)}</td><td class="num"><strong>${b.t}</strong></td><td><div class="bar"><div class="tr"><div class="fl" style="width:${b.rate||0}%;background:${DASH_GOLD}"></div></div><b>${pctTxt(b.rate)}</b></div></td></tr>`).join('')}</tbody></table></div>
-    ${lista.length>25?`<button class="dmore" onclick="dashToggle('${mais}')">${dashMore[mais]?'− Mostrar só 25':`+ Ver ${rotulo} (${lista.length})`}</button>`:''}`:'<div class="dempty">Nenhuma FIV lançada nesta estação.</div>'}
-  </div>`};
-  const byDonor={};rows.forEach(r=>{const k=norm(r.rgdDoadora);(byDonor[k]=byDonor[k]||{name:r.rgdDoadora,rows:[]}).rows.push(r)});
-  const donors=Object.values(byDonor).map(d=>({name:d.name,rows:d.rows,t:d.rows.length,...rateOf(d.rows,r=>r.resultado)})).sort((a,b)=>b.t-a.t||(b.rate??-1)-(a.rate??-1)||String(a.name).localeCompare(String(b.name),'pt-BR',{numeric:true}));
+  const cardAbas=(titulo,id,campo)=>`<div class="dcard" style="margin-top:12px"><div class="hd"><div class="t">${titulo}</div></div>${tabelaAbas(id,abasFiv,rows.map(r=>({c:r.data||'',nome:String(r[campo]||'').trim()||'(sem touro)',res:r.resultado,x:1})),{nomeCol:campo==='sire'?'Touro':'Doadora',xLabel:'Transf.',cor:DASH_GOLD,vazio:'Sem resultado ainda.'})}</div>`;
   return `<div class="dash-kpis">${kpi('Transferências',rows.length)}${kpi('Prenhez FIV',pctTxt(g.rate))}${kpi('Prenhas',g.p)}${kpi('Aguardando resultado',aguard)}${kpi('Doadoras',doadoras)}${kpi('FIVs feitas',datas.length)}</div>
   ${rows.length?cards:''}
-  ${tabelaPorFiv('Touros mais usados na FIV','Touro',bulls,'fivBulls','todos os touros')}
-  ${tabelaPorFiv('% de prenhez por doadora','Doadora',donors,'donors','todas as doadoras')}`;
+  ${rows.length?cardAbas('% de prenhez por touro — FIV','fivBulls','sire')+cardAbas('% de prenhez por doadora','donors','rgdDoadora'):''}`;
 }
 function dashboard(){
   title('Dashboard','Resumo da '+activeSeason().name);
@@ -1390,7 +1386,15 @@ function dashboard(){
   <div class="dash-h fiv">FIV</div>
   ${fivSection()}`;
 }
-function printDashboard(){printHTML('Dashboard - '+activeSeason().name,$('#content').innerHTML,document.querySelector('style').textContent)}
+function printDashboard(){
+  openModal(`<h2>Imprimir Dashboard</h2>
+  <div class="actions" style="justify-content:flex-start;flex-wrap:wrap"><button class="primary" onclick="imprimirDash(true)">Imprimir com todas as IATFs e FIVs</button><button class="ghost" onclick="imprimirDash(false)">Só o que está na tela</button></div>`);
+}
+function imprimirDash(tudo){
+  closeModal();dashImprimirTudo=!!tudo;let html='';
+  try{dashboard();html=$('#content').innerHTML}finally{dashImprimirTudo=false;dashboard()}
+  printHTML('Dashboard - '+activeSeason().name,html,document.querySelector('style').textContent);
+} window.imprimirDash=imprimirDash;
 window.printDashboard=printDashboard;
 
 /* MATRIZES */
