@@ -181,6 +181,34 @@ body.authenticated #loginScreen{display:none}
 /* Dentro do App Nelore MRA o login é feito na porta de entrada: a tela de login antiga nunca aparece */
 #loginScreen{display:none!important}
 /* celular: o "← App" vira um ícone na barra de baixo */
+/* ===== CELULAR (até 600px) — página rola normal, tabela quase tela cheia, controles compactos ===== */
+@media(max-width:600px){
+  html,body{height:auto;overflow:auto}.app,main{height:auto}main{overflow:visible;padding:0 8px 84px}#content{overflow:visible;min-height:0}
+  .animals-page,.iatf-page,.stock-page,.embrioes-page,.fiv-page{height:auto;display:block}
+  .table-wrap,.animals-page .table-wrap,.iatf-page .table-wrap,.stock-page .table-wrap,.embrioes-page .table-wrap,.fiv-page .table-wrap{max-height:calc(100vh - 150px)!important;border-radius:10px}
+  header{min-height:0;flex-direction:row!important;align-items:center!important;justify-content:space-between;padding:10px 0 8px;margin-bottom:10px;gap:8px}
+  header h1{font-size:20px;margin:0}header p#pageSub{display:none}
+  .header-actions{flex-wrap:nowrap}.header-actions button{padding:6px 9px;font-size:12.5px;min-height:0}
+  .toolbar{gap:6px;margin-bottom:8px!important}.filters,.quick-add{gap:6px}
+  .toolbar button,.toolbar select,.quick-add button{padding:7px 10px;font-size:13px;min-height:0}
+  .out-actions{gap:6px;padding-left:0;border-left:0;margin-left:0}
+  .zoom-box{display:none!important}
+  .date-box{padding:4px 7px;gap:2px;flex-direction:column;align-items:stretch;flex:1 1 140px}.date-box label{font-size:10.5px}.date-box input{min-width:0!important;width:100%;padding:5px 6px;font-size:14px}
+  .nav span[data-curto]{font-size:0!important}.nav span[data-curto]::after{content:attr(data-curto);font-size:9.5px}
+  .fiv-resumo{gap:6px;flex-wrap:nowrap}.fiv-q{padding:5px 8px;flex:1 1 auto}.fiv-q-c{gap:8px;justify-content:space-between}.fiv-q-c div{min-width:0}.fiv-q-c span{font-size:10px}.fiv-q-c strong{font-size:16px}
+  /* arrastar linha não funciona no dedo: some a alça */
+  td.row-handle,table:has(td.row-handle) thead tr:first-child th:first-child{display:none}
+  /* RGD fica parado na esquerda ao rolar a tabela pro lado */
+  #animalTable :is(th,td):nth-child(2),#acasalTable :is(th,td):nth-child(2),#iatfTable :is(th,td):nth-child(3),#fivTable :is(th,td):nth-child(3){position:sticky;left:0;z-index:2;background:#fff;box-shadow:2px 0 0 #e3e7e4}
+  #animalTable thead th:nth-child(2),#acasalTable thead th:nth-child(2),#iatfTable thead th:nth-child(3),#fivTable thead th:nth-child(3){z-index:4;background:#f6f8f6}
+  .cell-input{min-height:34px}
+  /* menu de baixo com nome embaixo do ícone, rola pro lado */
+  .sidebar nav{justify-content:flex-start!important;gap:2px}
+  .nav{flex-direction:column;gap:1px!important;padding:5px 7px!important;font-size:17px;min-width:58px;flex:0 0 auto}
+  .nav span{display:block!important;font-size:9.5px;white-space:nowrap;line-height:1.1}
+  .modal{padding:8px}.modal-card{padding:16px 14px;max-height:94vh}
+  .dash-hero .hn .v{font-size:40px}
+}
 @media(max-width:600px){.sidebar>.voltar-app{margin:0 4px 0 0;padding:9px 10px;align-self:center}.sidebar>.voltar-app .va-txt{display:none}.sidebar nav{min-width:0;overflow-x:auto;scrollbar-width:none}}
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
 </style>
@@ -202,15 +230,15 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
 <aside class="sidebar">
   <div class="brand"><div class="logo">MRA</div><div><strong>Cobertura MRA</strong><span>Gestão reprodutiva</span></div></div>
   <nav>
-    <button data-page="dashboard" class="nav active">▦ <span>Dashboard</span></button>
+    <button data-page="dashboard" class="nav active">▦ <span data-curto="Painel">Dashboard</span></button>
     <button data-page="animals" class="nav">◉ <span>Matrizes</span></button>
     <button data-page="iatf" class="nav">✓ <span>IATF</span></button>
-    <button data-page="stock" class="nav">▤ <span>Estoque - Sêmen</span></button>
-    <button data-page="acasal" class="nav">⚤ <span>Acasalamentos</span></button>
+    <button data-page="stock" class="nav">▤ <span data-curto="Sêmen">Estoque - Sêmen</span></button>
+    <button data-page="acasal" class="nav">⚤ <span data-curto="Acasal.">Acasalamentos</span></button>
     <button data-page="fiv" class="nav" style="color:#a8dcc0">⚗ <span>FIV</span></button>
     <button data-page="embrioes" class="nav" style="color:#a8dcc0">❄ <span>Embriões</span></button>
-    <button data-page="deleted" class="nav" style="color:#e0827b">↺ <span>Exclusões</span></button>
-    <button data-page="settings" class="nav">⚙ <span>Configurações</span></button>
+    <button data-page="deleted" class="nav" style="color:#e0827b">↺ <span data-curto="Excluídas">Exclusões</span></button>
+    <button data-page="settings" class="nav">⚙ <span data-curto="Config.">Configurações</span></button>
   </nav>
   <div class="side-season"><label>Estação</label><select id="seasonHeader"></select></div>
   <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
@@ -690,6 +718,8 @@ function pageAllowed(p){return !ALLOWED_PAGES||ALLOWED_PAGES.includes(p)}
 function firstAllowedPage(){const all=['dashboard','animals','iatf','stock','acasal','fiv','embrioes','deleted','settings'];return all.find(pageAllowed)||'dashboard'}
 function applyAllowedPages(){$$('.nav').forEach(b=>b.style.display=pageAllowed(b.dataset.page)?'':'none');if(!pageAllowed(page)){page=firstAllowedPage();$$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page))}}
 function go(p){if(!pageAllowed(p))p=firstAllowedPage();page=p;$$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===p));render()}
+// celular: o menu de baixo rola pro lado — deixa o botão da tela aberta visível
+function mostrarNavAtiva(){const a=document.querySelector('.nav.active');if(a&&innerWidth<=600)try{a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}}
 window.go=go;
 function renderSeasonSelector(){
   $('#seasonHeader').innerHTML=db.seasons.map(s=>`<option value="${esc(s.id)}" ${s.id===db.meta.activeSeasonId?'selected':''}>${esc(s.name)}</option>`).join('')
@@ -804,6 +834,7 @@ function render(){
   else settings();
   {const hb=$('#helpBtn');if(hb)hb.hidden=!defaultNoticeTexts()[page]}
   restoreViewPosition(__view);
+  mostrarNavAtiva();
 }
 function setActions(h){$('#pageActions').innerHTML=h||''}
 
@@ -1855,7 +1886,7 @@ function quickAddAnimalToCycle(){
   <div class="quick-add" style="margin-bottom:10px"><button class="ghost" type="button" onclick="qaSelectAll(true)">Marcar visíveis</button><button class="ghost" type="button" onclick="qaSelectAll(false)">Desmarcar tudo</button><span class="muted" id="qaCount" style="margin-left:auto;align-self:center"></span></div>
   <div style="max-height:340px;overflow:auto;border:1px solid #e3e7e4;border-radius:8px;padding:10px" id="qaList">${linhas}</div>
   <div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="primary" onclick="saveQuickAnimal()">Adicionar selecionadas</button></div>`);
-  setTimeout(()=>{qaApplyFilters();const el=$('#qaSearch');if(el)el.focus()},60)
+  setTimeout(()=>{qaApplyFilters();const el=$('#qaSearch');if(el&&innerWidth>600)el.focus()},60)
 } window.quickAddAnimalToCycle=quickAddAnimalToCycle;
 function qaApplyFilters(){
   const cats=new Set($$('.qa-cat:checked').map(x=>x.value));
