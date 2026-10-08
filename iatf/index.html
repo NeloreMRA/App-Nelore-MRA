@@ -21,9 +21,9 @@
 .nav{border:0;background:transparent;color:#dce9e2;padding:12px 14px;text-align:left;border-radius:9px;font-size:14px;cursor:pointer;display:flex;gap:10px;align-items:center}
 .nav:hover,.nav.active{background:#24583f;color:#fff}.sidebar-foot{margin-top:auto;font-size:11px;opacity:.82;padding:12px;display:flex;align-items:center;gap:8px}
 .dot{width:8px;height:8px;border-radius:50%;background:#e0b84f;box-shadow:0 0 0 2px #ffffff18;transition:background .2s}main{padding:0 32px 20px;min-width:0;height:100vh;overflow:hidden;display:flex;flex-direction:column}
-header{min-height:96px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e1e6e2;margin-bottom:24px;gap:14px}
+header{min-height:62px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e1e6e2;margin-bottom:12px;gap:14px}
 #content{flex:1 1 auto;min-height:0;overflow-y:auto}
-h1{font-size:24px;margin:0 0 5px}header p{margin:0;color:#768078;font-size:13px}.header-actions,.filters,.quick-add,.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+h1{font-size:22px;margin:0 0 2px}header p{margin:0;color:#768078;font-size:12px}.header-actions,.filters,.quick-add,.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 button{font:inherit}.primary,.ghost,.danger-btn{padding:9px 13px;border-radius:8px;cursor:pointer}.primary{border:0;background:#1f6a49;color:white}.primary:hover{background:#185b3e}
 .ghost{background:white;border:1px solid #d9dfda;color:#334139}.ghost:disabled{opacity:.45;cursor:not-allowed}.danger-btn{background:#fff;border:1px solid #e7bbb5;color:#a33627}
 .input,select{border:1px solid #d7ded9;background:#fff;border-radius:8px;padding:8px 9px;color:#233129;min-height:36px}.input{min-width:180px}
@@ -58,8 +58,8 @@ td{padding:8px 10px;border-bottom:1px solid #edf0ee;white-space:nowrap}tbody tr:
 .toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .out-actions{display:flex;gap:8px;align-items:center;margin-left:auto;padding-left:12px;border-left:1px solid #e1e6e2}
 @media(max-width:700px){.out-actions{margin-left:0;border-left:0;padding-left:0}}
-.fiv-resumo{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 10px}.fiv-q{border:1px solid #d9e4dc;background:#fff;border-radius:10px;padding:7px 12px}.fiv-q-t{font-size:10px;font-weight:800;color:#69746c;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}.fiv-q-c{display:flex;gap:16px}.fiv-q-c div{display:flex;flex-direction:column;align-items:center;min-width:44px}.fiv-q-c span{font-size:11px;color:#4a5850}.fiv-q-c strong{font-size:19px;line-height:1.15}
-.date-box{display:flex;align-items:center;gap:7px;background:#edf6f0;border:1px solid #cfe3d5;border-radius:8px;padding:6px 9px}.date-box label{font-size:12px;font-weight:650}
+#pageActions{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}#pageActions .ghost{padding:8px 12px;font-size:13px}.fiv-resumo{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 10px}.fiv-resumo.inline{margin:0 0 0 6px;gap:6px}.fiv-resumo.inline .fiv-q{padding:3px 10px}.fiv-resumo.inline .fiv-q-t{display:none}.fiv-resumo.inline .fiv-q-c{gap:12px}.fiv-resumo.inline .fiv-q-c span{font-size:10px}.fiv-resumo.inline .fiv-q-c strong{font-size:15px}.fiv-q{border:1px solid #d9e4dc;background:#fff;border-radius:10px;padding:7px 12px}.fiv-q-t{font-size:10px;font-weight:800;color:#69746c;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}.fiv-q-c{display:flex;gap:16px}.fiv-q-c div{display:flex;flex-direction:column;align-items:center;min-width:44px}.fiv-q-c span{font-size:11px;color:#4a5850}.fiv-q-c strong{font-size:19px;line-height:1.15}
+.date-box{display:flex;align-items:center;gap:7px;background:#edf6f0;border:1px solid #cfe3d5;border-radius:8px;padding:3px 8px}.date-box .input{padding:5px 7px;min-height:0}.date-box label{font-size:12px;font-weight:650}
 .iatf-category-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid #d9dfda;border-radius:8px;padding:6px 9px}.iatf-category-box>span{font-size:11px;font-weight:700;color:#657169;margin-right:2px}.iatf-cat-check{display:flex;align-items:center;gap:5px;padding:4px 7px;border-radius:7px;cursor:pointer;font-size:12px;user-select:none}.iatf-cat-check input{margin:0}.iatf-cat-check.vacas{background:#e7f0ff;color:#245a9c}.iatf-cat-check.primi{background:#fff0da;color:#8a5919}.iatf-cat-check.preco{background:#efe8ff;color:#6743a0}
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.clickable{cursor:pointer}
 .help-btn{margin-left:10px;width:24px;height:24px;border-radius:50%;border:1px solid #cfe5d5;background:#eff8f2;color:#1f6a49;font-weight:800;font-size:13px;cursor:pointer;vertical-align:middle;line-height:1;padding:0}.help-btn:hover{background:#1f6a49;color:#fff}
@@ -188,7 +188,7 @@ body.authenticated #loginScreen{display:none}
   .table-wrap,.animals-page .table-wrap,.iatf-page .table-wrap,.stock-page .table-wrap,.embrioes-page .table-wrap,.fiv-page .table-wrap{max-height:calc(100vh - 150px)!important;border-radius:10px}
   header{min-height:0;flex-direction:row!important;align-items:center!important;justify-content:space-between;padding:10px 0 8px;margin-bottom:10px;gap:8px}
   header h1{font-size:20px;margin:0}header p#pageSub{display:none}
-  .header-actions{flex-wrap:nowrap}.header-actions button{padding:6px 9px;font-size:12.5px;min-height:0}
+  .header-actions{flex-wrap:wrap;justify-content:flex-end}#pageActions{display:flex;gap:6px;flex-wrap:wrap}.header-actions button{padding:6px 9px;font-size:12.5px;min-height:0}
   .toolbar{gap:6px;margin-bottom:8px!important}.filters,.quick-add{gap:6px}
   .toolbar button,.toolbar select,.quick-add button{padding:7px 10px;font-size:13px;min-height:0}
   .out-actions{gap:6px;padding-left:0;border-left:0;margin-left:0}
@@ -1374,11 +1374,14 @@ function dashboard(){
   title('Dashboard','Resumo da '+activeSeason().name);
   setActions(`<button class="ghost" onclick="printDashboard()">🖨 Imprimir página</button>`);
   const g=rateOf(seasonRows(),r=>r.result);
+  // geral do topo = IATF + FIV somadas (prenhas / IATFs e transferências com resultado)
+  const gf=rateOf(seasonFiv().filter(r=>String(r.rgdDoadora||'').trim()),r=>r.resultado);
+  const tudo={p:g.p+gf.p,n:g.n+gf.n};tudo.rate=tudo.n?tudo.p/tudo.n*100:null;
   const oc=finalOutcomeCounts();
   const kpi=(l,v,c)=>`<div class="dkpi" style="--k:${c}"><div class="l">${l}</div><div class="v">${v}</div></div>`;
   $('#content').innerHTML=`
   <div class="dash-hero"><img src="${MRA_LOGO}" alt="Nelore MRA"><div><div class="bt">Nelore MRA</div><div class="bs">Fazenda Paraíso · ${esc(activeSeason().name)}</div></div>
-    <div class="hn"><div class="v">${pctTxt(g.rate)}</div><div class="l">Prenhez geral nas IATFs · ${g.p} de ${g.n}</div></div></div>
+    <div class="hn"><div class="v">${pctTxt(tudo.rate)}</div><div class="l">Prenhez geral (IATF + FIV) · ${tudo.p} de ${tudo.n}</div><div class="l" style="opacity:.8;margin-top:2px">IATF ${pctTxt(g.rate)} (${g.p} de ${g.n}) · FIV ${pctTxt(gf.rate)} (${gf.p} de ${gf.n})</div></div></div>
   <div class="dash-kpis">${kpi('Matrizes',seasonAnimals().length,'#5d6a62')}${kpi('Prenhas',oc.P,'#216440')}${kpi('Vazias',oc.V,'#c08a2e')}${kpi('PRT',oc.PRT,'#b8483a')}${kpi('Sem resultado',oc.none,'#9aa49d')}${kpi('Doses em saldo',db.semen.reduce((a,s)=>a+stockBalance(s),0),'#1f6a49')}</div>
   <div class="dash-h">% de prenhez por IATF</div>
   ${iatfSection()}
@@ -1644,7 +1647,7 @@ function toggleIatfCategory(cat,checked){
 } window.toggleIatfCategory=toggleIatfCategory;
 function selectIatfCycle(v){iatfCycle=Number(v);iatfCategory='';excelFilters.iatf={};iatfPage()} window.selectIatfCycle=selectIatfCycle;
 function iatfPage(){
-  title('IATF','Lançamentos da '+activeSeason().name);setActions('');
+  title('IATF','Lançamentos da '+activeSeason().name);setActions(`${zoomControlsHTML()}<button class="ghost" onclick="openIatfOutput('export')">⬇ Excel</button><button class="ghost" onclick="openIatfOutput('print')">🖨 Imprimir</button>`);
   $('#content').innerHTML=`
   ${bullDatalist()}${animalDatalist()}<datalist id="resultList"><option value="P"></option><option value="V"></option><option value="PRT"></option></datalist>
   <div class="iatf-page">
@@ -1653,12 +1656,11 @@ function iatfPage(){
       <select id="cycleSel" onchange="selectIatfCycle(this.value)">${Array.from({length:maxIatfCycle()},(_,i)=>i+1).map(c=>`<option value="${c}" ${c===iatfCycle?'selected':''}>${c}ª IATF</option>`).join('')}</select><button class="ghost" onclick="createNextIatf()">+ Criar IATF</button>
       <div class="date-box"><label>Data da ${iatfCycle}ª IATF</label><input type="date" class="input" style="min-width:145px" value="${esc(cycleDate(iatfCycle))}" onchange="setCycleDate(${iatfCycle},this.value)"></div><div class="date-box"><label>Data do Toque</label><input type="date" class="input" style="min-width:145px" value="${esc(toqueDate(iatfCycle))}" onchange="setToqueDate(${iatfCycle},this.value)"></div>
     </div>
-    <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="openIatfOutput('export')">⬇ Excel</button><button class="ghost" onclick="openIatfOutput('print')">🖨 Imprimir</button></div>
   </div>
-  <div id="iatfResumo" class="fiv-resumo"></div>
   <div class="toolbar">
     <div class="filters">
       <button class="primary" onclick="quickAddAnimalToCycle()">+ Matriz(es) nesta IATF</button><button class="ghost" onclick="openIatfExcluded()">Excluídas desta IATF (${iatfExcludedCurrent().length})</button><button class="ghost" onclick="openPrtPanel()">⟳ PRTs (${prtAnimals().length})</button><button class="ghost" onclick="openReturnsPanel()">↩ Retornos (${returnRows().length})</button>
+      <div id="iatfResumo" class="fiv-resumo inline"></div>
     </div>
   </div>
   <div id="iatfTable"></div>
@@ -2519,7 +2521,7 @@ function fivRowsFiltered(){
 }
 function fivPage(){
   title('FIV','RGD Doadora livre; touro do Estoque de Sêmen. Lançamentos pertencem à estação '+activeSeason().name+'.');
-  setActions('');
+  setActions(`${zoomControlsHTML()}<button class="ghost" onclick="openFivOutput('export')">⬇ Excel</button><button class="ghost" onclick="openFivOutput('print')">🖨 Imprimir</button>`);
   if(excelFilters.fiv)delete excelFilters.fiv.data; // a data agora é escolhida em cima
   const lista=fivDatasLista(),atual=fivAtual();
   $('#content').innerHTML=`
@@ -2528,15 +2530,13 @@ function fivPage(){
   <div class="toolbar" style="margin-bottom:9px">
     <div class="filters">
       ${lista.length?`<select id="fivSel" onchange="selectFiv(this.value)">${lista.map(d=>`<option value="${esc(d)}" ${d===atual?'selected':''}>${esc(fivNome(d))}</option>`).join('')}</select>`:''}<button class="ghost" onclick="openCriarFiv()">+ Criar FIV</button>
-      ${atual!==null?`<div class="date-box"><label>Data da FIV</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)"></div><div class="date-box"><label>Data do Toque</label><input type="date" class="input" style="min-width:145px" value="${esc(fivToque(atual))}" onchange="setFivToque(this.value)"></div><div class="date-box"><label>Local</label><input class="input" id="fivLocal" style="min-width:180px" value="${esc(fivLocal(atual))}" onchange="setFivLocal(this.value)" onkeydown="if(event.key==='Enter')this.blur()"></div>`:''}
-      ${atual!==null?`<button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirFivVazia()">Excluir esta FIV</button>`:''}
+      ${atual!==null?`<div class="date-box"><label>Data da FIV</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)"></div><div class="date-box"><label>Data do Toque</label><input type="date" class="input" style="min-width:145px" value="${esc(fivToque(atual))}" onchange="setFivToque(this.value)"></div><div class="date-box"><label>Local</label><input class="input" id="fivLocal" style="min-width:0;width:150px" value="${esc(fivLocal(atual))}" onchange="setFivLocal(this.value)" onkeydown="if(event.key==='Enter')this.blur()"></div>`:''}
     </div>
-    <div class="out-actions">${zoomControlsHTML()}<button class="ghost" onclick="openFivOutput('export')">⬇ Excel</button><button class="ghost" onclick="openFivOutput('print')">🖨 Imprimir</button></div>
   </div>
   ${atual===null?`<div class="notice">Nenhuma FIV nesta estação. Clique em <strong>+ Criar FIV</strong> e escolha a data.</div>`:`
-  <div id="fivResumo" class="fiv-resumo"></div>
   <div class="toolbar">
-    <div class="quick-add"><button class="primary" onclick="addBlankFiv()">+ Linha em branco</button><button class="ghost" onclick="openFivEntryModal()">+ Cadastrar em tela</button><button class="ghost" id="fivPrtBtn" onclick="openFivPrt()">⟳ PRTs</button></div>
+    <div class="quick-add"><button class="primary" onclick="addBlankFiv()">+ Linha em branco</button><button class="ghost" onclick="openFivEntryModal()">+ Cadastrar em tela</button><button class="ghost" id="fivPrtBtn" onclick="openFivPrt()">⟳ PRTs</button><div id="fivResumo" class="fiv-resumo inline"></div></div>
+    <button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirFivVazia()">Excluir esta FIV</button>
   </div>
   <div id="fivTable"></div>`}
   </div>`;
