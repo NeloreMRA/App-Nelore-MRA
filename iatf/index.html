@@ -1483,7 +1483,7 @@ function renderAnimalTable(){
   const rows=animalRowsFiltered();
   const total=seasonAnimals().length;
   root.innerHTML=`<div style="display:flex;justify-content:flex-end;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c"><strong style="color:#233129;margin-right:4px">${rows.length}</strong> matrizes exibidas de <strong style="color:#233129;margin:0 4px">${total}</strong> cadastradas</div><div class="table-wrap"><table><thead>
-  <tr><th></th>${animalSelecting?'<th>✓</th>':''}<th>${excelHead('animals','rgd','RGD')}</th><th>${excelHead('animals','firstSire','1º Acasalamento')}</th><th>${excelHead('animals','category','Categoria')}</th><th>${excelHead('animals','status','Situação')}</th><th>${excelHead('animals','curCycle','IATF atual')}</th><th>${excelHead('animals','createdAt','Criada em')}</th><th></th></tr>
+  <tr><th></th>${animalSelecting?'<th>✓</th>':''}<th>${excelHead('animals','rgd','RGD')}</th><th>${excelHead('animals','firstSire','1º Acasalamento')}</th><th>${excelHead('animals','category','Categoria')}</th><th>${excelHead('animals','status','Situação')}</th><th>${excelHead('animals','curCycle','IATF atual')}</th><th>${excelHead('animals','obs','Observação')}</th><th>${excelHead('animals','createdAt','Criada em')}</th><th></th></tr>
   </thead><tbody>${rows.map(a=>`<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'animals','${a.id}')">
   ${rowHandleTd('animals',a.id)}
   ${animalSelecting?`<td><input class="checkbox" type="checkbox" ${animalSelected.has(a.id)?'checked':''} onchange="selectAnimal('${a.id}',this.checked)"></td>`:''}
@@ -1492,6 +1492,7 @@ function renderAnimalTable(){
   <td><select class="cell-input category-select nav-cat ${catClass(a.category)}" style="min-width:120px" onkeydown="iatfEnter(event,'nav-cat')" onchange="editAnimalCell('${a.id}','category',this.value,this)">${categories().map(x=>`<option ${x===a.category?'selected':''}>${x}</option>`).join('')}</select></td>
   <td><span class="badge ${resClass(a.status)}">${statusLabel(a.status)}</span></td>
   <td><input class="cell-input nav-cycle" type="number" min="1" step="1" style="width:70px;text-align:center" value="${a.curCycle}" placeholder="—" title="Número da IATF em que essa matriz está. Vazio = ainda não está em nenhuma." onkeydown="iatfEnter(event,'nav-cycle')" onchange="setAnimalIatfCycle('${a.id}',this.value,this)"></td>
+  <td><input class="cell-input nav-obs" style="min-width:190px" value="${esc(a.obs||'')}" onkeydown="iatfEnter(event,'nav-obs')" onchange="editAnimalCell('${a.id}','obs',this.value,this)"></td>
   <td style="white-space:nowrap"><input class="cell-input nav-created" type="date" style="width:135px" value="${esc(a.createdAt||'')}" onkeydown="iatfEnter(event,'nav-created')" onchange="editAnimalCell('${a.id}','createdAt',this.value,this)"></td>
   <td><button class="mini" onclick="deleteAnimal('${a.id}')">Excluir</button></td></tr>`).join('')}</tbody></table></div>`;
   restoreViewPosition(__view);
@@ -1516,6 +1517,8 @@ function editAnimalCell(id,key,val,el){
     if(el){el.classList.remove('cat-vacas','cat-primi','cat-preco');el.classList.add(catClass(val));}
   }else if(key==='createdAt'){
     a.createdAt=val; // pode deixar vazio também, sem problema
+  }else if(key==='obs'){
+    a.obs=val;
   }
   el.dataset.prev=val;
   // Não recria a tabela a cada edição: mantém foco e rolagem exatamente onde estão.
@@ -2066,12 +2069,13 @@ function renderAcasalTable(){
   const rows=acasalRowsFiltered();
   const total=acasalDaData().length;
   root.innerHTML=`<div style="display:flex;justify-content:flex-end;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c"><strong style="color:#233129;margin-right:4px">${rows.length}</strong> linha(s) exibida(s) de <strong style="color:#233129;margin:0 4px">${total}</strong></div><div class="table-wrap"><table><thead>
-  <tr><th></th><th>${excelHead('acasal','rgd','RGD')}</th><th>${excelHead('acasal','category','Categoria')}</th>${ACASAL_COLS.map(([k,l])=>`<th>${excelHead('acasal',k,l)}</th>`).join('')}<th></th></tr>
+  <tr><th></th><th>${excelHead('acasal','rgd','RGD')}</th><th>${excelHead('acasal','category','Categoria')}</th>${ACASAL_COLS.map(([k,l])=>`<th>${excelHead('acasal',k,l)}</th>`).join('')}<th>${excelHead('acasal','obs','Observação')}</th><th></th></tr>
   </thead><tbody>${rows.map(a=>`<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'acasal','${a.id}')">
   ${rowHandleTd('acasal',a.id)}
   <td><input class="cell-input nav-a-rgd" style="font-weight:700;min-width:110px" value="${esc(a.rgd)}" onkeydown="iatfEnter(event,'nav-a-rgd')" onchange="editAcasalCell('${a.id}','rgd',this.value,this)"></td>
   <td><select class="cell-input category-select nav-a-cat ${catClass(a.category)}" style="min-width:120px" onkeydown="iatfEnter(event,'nav-a-cat')" onchange="editAcasalCell('${a.id}','category',this.value,this)"><option value="">—</option>${categories().map(x=>`<option ${x===a.category?'selected':''}>${x}</option>`).join('')}</select></td>
   ${ACASAL_COLS.map(([k])=>`<td><input class="cell-input nav-a-${k}" list="bullsList" style="min-width:190px" value="${esc(a[k]||'')}" onkeydown="iatfEnter(event,'nav-a-${k}')" onfocus="this.select()" onchange="editAcasalCell('${a.id}','${k}',this.value,this)"></td>`).join('')}
+  <td><input class="cell-input nav-a-obs" style="min-width:190px" value="${esc(a.obs||'')}" onkeydown="iatfEnter(event,'nav-a-obs')" onchange="editAcasalCell('${a.id}','obs',this.value,this)"></td>
   <td><button class="mini" onclick="deleteAcasal('${a.id}')">Excluir</button></td></tr>`).join('')}</tbody></table></div>`;
   restoreViewPosition(__view);
 }
@@ -2094,14 +2098,14 @@ function exportAcasalToMatrizesTemplate(){
   if(!needXLSX())return;
   const rows=acasalRowsFiltered().filter(a=>String(a.rgd||'').trim());
   if(!rows.length)return alert('Nenhuma linha com RGD pra exportar (confira os filtros da tabela).');
-  const out=rows.map(a=>({RGD:a.rgd,'1_ACASALAMENTO':a.iatf1||'',CATEGORIA:a.category||''}));
+  const out=rows.map(a=>({RGD:a.rgd,'1_ACASALAMENTO':a.iatf1||'',CATEGORIA:a.category||'',OBSERVACAO:a.obs||''}));
   jsonToXlsx(out,'matrizes_para_subir.xlsx','IMPORTAR');
 } window.exportAcasalToMatrizesTemplate=exportAcasalToMatrizesTemplate;
 function exportAcasalFull(){
   if(!needXLSX())return;
   const rows=acasalRowsFiltered().filter(a=>String(a.rgd||'').trim());
   if(!rows.length)return alert('Nenhuma linha com RGD pra exportar (confira os filtros da tabela).');
-  const out=rows.map(a=>({RGD:a.rgd,CATEGORIA:a.category||'','1_IATF':a.iatf1||'','2_IATF':a.iatf2||'','3_IATF':a.iatf3||'','4_IATF':a.iatf4||'','1_FIV':a.fiv1||'','2_FIV':a.fiv2||'',DATA:fmtDate(a.createdAt||'')}));
+  const out=rows.map(a=>({RGD:a.rgd,CATEGORIA:a.category||'','1_IATF':a.iatf1||'','2_IATF':a.iatf2||'','3_IATF':a.iatf3||'','4_IATF':a.iatf4||'','1_FIV':a.fiv1||'','2_FIV':a.fiv2||'',OBSERVACAO:a.obs||'',DATA:fmtDate(a.createdAt||'')}));
   jsonToXlsx(out,'acasalamentos.xlsx','Acasalamentos');
 } window.exportAcasalFull=exportAcasalFull;
 
@@ -2170,7 +2174,7 @@ function importAcasalExcel(file){
         if(v && !sireExists(v)){errs.push(`Linha ${line}: touro "${v}" (${label}) não existe no Estoque.`);return}
         vals[k]=v;
       });
-      prepared.push({rgd,cat,...vals});
+      prepared.push({rgd,cat,...vals,obs:String(pick(r,['OBSERVACAO','OBSERVAÇÃO','OBS'])||'').trim()});
     });
     if(errs.length){showImportErrors('Importação com problemas',`Corrija ${errs.length} linha(s) e envie o Excel novamente. Nada foi importado.`,errs);return}
     if(!prepared.length)return alert('Nenhum RGD encontrado no arquivo.');
@@ -2182,10 +2186,12 @@ function importAcasalExcel(file){
       if(existing){
         if(x.cat)existing.category=x.cat;
         ACASAL_COLS.forEach(([k])=>{if(x[k])existing[k]=x[k]});
+        if(x.obs)existing.obs=x.obs;
         atualizados++;
       }else{
         const novo={id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:x.rgd,category:x.cat||'',createdAt:acasalAtual()||todayISO()};
         ACASAL_COLS.forEach(([k])=>{novo[k]=x[k]||''});
+        novo.obs=x.obs||'';
         db.acasalamentos.push(novo);
         novos++;
       }
@@ -3071,7 +3077,7 @@ async function downloadAnimalTemplate(){
   if(typeof ExcelJS==='undefined'){alert('A biblioteca de Excel avançado não carregou. Verifique sua internet e tente de novo.');return}
   const wb=new ExcelJS.Workbook();
   const ws=wb.addWorksheet('IMPORTAR');
-  ws.columns=[{header:'RGD',key:'rgd',width:20},{header:'1_ACASALAMENTO',key:'sire',width:34},{header:'CATEGORIA',key:'cat',width:18}];
+  ws.columns=[{header:'RGD',key:'rgd',width:20},{header:'1_ACASALAMENTO',key:'sire',width:34},{header:'CATEGORIA',key:'cat',width:18},{header:'OBSERVACAO',key:'obs',width:34}];
   ws.getRow(1).font={bold:true};
   const bulls=sireNames();
   const cats=categories();
@@ -3120,11 +3126,12 @@ function importAnimalsExcel(file){
       if(!rgd)return;
       const sire=String(pick(r,['1_ACASALAMENTO','1 ACASALAMENTO','1º ACASALAMENTO'])||'').trim();
       let cat=String(pick(r,['CATEGORIA'])||'').trim();
+      const obs=String(pick(r,['OBSERVACAO','OBSERVAÇÃO','OBS'])||'').trim();
       if(sire && !sireExists(sire)){errs.push(`Linha ${line}: touro "${sire}" não existe no Estoque.`);return}
       if(cat){const m=matchList(categories(),cat);if(!m){errs.push(`Linha ${line}: categoria "${cat}" não existe (use: ${categories().join(', ')}).`);return}cat=m}
       if(seen.has(norm(rgd))){errs.push(`Linha ${line}: RGD "${rgd}" duplicado no arquivo.`);return}
       seen.add(norm(rgd));
-      prepared.push({rgd,sire,cat});
+      prepared.push({rgd,sire,cat,obs});
     });
     if(errs.length){showImportErrors('Importação com problemas',`Corrija ${errs.length} linha(s) e envie o Excel novamente. Nenhuma matriz foi importada.`,errs);return}
     if(!prepared.length)return alert('Nenhum RGD encontrado no arquivo.');
@@ -3135,9 +3142,10 @@ function importAnimalsExcel(file){
       if(existing){
         if(x.sire&&norm(x.sire)!==norm(currentSire(existing)))setAnimalSire(existing,x.sire);
         if(x.cat)existing.category=x.cat;
+        if(x.obs)existing.obs=x.obs;
         atualizados++;
       }else{
-        db.animals.push({id:uid('a'),seasonId:db.meta.activeSeasonId,rgd:x.rgd,firstSire:x.sire,category:x.cat||categories()[0],active:true,createdAt:todayISO()});
+        db.animals.push({id:uid('a'),seasonId:db.meta.activeSeasonId,rgd:x.rgd,firstSire:x.sire,category:x.cat||categories()[0],obs:x.obs||'',active:true,createdAt:todayISO()});
         novos++;
       }
       // sincroniza com lançamentos de IATF já existentes dessa matriz nesta estação
@@ -3180,7 +3188,7 @@ function confirmarImport(titulo,itens,aplicar){
   <div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="primary" onclick="__importOk&&__importOk()">Confirmar e subir</button></div>`);
 }
 function showImportErrors(titleText,sub,errs){openModal(`<h2>${esc(titleText)}</h2><div class="notice">${esc(sub)}</div><div class="error-list">${errs.map(e=>`<div>• ${esc(e)}</div>`).join('')}</div><div class="actions"><button class="primary" onclick="closeModal()">Entendi</button></div>`)}
-function exportAnimals(){if(!needXLSX())return;const rows=animalRowsFiltered().map(a=>({RGD:a.rgd,'1_ACASALAMENTO':a.firstSire,CATEGORIA:a.category,SITUACAO:statusLabel(a.status)}));jsonToXlsx(rows,'matrizes_'+fileSafe(activeSeason().name)+'.xlsx','Matrizes')} window.exportAnimals=exportAnimals;
+function exportAnimals(){if(!needXLSX())return;const rows=animalRowsFiltered().map(a=>({RGD:a.rgd,'1_ACASALAMENTO':a.firstSire,CATEGORIA:a.category,SITUACAO:statusLabel(a.status),OBSERVACAO:a.obs||''}));jsonToXlsx(rows,'matrizes_'+fileSafe(activeSeason().name)+'.xlsx','Matrizes')} window.exportAnimals=exportAnimals;
 function exportIatfRows(rows,comResumo){
   const nome='iatf_'+fileSafe(activeSeason().name)+'.xlsx';
   if(!comResumo)return downloadSheets(iatfSheets(rows),nome);
