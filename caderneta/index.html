@@ -144,7 +144,10 @@ textarea.input{min-height:96px;resize:vertical}
 .pz-top select:focus,.pz-top input:focus{border-color:#72a386;box-shadow:0 0 0 3px #72a38622}
 #pzEst{min-width:120px;font-weight:800;color:var(--verde-esc)}
 .pz-rgd{flex:1 1 200px;max-width:280px}.pz-obsc{flex:1 1 200px;max-width:320px}.pz-obsc input{width:100%}.pz-rgd input{width:100%;font-weight:800;font-size:17px}
-.pz-achou{font-weight:400;color:#9a5a12}
+.pz-rgd{position:relative}
+.pz-ja{display:none;position:absolute;right:7px;bottom:7px;height:28px;align-items:center;gap:5px;border-radius:7px;padding:0 10px;font-size:13px;font-weight:800;color:#fff;pointer-events:none;white-space:nowrap}
+.pz-ja.P,.pz-ja.V,.pz-ja.T{display:inline-flex}.pz-ja.P{background:#1f7a4d}.pz-ja.V{background:#c0392b}.pz-ja.T{background:#d9822b}
+.pz-rgd.tem input{padding-right:150px;border-color:#e0a23c;box-shadow:0 0 0 3px #f5c86a55;background:#fffaf0}
 .pz-bts{display:flex;gap:8px}.pz-b{border:0;border-radius:11px;padding:11px 16px;height:auto;font-weight:800;font-size:15.5px;color:#fff}
 .pz-b.P{background:#1f7a4d}.pz-b.V{background:#c0392b}.pz-b.T{background:#d9822b}
 .pz-chips{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px}.pz-chips::-webkit-scrollbar{display:none}.pz-chips .aviso-f{flex:none;white-space:nowrap}
@@ -163,6 +166,7 @@ textarea.input{min-height:96px;resize:vertical}
   .abas{width:100%}.aba{flex:1;padding:9px 6px}
   .fab{display:block}
   .pz-top .campo{flex:1 1 100%}.pz-top .campo:first-child{flex:0 0 105px}.pz-top .pz-rgd{flex:1 1 0;max-width:none}.pz-obsc{max-width:none}#pzEst{width:100%}
+  .pz-top{align-items:flex-start}.pz-ja.P,.pz-ja.V,.pz-ja.T{position:static;display:flex;justify-content:center;margin-top:6px;height:32px;font-size:14.5px}.pz-rgd.tem input{padding-right:11px}
   .pz-bts{width:100%}.pz-b{flex:1;padding:15px 6px;font-size:16.5px}
   .pz-reg{grid-template-columns:minmax(0,1fr) 118px 30px;row-gap:0}.pz-reg .info{grid-column:1;grid-row:2}.pz-reg .info.por,.pz-reg .pz-obs,.pz-cab .info.obs{display:none!important}.pz-obs-cel{display:inline}.pz-reg .info{white-space:normal}.pz-reg .rgd{grid-row:1}
   .pz-reg .pz-sel{grid-column:2;grid-row:1/3}.pz-reg .xdel{grid-column:3;grid-row:1/3}
@@ -199,7 +203,7 @@ textarea.input{min-height:96px;resize:vertical}
     <div id="secPz" class="hidden">
       <div class="pz-top">
         <div class="campo"><label>Estação</label><select id="pzEst" onchange="trocarEstacao(this.value)"></select></div>
-        <div class="campo pz-rgd"><label>RGD <span class="pz-achou" id="pzAchou"></span></label><input id="pzRgd" placeholder="MRA 1234" autocapitalize="characters" autocomplete="off" oninput="desenharPz()"></div>
+        <div class="campo pz-rgd"><label>RGD</label><input id="pzRgd" placeholder="MRA 1234" autocapitalize="characters" autocomplete="off" oninput="desenharPz()"><span class="pz-ja" id="pzAchou"></span></div>
         <div class="campo pz-obsc"><label>Observação</label><input id="pzObs" placeholder="(se quiser)" autocomplete="off"></div>
         <div class="campo pz-desk"><label>Resultado</label><select id="pzRes"><option value="">—</option><option>Prenha</option><option>Vazia</option><option>PRT</option></select></div>
         <div class="campo pz-desk"><label>&nbsp;</label><button class="btn btn-primary" onclick="lancarPz($('#pzRes').value)">+ Lançar</button></div>
@@ -591,7 +595,7 @@ function desenharPz(){
   $('#pzChips').innerHTML=`<button class="pill ${!filtroPz?'on':''}" onclick="filtroPzSet('')">Todas<b>${n}</b></button>`
     +RES_PZ.map(([r,l])=>{const c=cont(r);return `<button class="pill ${l} ${filtroPz===r?'on':''}" onclick="filtroPzSet('${r}')">${r}<b>${c}</b>${n&&r==='Prenha'?` · ${Math.round(c*100/n)}%`:''}</button>`}).join('');
   const typed=$('#pzRgd').value.trim(),ja=typed?pz[chaveRgd(typed)]:null;
-  $('#pzAchou').innerHTML=ja&&ja.resultado?`· já está <b>${esc(ja.resultado)}</b>`:'';
+  const tem=!!(ja&&ja.resultado);$('#pzAchou').className='pz-ja '+(tem?letraPz(ja.resultado):'');$('#pzAchou').textContent=tem?'⚠ Já lançada: '+ja.resultado:'';$('#pzRgd').parentElement.classList.toggle('tem',tem);
   if(ja&&ja.resultado&&document.activeElement===$('#pzRgd'))$('#pzRes').value=ja.resultado;
   guardarFiltros();
   const v=visiveisPz(),fil=temFiltroCol()||ordemCol.prenhez;
