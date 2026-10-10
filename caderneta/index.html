@@ -139,18 +139,18 @@ textarea.input{min-height:96px;resize:vertical}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#17211c;color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;z-index:50;max-width:90vw;text-align:center}
 /* Prenha/Vazia */
 .pz-top{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid var(--borda);border-radius:12px;padding:10px 12px;margin-bottom:10px}
-.pz-top .campo{display:flex;flex-direction:column;gap:4px}.pz-top label{font-size:11.5px;font-weight:700;color:var(--suave)}
-.pz-top select,.pz-top input{border:1px solid #d7ded9;border-radius:9px;padding:9px 11px;font-size:16px;background:#fff;outline:none}
+.pz-top .campo{display:flex;flex-direction:column;gap:4px}.pz-top label{font-size:11.5px;font-weight:700;color:var(--suave);white-space:nowrap;line-height:16px}
+.pz-top select,.pz-top input{height:42px;border:1px solid #d7ded9;border-radius:9px;padding:0 11px;font-size:16px;background:#fff;outline:none}
 .pz-top select:focus,.pz-top input:focus{border-color:#72a386;box-shadow:0 0 0 3px #72a38622}
 #pzEst{min-width:120px;font-weight:800;color:var(--verde-esc)}
-.pz-rgd{flex:1 1 200px;max-width:280px}.pz-rgd input{width:100%;font-weight:800;font-size:17px}
+.pz-rgd{flex:1 1 200px;max-width:280px}.pz-obsc{flex:1 1 200px;max-width:320px}.pz-obsc input{width:100%}.pz-rgd input{width:100%;font-weight:800;font-size:17px}
 .pz-achou{font-weight:400;color:#9a5a12}
-.pz-bts{display:flex;gap:8px}.pz-b{border:0;border-radius:11px;padding:11px 16px;font-weight:800;font-size:15.5px;color:#fff}
+.pz-bts{display:flex;gap:8px}.pz-b{border:0;border-radius:11px;padding:11px 16px;height:auto;font-weight:800;font-size:15.5px;color:#fff}
 .pz-b.P{background:#1f7a4d}.pz-b.V{background:#c0392b}.pz-b.T{background:#d9822b}
 .pz-chips{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px}.pz-chips::-webkit-scrollbar{display:none}.pz-chips .aviso-f{flex:none;white-space:nowrap}
 .pz-chips .pill b{margin-left:4px}.pz-chips .pill.on.P{background:#1f7a4d;border-color:#1f7a4d}.pz-chips .pill.on.V{background:#c0392b;border-color:#c0392b}.pz-chips .pill.on.T{background:#d9822b;border-color:#d9822b}
-.pz-lista{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:hidden;max-width:760px}
-.pz-reg{display:grid;grid-template-columns:minmax(0,1fr) 130px 120px minmax(0,1fr) 34px;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--linha)}
+.pz-lista{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:hidden;max-width:1100px}.pz-obs{width:100%;border:1px solid transparent;border-radius:7px;padding:5px 7px;font-size:13.5px;background:none;outline:none}.pz-obs:hover{border-color:#e3e8e4}.pz-obs:focus{border-color:#72a386;background:#fff}.pz-obs-cel{display:none}
+.pz-reg{display:grid;grid-template-columns:minmax(0,1fr) 130px 110px minmax(0,1fr) minmax(0,2fr) 34px;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--linha)}
 .pz-reg:last-child{border-bottom:0}.pz-cab{background:#f3f5f3;padding:6px 12px;position:sticky;top:0;z-index:2}.pz-cab .thf{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--suave);font-weight:700}.pz-cab .fbtn{font-size:12px;padding:2px 7px}.pz-reg .rgd{font-weight:800;font-size:15px;cursor:pointer}.pz-reg .info{font-size:12.5px;color:var(--muito-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pz-sel{width:100%;border:1px solid #d7ded9;border-radius:8px;padding:6px 8px;font-size:14.5px;font-weight:800;outline:none}
 .pz-sel.P{background:#e3f3e8;color:#1f6a49;border-color:#b9dcc6}.pz-sel.V{background:#fbeeec;color:#a33627;border-color:#ecc3bd}.pz-sel.T{background:#fdf0dc;color:#9a5a12;border-color:#efd3a6}
@@ -162,9 +162,9 @@ textarea.input{min-height:96px;resize:vertical}
   .lista{display:block}
   .abas{width:100%}.aba{flex:1;padding:9px 6px}
   .fab{display:block}
-  .pz-top .campo{flex:1 1 100%}.pz-top .campo:first-child{flex:0 0 105px}.pz-top .pz-rgd{flex:1 1 0;max-width:none}#pzEst{width:100%}
+  .pz-top .campo{flex:1 1 100%}.pz-top .campo:first-child{flex:0 0 105px}.pz-top .pz-rgd{flex:1 1 0;max-width:none}.pz-obsc{max-width:none}#pzEst{width:100%}
   .pz-bts{width:100%}.pz-b{flex:1;padding:15px 6px;font-size:16.5px}
-  .pz-reg{grid-template-columns:minmax(0,1fr) 118px 30px;row-gap:0}.pz-reg .info{grid-column:1;grid-row:2}.pz-reg .info.por{display:none}.pz-reg .rgd{grid-row:1}
+  .pz-reg{grid-template-columns:minmax(0,1fr) 118px 30px;row-gap:0}.pz-reg .info{grid-column:1;grid-row:2}.pz-reg .info.por,.pz-reg .pz-obs,.pz-cab .info.obs{display:none!important}.pz-obs-cel{display:inline}.pz-reg .info{white-space:normal}.pz-reg .rgd{grid-row:1}
   .pz-reg .pz-sel{grid-column:2;grid-row:1/3}.pz-reg .xdel{grid-column:3;grid-row:1/3}
   .pz-cab{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}.pz-cab>*{grid-row:1!important;grid-column:auto!important}.pz-cab .info.por,.pz-cab>span:last-child{display:none!important}
   .aba{font-size:13px;padding:9px 4px;min-width:0}.abas{overflow:hidden}
@@ -200,6 +200,7 @@ textarea.input{min-height:96px;resize:vertical}
       <div class="pz-top">
         <div class="campo"><label>Estação</label><select id="pzEst" onchange="trocarEstacao(this.value)"></select></div>
         <div class="campo pz-rgd"><label>RGD <span class="pz-achou" id="pzAchou"></span></label><input id="pzRgd" placeholder="MRA 1234" autocapitalize="characters" autocomplete="off" oninput="desenharPz()"></div>
+        <div class="campo pz-obsc"><label>Observação</label><input id="pzObs" placeholder="(se quiser)" autocomplete="off"></div>
         <div class="campo pz-desk"><label>Resultado</label><select id="pzRes"><option value="">—</option><option>Prenha</option><option>Vazia</option><option>PRT</option></select></div>
         <div class="campo pz-desk"><label>&nbsp;</label><button class="btn btn-primary" onclick="lancarPz($('#pzRes').value)">+ Lançar</button></div>
         <div class="pz-bts pz-cel"><button class="pz-b P" onclick="lancarPz('Prenha')">Prenha</button><button class="pz-b V" onclick="lancarPz('Vazia')">Vazia</button><button class="pz-b T" onclick="lancarPz('PRT')">PRT</button></div>
@@ -596,19 +597,21 @@ function desenharPz(){
   const v=visiveisPz(),fil=temFiltroCol()||ordemCol.prenhez;
   if(fil)$('#pzChips').innerHTML+=`<span class="aviso-f">🔎 ${temFiltroCol()?'Filtro na tabela':'Ordenado'} <button onclick="limparTudoCol()">Limpar</button></span>`;
   const fb=(k,t)=>`<div class="thf"><span>${t}</span><button class="fbtn ${filtrosCol.prenhez[k]||(ordemCol.prenhez&&ordemCol.prenhez.k===k)?'on':''}" onclick="abrirFiltro(event,'${k}')" title="Filtrar / ordenar">▾</button></div>`;
-  const cab=`<div class="pz-reg pz-cab">${fb('rgd','RGD')}${fb('resultado','Resultado')}<div class="info">${fb('data','Data')}</div><div class="info por">${fb('por','Por')}</div><span></span></div>`;
+  const cab=`<div class="pz-reg pz-cab">${fb('rgd','RGD')}${fb('resultado','Resultado')}<div class="info">${fb('data','Data')}</div><div class="info por">${fb('por','Por')}</div><div class="info obs">${fb('obs','Observação')}</div><span></span></div>`;
   if(!v.length){$('#pzLista').innerHTML=(n?cab:'')+`<div class="vazio">${n?'Nada encontrado.':`Nada lançado na estação ${esc(estPz)}.`}</div>`;return}
   const podeDel=x=>ehAdmin||x.criadoPorUid===eu.uid;
   $('#pzLista').innerHTML=cab+v.slice(0,500).map(x=>`<div class="pz-reg"><div class="rgd" onclick="pegarPz('${x.k}')">${esc(x.rgd)}</div>
     <select class="pz-sel ${letraPz(x.resultado)}" onchange="gravarPz(pz['${x.k}'].rgd,this.value);desenharPz()">${RES_PZ.map(([r])=>`<option ${r===x.resultado?'selected':''}>${r}</option>`).join('')}</select>
-    <div class="info">${fmtData(x.data)}</div><div class="info por">${esc(x.por||'')}</div>
+    <div class="info">${fmtData(x.data)}${x.obs?`<span class="pz-obs-cel"> · ${esc(x.obs)}</span>`:''}</div><div class="info por">${esc(x.por||'')}</div>
+    <input class="pz-obs" value="${esc(x.obs||'')}" placeholder="—" onchange="obsPz('${x.k}',this.value)">
     ${podeDel(x)?`<button class="xdel" title="Excluir" onclick="apagarPz('${x.k}')">🗑</button>`:'<span></span>'}</div>`).join('')
     +(v.length>500?`<div class="vazio">Mostrando 500 de ${v.length}. Digite o RGD pra achar.</div>`:'');
 }
-function pegarPz(k){const x=pz[k];if(!x)return;$('#pzRgd').value=x.rgd;$('#pzRgd').focus();desenharPz();scrollTo({top:0,behavior:'smooth'})}
-function gravarPz(rgd,res){
+function obsPz(k,v){const x=pz[k];if(!x)return;x.obs=v.trim();refPz(estPz).set({animais:{[k]:{obs:x.obs}}},{merge:true}).catch(e=>toast('Não salvou: '+e.message))}
+function pegarPz(k){const x=pz[k];if(!x)return;$('#pzRgd').value=x.rgd;$('#pzObs').value=x.obs||'';$('#pzRgd').focus();desenharPz();scrollTo({top:0,behavior:'smooth'})}
+function gravarPz(rgd,res,obs){
   const k=chaveRgd(rgd),ant=pz[k],agora=new Date().toISOString();
-  const val={rgd,resultado:res,data:hoje(),em:agora,por:meuNome,porUid:eu.uid,criadoPorUid:(ant&&ant.criadoPorUid)||eu.uid,anterior:ant&&ant.resultado&&ant.resultado!==res?ant.resultado:((ant&&ant.anterior)||'')};
+  const val={rgd,resultado:res,obs:obs!=null&&obs!==''?obs:((ant&&ant.obs)||''),data:hoje(),em:agora,por:meuNome,porUid:eu.uid,criadoPorUid:(ant&&ant.criadoPorUid)||eu.uid,anterior:ant&&ant.resultado&&ant.resultado!==res?ant.resultado:((ant&&ant.anterior)||'')};
   pz[k]=val;refPz(estPz).set({animais:{[k]:val}},{merge:true}).catch(e=>toast('Não salvou: '+e.message));
   return ant;
 }
@@ -616,19 +619,20 @@ function lancarPz(res){
   const rgd=normRgd($('#pzRgd').value);
   if(!chaveRgd(rgd)){toast('Digite o RGD.');$('#pzRgd').focus();return}
   if(!res){toast('Escolha o resultado.');$('#pzRes').focus();return}
-  const ant=gravarPz(rgd,res);
+  const ant=gravarPz(rgd,res,$('#pzObs').value.trim());
   toast((ant&&ant.resultado?`${rgd}: ${ant.resultado} → ${res}`:`${rgd}: ${res}`)+(navigator.onLine?'':' (guardado no aparelho)'));
-  $('#pzRgd').value='';$('#pzRes').value='';desenharPz();$('#pzRgd').focus();
+  $('#pzRgd').value='';$('#pzRes').value='';$('#pzObs').value='';desenharPz();$('#pzRgd').focus();
 }
 function apagarPz(k){const x=pz[k];if(!x||!confirm(`Excluir ${x.rgd} desta estação?`))return;
   delete pz[k];refPz(estPz).set({animais:{[k]:firebase.firestore.FieldValue.delete()}},{merge:true}).catch(e=>toast('Não excluiu: '+e.message));desenharPz();toast('Excluído.')}
 $('#pzRgd').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(innerWidth>860)$('#pzRes').focus()}});
+$('#pzObs').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(innerWidth>860)$('#pzRes').focus()}});
 $('#pzRes').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarPz($('#pzRes').value)}});
 function exportarPz(){
   if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
   const v=visiveisPz();if(!v.length){toast('Nada pra exportar.');return}
-  const ws=XLSX.utils.json_to_sheet(v.map(x=>({RGD:x.rgd,RESULTADO:x.resultado,DATA:fmtData(x.data),LANCADO_POR:x.por||''})));
-  ws['!cols']=[{wch:14},{wch:12},{wch:12},{wch:18}];
+  const ws=XLSX.utils.json_to_sheet(v.map(x=>({RGD:x.rgd,RESULTADO:x.resultado,DATA:fmtData(x.data),OBSERVACAO:x.obs||'',LANCADO_POR:x.por||''})));
+  ws['!cols']=[{wch:14},{wch:12},{wch:12},{wch:34},{wch:18}];
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Prenhez');XLSX.writeFile(wb,`caderneta_prenhez_${estPz.replace(/[^0-9A-Za-z]+/g,'-')}.xlsx`);
 }
 if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
