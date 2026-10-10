@@ -137,6 +137,24 @@ textarea.input{min-height:96px;resize:vertical}
 .menu{position:absolute;right:16px;top:54px;background:#fff;color:var(--texto);border:1px solid var(--borda);border-radius:12px;box-shadow:0 10px 30px #0003;padding:6px;z-index:20;min-width:190px}
 .menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:10px 12px;border-radius:8px;font-size:14.5px}.menu button:hover{background:#f3f6f4}
 .toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#17211c;color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;z-index:50;max-width:90vw;text-align:center}
+/* Prenha/Vazia */
+.pz-top{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;background:#fff;border:1px solid var(--borda);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.pz-top .campo{display:flex;flex-direction:column;gap:4px}.pz-top label{font-size:11.5px;font-weight:700;color:var(--suave)}
+.pz-top select,.pz-top input{border:1px solid #d7ded9;border-radius:9px;padding:9px 11px;font-size:16px;background:#fff;outline:none}
+.pz-top select:focus,.pz-top input:focus{border-color:#72a386;box-shadow:0 0 0 3px #72a38622}
+#pzEst{min-width:120px;font-weight:800;color:var(--verde-esc)}
+.pz-rgd{flex:1 1 200px;max-width:280px}.pz-rgd input{width:100%;font-weight:800;font-size:17px}
+.pz-achou{font-size:12.5px;color:var(--suave);min-height:16px;margin-top:2px}
+.pz-bts{display:flex;gap:8px}.pz-b{border:0;border-radius:11px;padding:11px 16px;font-weight:800;font-size:15.5px;color:#fff}
+.pz-b.P{background:#1f7a4d}.pz-b.V{background:#c0392b}.pz-b.T{background:#d9822b}
+.pz-ord{margin-left:auto}
+.pz-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px}.pz-chips::-webkit-scrollbar{display:none}
+.pz-chips .pill b{margin-left:4px}.pz-chips .pill.on.P{background:#1f7a4d;border-color:#1f7a4d}.pz-chips .pill.on.V{background:#c0392b;border-color:#c0392b}.pz-chips .pill.on.T{background:#d9822b;border-color:#d9822b}
+.pz-lista{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:hidden;max-width:760px}
+.pz-reg{display:grid;grid-template-columns:minmax(0,1fr) 130px minmax(0,1fr) 34px;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--linha)}
+.pz-reg:last-child{border-bottom:0}.pz-reg .rgd{font-weight:800;font-size:15px;cursor:pointer}.pz-reg .info{font-size:12.5px;color:var(--muito-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pz-sel{width:100%;border:1px solid #d7ded9;border-radius:8px;padding:6px 8px;font-size:14.5px;font-weight:800;outline:none}
+.pz-sel.P{background:#e3f3e8;color:#1f6a49;border-color:#b9dcc6}.pz-sel.V{background:#fbeeec;color:#a33627;border-color:#ecc3bd}.pz-sel.T{background:#fdf0dc;color:#9a5a12;border-color:#efd3a6}
 /* ===== celular ===== */
 @media(max-width:860px){
   .pag{grid-template-columns:minmax(0,1fr);padding:12px 16px 110px;gap:0}
@@ -145,13 +163,19 @@ textarea.input{min-height:96px;resize:vertical}
   .lista{display:block}
   .abas{width:100%}.aba{flex:1;padding:9px 6px}
   .fab{display:block}
+  .pz-top .campo{flex:1 1 100%}.pz-rgd{max-width:none}#pzEst{width:100%}.pz-top .pz-ord{display:none}
+  .pz-bts{width:100%}.pz-b{flex:1;padding:15px 6px;font-size:16.5px}
+  .pz-reg{grid-template-columns:minmax(0,1fr) 118px 30px;row-gap:0}.pz-reg .info{grid-column:1;grid-row:2}.pz-reg .rgd{grid-row:1}
+  .pz-reg .pz-sel{grid-column:2;grid-row:1/3}.pz-reg .xdel{grid-column:3;grid-row:1/3}
+  .aba{font-size:13px;padding:9px 4px;min-width:0}.abas{overflow:hidden}
   .modal{padding:0;align-items:flex-end}
   .folha{width:100%;max-height:96vh;border-radius:18px 18px 0 0}
   .folha-pe{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
 }
 @media(max-width:600px){.topo-in>img{display:none}}
 @media(min-width:861px){.topo .so-cel{display:none}}
-@media print{.topo,.barra-f,.fbtn,.fab,.offline,.busca,.abas,.so-cel,tr.rapido,.xdel,.lista{display:none!important}.pag{display:block;padding:0}.tabd{display:block!important;max-height:none;overflow:visible;border:0}}
+.pz-desk{display:flex}.pz-cel{display:none}@media(max-width:860px){.pz-desk{display:none!important}.pz-cel{display:flex}}
+@media print{.topo,.barra-f,.fbtn,.fab,.offline,.busca,.abas,.so-cel,tr.rapido,.xdel,.lista,.pz-top,.pz-chips,.pz-reg .xdel{display:none!important}.pz-lista{border:0;max-width:none}.pz-sel{border:0;background:none!important;appearance:none;padding:0}.pag{display:block;padding:0}.tabd{display:block!important;max-height:none;overflow:visible;border:0}}
 </style>
 </head>
 <body>
@@ -169,8 +193,23 @@ textarea.input{min-height:96px;resize:vertical}
     <div id="offline" class="offline hidden">📵 Sem internet. Pode lançar normal: fica guardado no aparelho e envia sozinho quando a internet voltar.</div>
     <div class="abas" id="abas">
       <button class="aba" data-aba="nasc" onclick="irAba('nasc')">🐮 Nascimentos</button>
-      <button class="aba" data-aba="geral" onclick="irAba('geral')">📝 Lançamento Geral</button>
+      <button class="aba" data-aba="geral" onclick="irAba('geral')">📝 <span class="so-desk">Lançamento </span>Geral</button>
+      <button class="aba" data-aba="prenhez" onclick="irAba('prenhez')">🩺 Prenha/Vazia</button>
     </div>
+    <div id="secPz" class="hidden">
+      <div class="pz-top">
+        <div class="campo"><label>Estação</label><select id="pzEst" onchange="trocarEstacao(this.value)"></select></div>
+        <div class="campo pz-rgd"><label>RGD</label><input id="pzRgd" placeholder="MRA 1234" autocapitalize="characters" autocomplete="off" oninput="desenharPz()"><div class="pz-achou" id="pzAchou"></div></div>
+        <div class="campo pz-desk"><label>Resultado</label><select id="pzRes"><option value="">—</option><option>Prenha</option><option>Vazia</option><option>PRT</option></select></div>
+        <div class="campo pz-desk"><label>&nbsp;</label><button class="btn btn-primary" onclick="lancarPz($('#pzRes').value)">+ Lançar</button></div>
+        <div class="pz-bts pz-cel"><button class="pz-b P" onclick="lancarPz('Prenha')">Prenha</button><button class="pz-b V" onclick="lancarPz('Vazia')">Vazia</button><button class="pz-b T" onclick="lancarPz('PRT')">PRT</button></div>
+        <div class="campo pz-ord"><label>Ordem</label><select id="pzOrd" onchange="desenharPz()"><option value="rec">Mais recentes</option><option value="rgd">RGD</option></select></div>
+        <div class="campo so-desk"><label>&nbsp;</label><div style="display:flex;gap:6px"><button class="btn btn-ghost" onclick="exportarPz()">⬇ Excel</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div></div>
+      </div>
+      <div class="pz-chips" id="pzChips"></div>
+      <div class="pz-lista" id="pzLista"><div class="vazio">Carregando...</div></div>
+    </div>
+    <div id="secGen">
     <div class="barra-f">
       <div class="campo"><label id="rotMes">Mês</label><select id="selMes" onchange="mes=this.value;desenhar()"></select></div>
       <div class="busca"><input id="busca" placeholder="Buscar..." oninput="desenhar()"></div>
@@ -180,6 +219,7 @@ textarea.input{min-height:96px;resize:vertical}
     <div class="cab"><span class="qtd" id="qtd"></span></div>
     <div class="tabd" id="tabd"></div>
     <div class="lista" id="lista"><div class="vazio">Carregando...</div></div>
+    </div>
   </section>
 </div>
 <button class="fab" onclick="abrirForm()">+ Lançar</button>
@@ -218,7 +258,7 @@ const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agos
 const nomeMes=m=>{const [a,n]=m.split('-').map(Number);return `${MESES[n-1]} de ${a}`};
 const curtoMes=m=>{const [a,n]=m.split('-').map(Number);return `${MESES[n-1].slice(0,3)}/${String(a).slice(2)}`};
 let eu=null, ehAdmin=false, meuNome='', mes=hoje().slice(0,7), todos=[], itens=[], parar=null, miniFotos={}, pelagens=[];
-let aba='nasc';try{aba=localStorage.getItem('app-nelore-mra-caderneta-aba')==='geral'?'geral':'nasc'}catch(e){}
+let aba='nasc';try{const a=localStorage.getItem('app-nelore-mra-caderneta-aba');aba=a==='geral'||a==='prenhez'?a:'nasc'}catch(e){}
 
 function toast(t){document.querySelectorAll('.toast').forEach(x=>x.remove());const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
 function statusRede(){$('#offline').classList.toggle('hidden',navigator.onLine)}
@@ -232,7 +272,7 @@ firebase.auth().onAuthStateChanged(async u=>{
   if(!ehAdmin&&(!perfil||perfil.ativo===false||!(perfil.apps&&perfil.apps.caderneta))){alert('Você não tem acesso à Caderneta. Fale com o administrador.');location.href='../index.html';return}
   meuNome=ehAdmin?'Administrador':((perfil&&(perfil.nome||perfil.usuario))||String(u.email).replace(USER_DOMAIN,''));
   $('#quem').textContent=meuNome;
-  cfgRef.onSnapshot(d=>{pelagens=(d.exists&&d.data().pelagens)||[];$('#dlPelagem').innerHTML=pelagens.map(l=>`<option value="${esc(l)}">`).join('')},()=>{});
+  cfgRef.onSnapshot(d=>{pelagens=(d.exists&&d.data().pelagens)||[];estacoesPz=(d.exists&&d.data().estacoesPrenhez)||[];montarEstacoes();$('#dlPelagem').innerHTML=pelagens.map(l=>`<option value="${esc(l)}">`).join('')},()=>{});
   irAba(aba);
 });
 
@@ -240,6 +280,9 @@ firebase.auth().onAuthStateChanged(async u=>{
 function irAba(a){
   aba=a;try{localStorage.setItem('app-nelore-mra-caderneta-aba',a)}catch(e){}
   document.querySelectorAll('.aba').forEach(b=>b.classList.toggle('on',b.dataset.aba===a));
+  const ehPz=a==='prenhez';$('#secPz').classList.toggle('hidden',!ehPz);$('#secGen').classList.toggle('hidden',ehPz);$('.fab').classList.toggle('hidden',ehPz);
+  if(ehPz){fecharFiltro();if(parar){parar();parar=null}ouvirPz();return}
+  if(pararPz){pararPz();pararPz=null}
   $('#busca').placeholder=a==='nasc'?'Buscar RGD, receptora, pelagem...':'Buscar RGD, situação, observação...';
   $('#rotMes').textContent=a==='nasc'?'Mês do nascimento':'Mês do lançamento';
   fecharFiltro();montarTabela();ouvirAba();
@@ -383,7 +426,7 @@ function desenhar(){
 function abrirMenu(ev){
   ev.stopPropagation();const old=$('.menu');if(old){old.remove();return}
   const m=document.createElement('div');m.className='menu';
-  m.innerHTML=`<button onclick="exportarMes()">⬇ Excel do mês</button><button onclick="window.print()">🖨 Imprimir</button>`;
+  m.innerHTML=aba==='prenhez'?`<button onclick="exportarPz()">⬇ Excel</button><button onclick="window.print()">🖨 Imprimir</button>`:`<button onclick="exportarMes()">⬇ Excel do mês</button><button onclick="window.print()">🖨 Imprimir</button>`;
   document.body.appendChild(m);setTimeout(()=>document.addEventListener('click',()=>m.remove(),{once:true}),0);
 }
 
@@ -507,6 +550,83 @@ function exportarMes(){
   }
   const nome=aba==='nasc'?'Nascimentos':'Lancamento Geral';
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,nome);XLSX.writeFile(wb,`caderneta_${aba==='nasc'?'nascimentos':'geral'}_${mes||'todos'}.xlsx`);
+}
+/* ---------- Prenha/Vazia ----------
+   Um documento por estação: apps/caderneta/config/prenhez_<estação> {animais:{<RGD sem espaço>:{rgd,resultado,data,em,por,porUid,criadoPorUid,anterior}}}.
+   Fica em "config" porque lá qualquer um com acesso à Caderneta pode alterar (o funcionário troca o resultado
+   de uma matriz lançada por outro). Grava só o animal que mudou (merge), funciona sem internet. */
+const RES_PZ=[['Prenha','P'],['Vazia','V'],['PRT','T']],letraPz=r=>(RES_PZ.find(x=>x[0]===r)||[])[1]||'';
+const EST_PADRAO='26/27';
+let estacoesPz=[],estPz='',pz={},pararPz=null,filtroPz='';
+try{estPz=localStorage.getItem('app-nelore-mra-caderneta-estacao')||''}catch(e){}
+const normRgd=v=>{let t=String(v||'').toUpperCase().replace(/\s+/g,' ').trim();if(/^\d+$/.test(t))t='MRA '+t;return t.replace(/^MRA\s*(?=\d)/,'MRA ')};
+const chaveRgd=v=>normRgd(v).replace(/[^A-Z0-9]/g,'');
+const refPz=e=>fs.collection('apps').doc('caderneta').collection('config').doc('prenhez_'+e.replace(/[^0-9A-Za-z]+/g,'-'));
+function listaEstacoes(){return [...new Set([EST_PADRAO,...estacoesPz,...(estPz?[estPz]:[])])].sort((a,b)=>b.localeCompare(a,'pt-BR',{numeric:true}))}
+function montarEstacoes(){
+  if(!estPz)estPz=EST_PADRAO;const l=listaEstacoes();
+  $('#pzEst').innerHTML=l.map(e=>`<option ${e===estPz?'selected':''}>${esc(e)}</option>`).join('')+'<option value="__nova">+ Nova estação…</option>';
+}
+function trocarEstacao(v){
+  if(v==='__nova'){const n=(prompt('Nome da nova estação (ex.: 27/28):')||'').trim();
+    if(n){cfgRef.set({estacoesPrenhez:firebase.firestore.FieldValue.arrayUnion(n)},{merge:true}).catch(e=>toast('Não salvou: '+e.message));estacoesPz=[...estacoesPz,n];estPz=n}}
+  else estPz=v;
+  try{localStorage.setItem('app-nelore-mra-caderneta-estacao',estPz)}catch(e){}
+  montarEstacoes();ouvirPz();
+}
+function ouvirPz(){
+  if(pararPz)pararPz();montarEstacoes();
+  pz={};$('#pzLista').innerHTML='<div class="vazio">Carregando...</div>';
+  pararPz=refPz(estPz).onSnapshot(d=>{pz=(d.exists&&d.data().animais)||{};desenharPz()},e=>{$('#pzLista').innerHTML=`<div class="vazio">Não consegui carregar.<br><small>${esc(e.message)}</small></div>`});
+}
+function filtroPzSet(f){filtroPz=filtroPz===f?'':f;desenharPz()}
+function visiveisPz(){
+  const q=chaveRgd($('#pzRgd').value),ord=$('#pzOrd').value;
+  return Object.entries(pz).filter(([k,x])=>x&&x.resultado&&(!filtroPz||x.resultado===filtroPz)&&(!q||k.includes(q)))
+    .map(([k,x])=>({k,...x}))
+    .sort((a,b)=>ord==='rgd'?a.rgd.localeCompare(b.rgd,'pt-BR',{numeric:true}):String(b.em||'').localeCompare(String(a.em||'')));
+}
+function desenharPz(){
+  const todosPz=Object.values(pz).filter(x=>x&&x.resultado),n=todosPz.length,cont=r=>todosPz.filter(x=>x.resultado===r).length;
+  $('#pzChips').innerHTML=`<button class="pill ${!filtroPz?'on':''}" onclick="filtroPzSet('')">Todas<b>${n}</b></button>`
+    +RES_PZ.map(([r,l])=>{const c=cont(r);return `<button class="pill ${l} ${filtroPz===r?'on':''}" onclick="filtroPzSet('${r}')">${r}<b>${c}</b>${n&&r==='Prenha'?` · ${Math.round(c*100/n)}%`:''}</button>`}).join('');
+  const typed=$('#pzRgd').value.trim(),ja=typed?pz[chaveRgd(typed)]:null;
+  $('#pzAchou').innerHTML=ja&&ja.resultado?`Já lançada: <b>${esc(ja.resultado)}</b> — escolha pra trocar`:'';
+  if(ja&&ja.resultado&&document.activeElement===$('#pzRgd'))$('#pzRes').value=ja.resultado;
+  const v=visiveisPz();
+  if(!v.length){$('#pzLista').innerHTML=`<div class="vazio">${n?'Nada encontrado.':`Nada lançado na estação ${esc(estPz)}.`}</div>`;return}
+  const podeDel=x=>ehAdmin||x.criadoPorUid===eu.uid;
+  $('#pzLista').innerHTML=v.slice(0,500).map(x=>`<div class="pz-reg"><div class="rgd" onclick="pegarPz('${x.k}')">${esc(x.rgd)}</div>
+    <select class="pz-sel ${letraPz(x.resultado)}" onchange="gravarPz(pz['${x.k}'].rgd,this.value);desenharPz()">${RES_PZ.map(([r])=>`<option ${r===x.resultado?'selected':''}>${r}</option>`).join('')}</select>
+    <div class="info">${fmtData(x.data)} · ${esc(x.por||'')}</div>
+    ${podeDel(x)?`<button class="xdel" title="Excluir" onclick="apagarPz('${x.k}')">🗑</button>`:'<span></span>'}</div>`).join('')
+    +(v.length>500?`<div class="vazio">Mostrando 500 de ${v.length}. Digite o RGD pra achar.</div>`:'');
+}
+function pegarPz(k){const x=pz[k];if(!x)return;$('#pzRgd').value=x.rgd;$('#pzRgd').focus();desenharPz();scrollTo({top:0,behavior:'smooth'})}
+function gravarPz(rgd,res){
+  const k=chaveRgd(rgd),ant=pz[k],agora=new Date().toISOString();
+  const val={rgd,resultado:res,data:hoje(),em:agora,por:meuNome,porUid:eu.uid,criadoPorUid:(ant&&ant.criadoPorUid)||eu.uid,anterior:ant&&ant.resultado&&ant.resultado!==res?ant.resultado:((ant&&ant.anterior)||'')};
+  pz[k]=val;refPz(estPz).set({animais:{[k]:val}},{merge:true}).catch(e=>toast('Não salvou: '+e.message));
+  return ant;
+}
+function lancarPz(res){
+  const rgd=normRgd($('#pzRgd').value);
+  if(!chaveRgd(rgd)){toast('Digite o RGD.');$('#pzRgd').focus();return}
+  if(!res){toast('Escolha o resultado.');$('#pzRes').focus();return}
+  const ant=gravarPz(rgd,res);
+  toast((ant&&ant.resultado?`${rgd}: ${ant.resultado} → ${res}`:`${rgd}: ${res}`)+(navigator.onLine?'':' (guardado no aparelho)'));
+  $('#pzRgd').value='';$('#pzRes').value='';desenharPz();$('#pzRgd').focus();
+}
+function apagarPz(k){const x=pz[k];if(!x||!confirm(`Excluir ${x.rgd} desta estação?`))return;
+  delete pz[k];refPz(estPz).set({animais:{[k]:firebase.firestore.FieldValue.delete()}},{merge:true}).catch(e=>toast('Não excluiu: '+e.message));desenharPz();toast('Excluído.')}
+$('#pzRgd').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(innerWidth>860)$('#pzRes').focus()}});
+$('#pzRes').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarPz($('#pzRes').value)}});
+function exportarPz(){
+  if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
+  const v=visiveisPz();if(!v.length){toast('Nada pra exportar.');return}
+  const ws=XLSX.utils.json_to_sheet(v.map(x=>({RGD:x.rgd,RESULTADO:x.resultado,DATA:fmtData(x.data),LANCADO_POR:x.por||''})));
+  ws['!cols']=[{wch:14},{wch:12},{wch:12},{wch:18}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Prenhez');XLSX.writeFile(wb,`caderneta_prenhez_${estPz.replace(/[^0-9A-Za-z]+/g,'-')}.xlsx`);
 }
 if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
 </script>
