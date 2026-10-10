@@ -144,15 +144,14 @@ textarea.input{min-height:96px;resize:vertical}
 .pz-top select:focus,.pz-top input:focus{border-color:#72a386;box-shadow:0 0 0 3px #72a38622}
 #pzEst{min-width:120px;font-weight:800;color:var(--verde-esc)}
 .pz-rgd{flex:1 1 200px;max-width:280px}.pz-rgd input{width:100%;font-weight:800;font-size:17px}
-.pz-achou{font-size:12.5px;color:var(--suave);min-height:16px;margin-top:2px}
+.pz-achou{font-weight:400;color:#9a5a12}
 .pz-bts{display:flex;gap:8px}.pz-b{border:0;border-radius:11px;padding:11px 16px;font-weight:800;font-size:15.5px;color:#fff}
 .pz-b.P{background:#1f7a4d}.pz-b.V{background:#c0392b}.pz-b.T{background:#d9822b}
-.pz-ord{margin-left:auto}
-.pz-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px}.pz-chips::-webkit-scrollbar{display:none}
+.pz-chips{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px}.pz-chips::-webkit-scrollbar{display:none}.pz-chips .aviso-f{flex:none;white-space:nowrap}
 .pz-chips .pill b{margin-left:4px}.pz-chips .pill.on.P{background:#1f7a4d;border-color:#1f7a4d}.pz-chips .pill.on.V{background:#c0392b;border-color:#c0392b}.pz-chips .pill.on.T{background:#d9822b;border-color:#d9822b}
 .pz-lista{background:#fff;border:1px solid var(--borda);border-radius:12px;overflow:hidden;max-width:760px}
-.pz-reg{display:grid;grid-template-columns:minmax(0,1fr) 130px minmax(0,1fr) 34px;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--linha)}
-.pz-reg:last-child{border-bottom:0}.pz-reg .rgd{font-weight:800;font-size:15px;cursor:pointer}.pz-reg .info{font-size:12.5px;color:var(--muito-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pz-reg{display:grid;grid-template-columns:minmax(0,1fr) 130px 120px minmax(0,1fr) 34px;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--linha)}
+.pz-reg:last-child{border-bottom:0}.pz-cab{background:#f3f5f3;padding:6px 12px;position:sticky;top:0;z-index:2}.pz-cab .thf{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--suave);font-weight:700}.pz-cab .fbtn{font-size:12px;padding:2px 7px}.pz-reg .rgd{font-weight:800;font-size:15px;cursor:pointer}.pz-reg .info{font-size:12.5px;color:var(--muito-suave);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pz-sel{width:100%;border:1px solid #d7ded9;border-radius:8px;padding:6px 8px;font-size:14.5px;font-weight:800;outline:none}
 .pz-sel.P{background:#e3f3e8;color:#1f6a49;border-color:#b9dcc6}.pz-sel.V{background:#fbeeec;color:#a33627;border-color:#ecc3bd}.pz-sel.T{background:#fdf0dc;color:#9a5a12;border-color:#efd3a6}
 /* ===== celular ===== */
@@ -163,10 +162,11 @@ textarea.input{min-height:96px;resize:vertical}
   .lista{display:block}
   .abas{width:100%}.aba{flex:1;padding:9px 6px}
   .fab{display:block}
-  .pz-top .campo{flex:1 1 100%}.pz-rgd{max-width:none}#pzEst{width:100%}.pz-top .pz-ord{display:none}
+  .pz-top .campo{flex:1 1 100%}.pz-top .campo:first-child{flex:0 0 105px}.pz-top .pz-rgd{flex:1 1 0;max-width:none}#pzEst{width:100%}
   .pz-bts{width:100%}.pz-b{flex:1;padding:15px 6px;font-size:16.5px}
-  .pz-reg{grid-template-columns:minmax(0,1fr) 118px 30px;row-gap:0}.pz-reg .info{grid-column:1;grid-row:2}.pz-reg .rgd{grid-row:1}
+  .pz-reg{grid-template-columns:minmax(0,1fr) 118px 30px;row-gap:0}.pz-reg .info{grid-column:1;grid-row:2}.pz-reg .info.por{display:none}.pz-reg .rgd{grid-row:1}
   .pz-reg .pz-sel{grid-column:2;grid-row:1/3}.pz-reg .xdel{grid-column:3;grid-row:1/3}
+  .pz-cab{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}.pz-cab>*{grid-row:1!important;grid-column:auto!important}.pz-cab .info.por,.pz-cab>span:last-child{display:none!important}
   .aba{font-size:13px;padding:9px 4px;min-width:0}.abas{overflow:hidden}
   .modal{padding:0;align-items:flex-end}
   .folha{width:100%;max-height:96vh;border-radius:18px 18px 0 0}
@@ -199,12 +199,11 @@ textarea.input{min-height:96px;resize:vertical}
     <div id="secPz" class="hidden">
       <div class="pz-top">
         <div class="campo"><label>Estação</label><select id="pzEst" onchange="trocarEstacao(this.value)"></select></div>
-        <div class="campo pz-rgd"><label>RGD</label><input id="pzRgd" placeholder="MRA 1234" autocapitalize="characters" autocomplete="off" oninput="desenharPz()"><div class="pz-achou" id="pzAchou"></div></div>
+        <div class="campo pz-rgd"><label>RGD <span class="pz-achou" id="pzAchou"></span></label><input id="pzRgd" placeholder="MRA 1234" autocapitalize="characters" autocomplete="off" oninput="desenharPz()"></div>
         <div class="campo pz-desk"><label>Resultado</label><select id="pzRes"><option value="">—</option><option>Prenha</option><option>Vazia</option><option>PRT</option></select></div>
         <div class="campo pz-desk"><label>&nbsp;</label><button class="btn btn-primary" onclick="lancarPz($('#pzRes').value)">+ Lançar</button></div>
         <div class="pz-bts pz-cel"><button class="pz-b P" onclick="lancarPz('Prenha')">Prenha</button><button class="pz-b V" onclick="lancarPz('Vazia')">Vazia</button><button class="pz-b T" onclick="lancarPz('PRT')">PRT</button></div>
-        <div class="campo pz-ord"><label>Ordem</label><select id="pzOrd" onchange="desenharPz()"><option value="rec">Mais recentes</option><option value="rgd">RGD</option></select></div>
-        <div class="campo so-desk"><label>&nbsp;</label><div style="display:flex;gap:6px"><button class="btn btn-ghost" onclick="exportarPz()">⬇ Excel</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div></div>
+        <div class="campo so-desk" style="margin-left:auto"><label>&nbsp;</label><div style="display:flex;gap:6px"><button class="btn btn-ghost" onclick="exportarPz()">⬇ Excel</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div></div>
       </div>
       <div class="pz-chips" id="pzChips"></div>
       <div class="pz-lista" id="pzLista"><div class="vazio">Carregando...</div></div>
@@ -346,14 +345,14 @@ const textoBusca=i=>aba==='nasc'?[i.rgdMae,i.receptora,i.sexo,i.pelagem,i.obs,i.
 /* filtros da tabela (estilo Excel, igual Custos) */
 // filtros da tabela ficam guardados no aparelho (não somem ao trocar de mês/aba nem ao recarregar)
 const FILTRO_KEY='app-nelore-mra-caderneta-filtros';
-const filtrosCol={nasc:{},geral:{}},ordemCol={nasc:null,geral:null};
+const filtrosCol={nasc:{},geral:{},prenhez:{}},ordemCol={nasc:null,geral:null,prenhez:null};
 try{const f=JSON.parse(localStorage.getItem(FILTRO_KEY)||'{}');Object.assign(filtrosCol,f.filtros||{});Object.assign(ordemCol,f.ordem||{})}catch(e){}
 const guardarFiltros=()=>{try{localStorage.setItem(FILTRO_KEY,JSON.stringify({filtros:filtrosCol,ordem:ordemCol}))}catch(e){}};
 const valCampo=(i,k)=>k==='data'?(i.data||''):k==='por'?(i.criadoPorNome||''):k==='peso'?(numBR(i.peso)??''):k==='obs'&&aba==='geral'?obsGeral(i):(i[k]||'');
 const txtCampo=(i,k)=>{const v=valCampo(i,k);return v===''?'(vazio)':k==='data'?fmtData(v):k==='peso'?String(v).replace('.',','):String(v)};
 const temFiltroCol=()=>Object.values(filtrosCol[aba]).some(Boolean);
-function filtradas(exceto){const f=filtrosCol[aba],q=$('#busca').value.trim().toLowerCase();
-  return itens.filter(i=>(!q||textoBusca(i).toLowerCase().includes(q))&&Object.entries(f).every(([k,vs])=>k===exceto||!vs||vs.includes(txtCampo(i,k))))}
+function filtradas(exceto){const f=filtrosCol[aba],pzq=aba==='prenhez'?chaveRgd($('#pzRgd').value):'',q=aba==='prenhez'?'':$('#busca').value.trim().toLowerCase();
+  return itens.filter(i=>(!pzq||i.k.includes(pzq))&&(!q||textoBusca(i).toLowerCase().includes(q))&&Object.entries(f).every(([k,vs])=>k===exceto||!vs||vs.includes(txtCampo(i,k))))}
 function visiveis(){
   const o=ordemCol[aba];
   return filtradas().sort((a,b)=>{
@@ -389,6 +388,7 @@ const obsHtml=o=>o?(OBS_LISTA.some(x=>String(o).toLowerCase().startsWith(x.toLow
 function minisHtml(i){return (i.fotos||[]).map(f=>miniFotos[f]?`<img src="${miniFotos[f]}" alt="" onclick="event.stopPropagation();verFotoId('${f}')">`:'<span>📷</span>').join('')}
 function carregarMinis(v){v.forEach(i=>(i.fotos||[]).forEach(f=>{if(!(f in miniFotos)){miniFotos[f]='';colFotos.doc(f).get().then(d=>{if(d.exists){miniFotos[f]=d.data().dados;desenhar()}}).catch(()=>{})}}))}
 function desenhar(){
+  if(aba==='prenhez')return desenharPz();
   guardarFiltros();
   itens=todos.filter(i=>i.aba===aba&&(!mes||i.mes===mes));
   montarMeses();
@@ -580,25 +580,28 @@ function ouvirPz(){
   pararPz=refPz(estPz).onSnapshot(d=>{pz=(d.exists&&d.data().animais)||{};desenharPz()},e=>{$('#pzLista').innerHTML=`<div class="vazio">Não consegui carregar.<br><small>${esc(e.message)}</small></div>`});
 }
 function filtroPzSet(f){filtroPz=filtroPz===f?'':f;desenharPz()}
+// usa os mesmos filtros ▾ das outras abas (itens = animais da estação, já com o botão Prenha/Vazia/PRT aplicado)
 function visiveisPz(){
-  const q=chaveRgd($('#pzRgd').value),ord=$('#pzOrd').value;
-  return Object.entries(pz).filter(([k,x])=>x&&x.resultado&&(!filtroPz||x.resultado===filtroPz)&&(!q||k.includes(q)))
-    .map(([k,x])=>({k,...x}))
-    .sort((a,b)=>ord==='rgd'?a.rgd.localeCompare(b.rgd,'pt-BR',{numeric:true}):String(b.em||'').localeCompare(String(a.em||'')));
+  itens=Object.entries(pz).filter(([k,x])=>x&&x.resultado&&(!filtroPz||x.resultado===filtroPz)).map(([k,x])=>({k,...x,criadoPorNome:x.por||'',criadoEmLocal:x.em||''}));
+  return visiveis();
 }
 function desenharPz(){
   const todosPz=Object.values(pz).filter(x=>x&&x.resultado),n=todosPz.length,cont=r=>todosPz.filter(x=>x.resultado===r).length;
   $('#pzChips').innerHTML=`<button class="pill ${!filtroPz?'on':''}" onclick="filtroPzSet('')">Todas<b>${n}</b></button>`
     +RES_PZ.map(([r,l])=>{const c=cont(r);return `<button class="pill ${l} ${filtroPz===r?'on':''}" onclick="filtroPzSet('${r}')">${r}<b>${c}</b>${n&&r==='Prenha'?` · ${Math.round(c*100/n)}%`:''}</button>`}).join('');
   const typed=$('#pzRgd').value.trim(),ja=typed?pz[chaveRgd(typed)]:null;
-  $('#pzAchou').innerHTML=ja&&ja.resultado?`Já lançada: <b>${esc(ja.resultado)}</b> — escolha pra trocar`:'';
+  $('#pzAchou').innerHTML=ja&&ja.resultado?`· já está <b>${esc(ja.resultado)}</b>`:'';
   if(ja&&ja.resultado&&document.activeElement===$('#pzRgd'))$('#pzRes').value=ja.resultado;
-  const v=visiveisPz();
-  if(!v.length){$('#pzLista').innerHTML=`<div class="vazio">${n?'Nada encontrado.':`Nada lançado na estação ${esc(estPz)}.`}</div>`;return}
+  guardarFiltros();
+  const v=visiveisPz(),fil=temFiltroCol()||ordemCol.prenhez;
+  if(fil)$('#pzChips').innerHTML+=`<span class="aviso-f">🔎 ${temFiltroCol()?'Filtro na tabela':'Ordenado'} <button onclick="limparTudoCol()">Limpar</button></span>`;
+  const fb=(k,t)=>`<div class="thf"><span>${t}</span><button class="fbtn ${filtrosCol.prenhez[k]||(ordemCol.prenhez&&ordemCol.prenhez.k===k)?'on':''}" onclick="abrirFiltro(event,'${k}')" title="Filtrar / ordenar">▾</button></div>`;
+  const cab=`<div class="pz-reg pz-cab">${fb('rgd','RGD')}${fb('resultado','Resultado')}<div class="info">${fb('data','Data')}</div><div class="info por">${fb('por','Por')}</div><span></span></div>`;
+  if(!v.length){$('#pzLista').innerHTML=(n?cab:'')+`<div class="vazio">${n?'Nada encontrado.':`Nada lançado na estação ${esc(estPz)}.`}</div>`;return}
   const podeDel=x=>ehAdmin||x.criadoPorUid===eu.uid;
-  $('#pzLista').innerHTML=v.slice(0,500).map(x=>`<div class="pz-reg"><div class="rgd" onclick="pegarPz('${x.k}')">${esc(x.rgd)}</div>
+  $('#pzLista').innerHTML=cab+v.slice(0,500).map(x=>`<div class="pz-reg"><div class="rgd" onclick="pegarPz('${x.k}')">${esc(x.rgd)}</div>
     <select class="pz-sel ${letraPz(x.resultado)}" onchange="gravarPz(pz['${x.k}'].rgd,this.value);desenharPz()">${RES_PZ.map(([r])=>`<option ${r===x.resultado?'selected':''}>${r}</option>`).join('')}</select>
-    <div class="info">${fmtData(x.data)} · ${esc(x.por||'')}</div>
+    <div class="info">${fmtData(x.data)}</div><div class="info por">${esc(x.por||'')}</div>
     ${podeDel(x)?`<button class="xdel" title="Excluir" onclick="apagarPz('${x.k}')">🗑</button>`:'<span></span>'}</div>`).join('')
     +(v.length>500?`<div class="vazio">Mostrando 500 de ${v.length}. Digite o RGD pra achar.</div>`:'');
 }
