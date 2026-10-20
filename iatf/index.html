@@ -128,7 +128,7 @@ td.cell-selected{background:#dbe9ff!important}
 .dash-hero:after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:#b39a3b}
 .dash-hero img{width:96px;height:96px;border-radius:50%;flex:0 0 96px;box-shadow:0 0 0 3px #ffffff30}
 .dash-hero .bt{font-size:21px;font-weight:800;letter-spacing:.01em}.dash-hero .bs{font-size:11px;opacity:.75;letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
-.dash-hero .hn{margin-left:auto;text-align:right}.dash-hero .hn .v{font-size:52px;font-weight:800;line-height:1}.dash-hero .hn .l{font-size:12px;opacity:.85;margin-top:6px}
+.dash-hero .hn{margin-left:auto;text-align:right}.dash-hero .hn .v{font-size:52px;font-weight:800;line-height:1}.dash-hero .hn .l{font-size:12px;opacity:.85;margin-top:6px}.dash-hero .hq{display:flex;justify-content:flex-end;gap:14px;margin-top:8px;font-size:13px;opacity:.9}.dash-hero .hq span+span{border-left:1px solid #ffffff55;padding-left:14px}.dash-hero .hq b{font-size:15px}
 .dash-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-top:14px}
 .dkpi{background:#fff;border:1px solid #e3e8e4;border-radius:12px;padding:13px 15px;border-top:3px solid var(--k,#1f6a49)}
 .dkpi .l{font-size:12px;color:#5d6a62;font-weight:600}.dkpi .v{font-size:26px;font-weight:800;margin-top:6px;color:#17211c}
@@ -156,7 +156,7 @@ td.cell-selected{background:#dbe9ff!important}
 .dmore{margin-top:10px;border:1px dashed #b7c9bd;background:#fff;color:#1f6a49;border-radius:8px;padding:7px 12px;font-weight:700;cursor:pointer;width:100%;font-size:12.5px}.dmore:hover{background:#f5faf7}
 .dempty{padding:18px;text-align:center;color:#6c776f;font-size:12.5px}
 @media(max-width:1100px){.dash-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.dash-2{grid-template-columns:1fr}}
-@media(max-width:600px){.dash-hero{flex-wrap:wrap;padding:16px}.dash-hero img{width:64px;height:64px;flex-basis:64px}.dash-hero .hn{margin-left:0;text-align:left;width:100%}.dash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.dash-hero{flex-wrap:wrap;padding:16px}.dash-hero img{width:64px;height:64px;flex-basis:64px}.dash-hero .hn{margin-left:0;text-align:left;width:100%}.dash-hero .hq{justify-content:flex-start}.dash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* LOGIN FIREBASE */
 body.auth-pending .app,body.auth-logged-out .app{display:none!important}
@@ -1409,7 +1409,7 @@ function dashboard(){
   const kpi=(l,v,c)=>`<div class="dkpi" style="--k:${c}"><div class="l">${l}</div><div class="v">${v}</div></div>`;
   $('#content').innerHTML=`
   <div class="dash-hero"><img src="${MRA_LOGO}" alt="Nelore MRA"><div><div class="bt">Nelore MRA</div><div class="bs">Fazenda Paraíso · ${esc(activeSeason().name)}</div></div>
-    <div class="hn"><div class="v">${pctTxt(tudo.rate)}</div><div class="l">${tudo.p} de ${tudo.n}</div></div></div>
+    <div class="hn"><div class="v">${pctTxt(tudo.rate)}</div><div class="hq">${[['IATF',g],['FIV',gf]].filter(([,x])=>x.n).map(([l,x])=>`<span><b>${pctTxt(x.rate)}</b> ${l}</span>`).join('')}</div></div></div>
   <div class="dash-kpis">${kpi('Matrizes',seasonAnimals().length,'#5d6a62')}${kpi('Prenhas',oc.P,'#216440')}${kpi('Vazias',oc.V,'#b8483a')}${kpi('PRT',oc.PRT,'#c08a2e')}${kpi('Sem resultado',oc.none,'#9aa49d')}${kpi('Doses em saldo',db.semen.reduce((a,s)=>a+stockBalance(s),0),'#1f6a49')}</div>
   <div class="dash-h">% de prenhez por IATF</div>
   <div class="dash-lado"><div class="dcard"><div class="hd"><div class="t">% de prenhez por touro</div></div>${bullSection()}</div><div class="lado-cards">${iatfSection()}</div></div>
