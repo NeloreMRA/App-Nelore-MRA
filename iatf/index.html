@@ -60,6 +60,10 @@ td{padding:8px 10px;border-bottom:1px solid #edf0ee;white-space:nowrap}tbody tr:
 @media(max-width:700px){.out-actions{margin-left:0;border-left:0;padding-left:0}}
 #pageActions{display:flex;gap:8px;align-items:center;flex-wrap:nowrap}#pageActions .ghost{padding:8px 12px;font-size:13px}.abas-t{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 10px}.abas-t button{border:1px solid #d9e4dc;background:#f6f8f6;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;color:#4a5850;cursor:pointer}.abas-t button.on{background:#1f6a49;color:#fff;border-color:#1f6a49}.abas-t button small{font-weight:400;opacity:.8;margin-left:4px}.dash-lado{display:grid;grid-template-columns:auto minmax(280px,1fr);gap:12px;align-items:start}.dash-lado>div>.dcard:first-child{margin-top:0!important}.lado-cards .dash-grid{grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}@media(max-width:1100px){.dash-lado{grid-template-columns:1fr}}.menu-op{position:relative;display:inline-block}.menu-op-lista{display:none;position:fixed;z-index:60;background:#fff;border:1px solid #d9dfda;border-radius:10px;box-shadow:0 10px 30px #0003;padding:6px;min-width:240px}.menu-op.aberto .menu-op-lista{display:block}.menu-op-lista>button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;padding:6px 9px;border-radius:7px;font-size:13px;cursor:pointer;color:#26332b}.menu-op-lista>button:hover{background:#f2f5f3}.op-ico{flex:0 0 28px;width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center}.menu-op-zoom{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #e8ece9;margin-top:4px;padding:8px 6px 3px;font-size:12px;color:#69746c}.fiv-resumo{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 10px}.fiv-resumo.inline{margin:0 0 0 6px;gap:6px}.fiv-resumo.inline .fiv-q{padding:4px 14px}.fiv-resumo.inline .fiv-q-t{display:none}.fiv-resumo.inline .fiv-q-c{gap:18px}.fiv-resumo.inline .fiv-q-c div{min-width:50px}.fiv-resumo.inline .fiv-q-c span{font-size:12px}.fiv-resumo.inline .fiv-q-c strong{font-size:20px}.fiv-q{border:1px solid #d9e4dc;background:#fff;border-radius:10px;padding:7px 12px}.fiv-q-t{font-size:10px;font-weight:800;color:#69746c;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}.fiv-q-c{display:flex;gap:16px}.fiv-q-c div{display:flex;flex-direction:column;align-items:center;min-width:44px}.fiv-q-c span{font-size:11px;color:#4a5850}.fiv-q-c strong{font-size:19px;line-height:1.15}
 .date-box{display:flex;align-items:center;gap:7px;background:#edf6f0;border:1px solid #cfe3d5;border-radius:8px;padding:3px 8px}.date-box .input{padding:5px 7px;min-height:0}.date-box label{font-size:12px;font-weight:650}
+.date-box.db-data{background:#e3f1e8;border-color:#b7d8c3}.date-box.db-data label{color:#1f6a49}
+.date-box.db-toque{background:#e2eff2;border-color:#b3d4db}.date-box.db-toque label{color:#1d6470}
+.date-box.db-local{background:#eef0e0;border-color:#d3d8b0}.date-box.db-local label{color:#5d6b2a}
+.date-box.falta{background:#fff6e2;border:1px dashed #e2a93f}.date-box.falta label{color:#a0661a}.date-box.falta label:after{content:" •";color:#e08a1e}
 .iatf-category-box{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid #d9dfda;border-radius:8px;padding:6px 9px}.iatf-category-box>span{font-size:11px;font-weight:700;color:#657169;margin-right:2px}.iatf-cat-check{display:flex;align-items:center;gap:5px;padding:4px 7px;border-radius:7px;cursor:pointer;font-size:12px;user-select:none}.iatf-cat-check input{margin:0}.iatf-cat-check.vacas{background:#e7f0ff;color:#245a9c}.iatf-cat-check.primi{background:#fff0da;color:#8a5919}.iatf-cat-check.preco{background:#efe8ff;color:#6743a0}
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.clickable{cursor:pointer}
 .help-btn{margin-left:10px;width:24px;height:24px;border-radius:50%;border:1px solid #cfe5d5;background:#eff8f2;color:#1f6a49;font-weight:800;font-size:13px;cursor:pointer;vertical-align:middle;line-height:1;padding:0}.help-btn:hover{background:#1f6a49;color:#fff}
@@ -193,7 +197,7 @@ body.authenticated #loginScreen{display:none}
   .toolbar button,.toolbar select,.quick-add button{padding:7px 10px;font-size:13px;min-height:0}
   .out-actions{gap:6px;padding-left:0;border-left:0;margin-left:0}
   .zoom-box{display:none!important}.menu-op-zoom{display:none!important}
-  .date-box{padding:4px 7px;gap:2px;flex-direction:column;align-items:stretch;flex:1 1 140px}.date-box label{font-size:10.5px}.date-box input{min-width:0!important;width:100%;padding:5px 6px;font-size:14px}
+  .date-box{padding:4px 7px;gap:2px;flex-direction:column;align-items:stretch;flex:1 1 140px}.date-box label{font-size:10.5px}.date-box input{min-width:0!important;width:100%!important;padding:5px 6px;font-size:14px}
   .nav span[data-curto]{font-size:0!important}.nav span[data-curto]::after{content:attr(data-curto);font-size:9.5px}
   .fiv-resumo{gap:6px;flex-wrap:nowrap}.fiv-resumo.inline{width:100%;margin:0}.fiv-resumo.inline .fiv-q{padding:4px 8px}.fiv-resumo.inline .fiv-q-c{gap:6px}.fiv-resumo.inline .fiv-q-c div{min-width:0}.fiv-resumo.inline .fiv-q-c span{font-size:10.5px}.fiv-resumo.inline .fiv-q-c strong{font-size:17px}.fiv-q{padding:5px 8px;flex:1 1 auto}.fiv-q-c{gap:8px;justify-content:space-between}.fiv-q-c div{min-width:0}.fiv-q-c span{font-size:10px}.fiv-q-c strong{font-size:16px}
   /* arrastar linha não funciona no dedo: some a alça */
@@ -767,6 +771,9 @@ function toggleMenuOp(btn,e){
 document.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('.menu-op-lista .zoom-box'))if(!e.target.closest||!e.target.closest('.menu-op'))fecharMenusOp()});
 window.addEventListener('scroll',fecharMenusOp,true);
 window.toggleMenuOp=toggleMenuOp;window.fecharMenusOp=fecharMenusOp;
+// bloquinho de cima (Data, Data do Toque, Local): cor própria e fica amarelo enquanto estiver vazio
+function caixaTopo(tipo,rotulo,val,input){return `<div class="date-box db-${tipo}${val?'':' falta'}"><label>${rotulo}</label>${input}</div>`}
+document.addEventListener('input',e=>{const b=e.target.closest&&e.target.closest('.date-box');if(b&&e.target.matches('input'))b.classList.toggle('falta',!e.target.value)});
 function zoomControlsHTML(){
   return `<div class="zoom-box"><button class="mini" type="button" onclick="zoomTable(-10)" title="Diminuir">−</button><span class="zoom-label">${tableZoomPct}%</span><button class="mini" type="button" onclick="zoomTable(10)" title="Aumentar">+</button></div>`;
 }
@@ -882,7 +889,7 @@ const GRID_ADD_ROWS={
   fivTable:n=>{const d=fivAtual();if(d===null)return;fivSort={key:'',dir:1};
     for(let i=0;i<n;i++)db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,n:fivProxN(d),rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});renderFivTable()},
   acasalTable:n=>{acasalSort={key:'',dir:1};
-    for(let i=0;i<n;i++)db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:acasalAtual()||todayISO()});renderAcasalTable()},
+    for(let i=0;i<n;i++)db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:acasalDataNova()});renderAcasalTable()},
   embrioesTable:n=>{embrioesSort={key:'',dir:1};
     for(let i=0;i<n;i++)db.embrioes.push({id:uid('emb'),rgd:'',touro:'',estFresco:0,estVit:0,estDt:0,saidaFresco:0,saidaVit:0,saidaDt:0});renderEmbrioesTable()}
 };
@@ -1300,6 +1307,7 @@ function createNextIatf(){
   excelFilters.iatf={};
   save();
   iatfPage();
+  quickAddAnimalToCycle(); // IATF nova já abre a janela pra colocar as matrizes
 }
 window.createNextIatf=createNextIatf;
 /* ===== DASHBOARD ===================================================================== */
@@ -1689,7 +1697,7 @@ function iatfPage(){
   <div class="toolbar" style="margin-bottom:9px">
     <div class="filters">
       <select id="cycleSel" onchange="selectIatfCycle(this.value)">${Array.from({length:maxIatfCycle()},(_,i)=>i+1).map(c=>`<option value="${c}" ${c===iatfCycle?'selected':''}>${c}ª IATF</option>`).join('')}</select><button class="ghost" onclick="createNextIatf()">+ Criar IATF</button>
-      <div class="date-box"><label>Data da ${iatfCycle}ª IATF</label><input type="date" class="input" style="min-width:145px" value="${esc(cycleDate(iatfCycle))}" onchange="setCycleDate(${iatfCycle},this.value)"></div><div class="date-box"><label>Data do Toque</label><input type="date" class="input" style="min-width:145px" value="${esc(toqueDate(iatfCycle))}" onchange="setToqueDate(${iatfCycle},this.value)"></div>
+      ${caixaTopo('data',`Data da ${iatfCycle}ª IATF`,cycleDate(iatfCycle),`<input type="date" class="input" style="min-width:145px" value="${esc(cycleDate(iatfCycle))}" onchange="setCycleDate(${iatfCycle},this.value)">`)}${caixaTopo('toque','Data do Toque',toqueDate(iatfCycle),`<input type="date" class="input" style="min-width:145px" value="${esc(toqueDate(iatfCycle))}" onchange="setToqueDate(${iatfCycle},this.value)">`)}
     </div>
   </div>
   <div class="toolbar">
@@ -2018,8 +2026,11 @@ function acasalDatasLista(){
   const ds=new Set([...((db.acasalDatas||{})[sid]||[]),...seasonAcasal().map(a=>a.createdAt||'').filter(Boolean)]);
   const l=[...ds].sort();if(seasonAcasal().some(a=>!a.createdAt))l.push('');return l;
 }
-function acasalAtual(){const l=acasalDatasLista();if(acasalData===null||!l.includes(acasalData))acasalData=l.length?l.filter(Boolean).slice(-1)[0]??l[0]:null;return acasalData}
-function acasalDaData(){const d=acasalAtual();return d===null?[]:seasonAcasal().filter(a=>(a.createdAt||'')===d)}
+const ACASAL_TODOS='__todos';
+function acasalAtual(){const l=acasalDatasLista();if(acasalData===ACASAL_TODOS&&l.length)return acasalData;if(acasalData===null||!l.includes(acasalData))acasalData=l.length?l.filter(Boolean).slice(-1)[0]??l[0]:null;return acasalData}
+function acasalDaData(){const d=acasalAtual();return d===null?[]:d===ACASAL_TODOS?seasonAcasal():seasonAcasal().filter(a=>(a.createdAt||'')===d)}
+// data que uma linha nova recebe (em "Todos" vai pra data mais recente)
+function acasalDataNova(){const d=acasalAtual();return d===ACASAL_TODOS?(acasalDatasLista().filter(Boolean).slice(-1)[0]||todayISO()):(d||todayISO())}
 function selectAcasalData(v){acasalData=v;acasalPage();saveViewState()} window.selectAcasalData=selectAcasalData;
 function openCriarAcasalData(){
   openModal(`<h2>Criar data</h2><div class="form-grid"><div class="field full"><label>Data</label><input id="acNovaData" type="date" class="input" value="${todayISO()}"></div></div>
@@ -2065,8 +2076,8 @@ function acasalPage(){
   <div class="animals-page">
   <div class="toolbar" style="margin-bottom:9px">
     <div class="filters">
-      ${lista.length?`<select id="acasalSel" onchange="selectAcasalData(this.value)">${lista.map(d=>`<option value="${esc(d)}" ${d===atual?'selected':''}>${d?fmtDate(d):'Sem data'}</option>`).join('')}</select>`:''}<button class="ghost" onclick="openCriarAcasalData()">+ Criar data</button>
-      ${atual!==null?`<div class="date-box"><label>Data</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarAcasalData(this.value,this)"></div><button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirAcasalData()">Excluir esta data</button>`:''}
+      ${lista.length?`<select id="acasalSel" onchange="selectAcasalData(this.value)"><option value="${ACASAL_TODOS}" ${atual===ACASAL_TODOS?'selected':''}>Todos</option>${lista.map(d=>`<option value="${esc(d)}" ${d===atual?'selected':''}>${d?fmtDate(d):'Sem data'}</option>`).join('')}</select>`:''}<button class="ghost" onclick="openCriarAcasalData()">+ Criar data</button>
+      ${atual!==null&&atual!==ACASAL_TODOS?`${caixaTopo('data','Data',atual,`<input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarAcasalData(this.value,this)">`)}<button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirAcasalData()">Excluir esta data</button>`:''}
     </div>
   </div>
   ${atual===null?`<div class="notice">Nenhum acasalamento nesta estação. Clique em <strong>+ Criar data</strong>.</div>`:''}
@@ -2082,7 +2093,7 @@ function acasalPage(){
   renderAcasalTable();
 }
 function addBlankAcasal(){
-  const d=acasalAtual();if(d===null)return openCriarAcasalData();
+  if(acasalAtual()===null)return openCriarAcasalData();const d=acasalDataNova();
   db.acasalamentos=db.acasalamentos||[];
   db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:d});
   save();acasalPage();
@@ -2214,7 +2225,7 @@ function importAcasalExcel(file){
         if(x.obs)existing.obs=x.obs;
         atualizados++;
       }else{
-        const novo={id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:x.rgd,category:x.cat||'',createdAt:acasalAtual()||todayISO()};
+        const novo={id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:x.rgd,category:x.cat||'',createdAt:acasalDataNova()};
         ACASAL_COLS.forEach(([k])=>{novo[k]=x[k]||''});
         novo.obs=x.obs||'';
         db.acasalamentos.push(novo);
@@ -2524,7 +2535,8 @@ function criarFiv(){
   const d=$('#fivNovaData').value;if(!d)return alert('Informe a data da FIV.');
   const sid=db.meta.activeSeasonId;
   if(!fivDatasLista().includes(d)){db.fivDatas=db.fivDatas||{};db.fivDatas[sid]=[...((db.fivDatas[sid])||[]),d];save()}
-  fivData=d;closeModal();fivPage();
+  fivData=d;closeModal();
+  if(!seasonFiv().some(r=>r.data===d))addBlankFiv();else fivPage(); // FIV nova já vem com uma linha pronta
 } window.criarFiv=criarFiv;
 // muda a data da FIV aberta: leva junto todas as linhas dela
 function mudarDataFiv(nova,el){
@@ -2571,7 +2583,7 @@ function fivPage(){
   <div class="toolbar" style="margin-bottom:9px">
     <div class="filters">
       ${lista.length?`<select id="fivSel" onchange="selectFiv(this.value)">${lista.map(d=>`<option value="${esc(d)}" ${d===atual?'selected':''}>${esc(fivNome(d))}</option>`).join('')}</select>`:''}<button class="ghost" onclick="openCriarFiv()">+ Criar FIV</button>
-      ${atual!==null?`<div class="date-box"><label>Data da FIV</label><input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)"></div><div class="date-box"><label>Data do Toque</label><input type="date" class="input" style="min-width:145px" value="${esc(fivToque(atual))}" onchange="setFivToque(this.value)"></div><div class="date-box"><label>Local</label><input class="input" id="fivLocal" style="min-width:0;width:150px" value="${esc(fivLocal(atual))}" onchange="setFivLocal(this.value)" onkeydown="if(event.key==='Enter')this.blur()"></div>`:''}
+      ${atual!==null?`${caixaTopo('data','Data da FIV',atual,`<input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarDataFiv(this.value,this)">`)}${caixaTopo('toque','Data do Toque',fivToque(atual),`<input type="date" class="input" style="min-width:145px" value="${esc(fivToque(atual))}" onchange="setFivToque(this.value)">`)}${caixaTopo('local','Local',fivLocal(atual),`<input class="input" id="fivLocal" style="min-width:0;width:150px" value="${esc(fivLocal(atual))}" onchange="setFivLocal(this.value)" onkeydown="if(event.key==='Enter')this.blur()">`)}`:''}
     </div>
   </div>
   ${atual===null?`<div class="notice">Nenhuma FIV nesta estação. Clique em <strong>+ Criar FIV</strong> e escolha a data.</div>`:`

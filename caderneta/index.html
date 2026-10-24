@@ -203,7 +203,7 @@ textarea.input{min-height:96px;resize:vertical}
     <div id="secPz" class="hidden">
       <div class="pz-top">
         <div class="campo"><label>Estação</label><select id="pzEst" onchange="trocarEstacao(this.value)"></select></div>
-        <div class="campo pz-rgd"><label>RGD</label><input id="pzRgd" placeholder="MRA 1234" autocapitalize="characters" autocomplete="off" oninput="desenharPz()"><span class="pz-ja" id="pzAchou"></span></div>
+        <div class="campo pz-rgd"><label>RGD</label><input id="pzRgd" placeholder="RGD" autocapitalize="characters" autocomplete="off" oninput="desenharPz()"><span class="pz-ja" id="pzAchou"></span></div>
         <div class="campo pz-obsc"><label>Observação</label><input id="pzObs" placeholder="(se quiser)" autocomplete="off"></div>
         <div class="campo pz-desk"><label>Resultado</label><select id="pzRes"><option value="">—</option><option>Prenha</option><option>Vazia</option><option>PRT</option></select></div>
         <div class="campo pz-desk"><label>&nbsp;</label><button class="btn btn-primary" onclick="lancarPz($('#pzRes').value)">+ Lançar</button></div>
@@ -564,7 +564,7 @@ const RES_PZ=[['Prenha','P'],['Vazia','V'],['PRT','T']],letraPz=r=>(RES_PZ.find(
 const EST_PADRAO='26/27';
 let estacoesPz=[],estPz='',pz={},pararPz=null,filtroPz='';
 try{estPz=localStorage.getItem('app-nelore-mra-caderneta-estacao')||''}catch(e){}
-const normRgd=v=>{let t=String(v||'').toUpperCase().replace(/\s+/g,' ').trim();if(/^\d+$/.test(t))t='MRA '+t;return t.replace(/^MRA\s*(?=\d)/,'MRA ')};
+const normRgd=v=>String(v||'').toUpperCase().replace(/\s+/g,' ').trim(); // RGD livre (nem sempre é MRA)
 const chaveRgd=v=>normRgd(v).replace(/[^A-Z0-9]/g,'');
 const refPz=e=>fs.collection('apps').doc('caderneta').collection('config').doc('prenhez_'+e.replace(/[^0-9A-Za-z]+/g,'-'));
 function listaEstacoes(){return [...new Set([EST_PADRAO,...estacoesPz,...(estPz?[estPz]:[])])].sort((a,b)=>b.localeCompare(a,'pt-BR',{numeric:true}))}
