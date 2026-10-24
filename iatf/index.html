@@ -889,6 +889,7 @@ const GRID_ADD_ROWS={
   fivTable:n=>{const d=fivAtual();if(d===null)return;fivSort={key:'',dir:1};
     for(let i=0;i<n;i++)db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,n:fivProxN(d),rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});renderFivTable()},
   acasalTable:n=>{acasalSort={key:'',dir:1};
+    if(acasalAtual()===ACASAL_TODOS)return; // em "Todos" não cria linha (não saberia a data)
     for(let i=0;i<n;i++)db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:acasalDataNova()});renderAcasalTable()},
   embrioesTable:n=>{embrioesSort={key:'',dir:1};
     for(let i=0;i<n;i++)db.embrioes.push({id:uid('emb'),rgd:'',touro:'',estFresco:0,estVit:0,estDt:0,saidaFresco:0,saidaVit:0,saidaDt:0});renderEmbrioesTable()}
@@ -2083,17 +2084,17 @@ function acasalPage(){
   ${atual===null?`<div class="notice">Nenhum acasalamento nesta estação. Clique em <strong>+ Criar data</strong>.</div>`:''}
   <div class="toolbar">
     <div class="quick-add">
-      <button class="primary" onclick="addBlankAcasal()">+ Linha em branco</button>
+      ${atual===ACASAL_TODOS?'':'<button class="primary" onclick="addBlankAcasal()">+ Linha em branco</button>'}
       <button class="danger-btn" onclick="openNaoUtilizadasPanel()">🗂 Não utilizadas (${seasonNaoUtil().length})</button>
     </div>
-    <div class="out-actions">${menuOpcoes([['⬆ Subir Excel',"document.getElementById('acasalImportFile').click()"],['⬇ Baixar Acasalamentos (Excel)','exportAcasalFull()'],['⬇ Excel pra subir em Matrizes','exportAcasalToMatrizesTemplate()']])}</div>
+    <div class="out-actions">${menuOpcoes([atual===ACASAL_TODOS?null:['⬆ Subir Excel',"document.getElementById('acasalImportFile').click()"],['⬇ Baixar Acasalamentos (Excel)','exportAcasalFull()'],['⬇ Excel pra subir em Matrizes','exportAcasalToMatrizesTemplate()']])}</div>
   </div>
   <div id="acasalTable"></div>
   </div>`;
   renderAcasalTable();
 }
 function addBlankAcasal(){
-  if(acasalAtual()===null)return openCriarAcasalData();const d=acasalDataNova();
+  if(acasalAtual()===null)return openCriarAcasalData();if(acasalAtual()===ACASAL_TODOS)return alert('Escolha uma data em cima pra adicionar linha.');const d=acasalDataNova();
   db.acasalamentos=db.acasalamentos||[];
   db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:d});
   save();acasalPage();
@@ -2194,6 +2195,7 @@ function exportNaoUtilizadas(){
 
 /* IMPORTAÇÃO — Acasalamentos e Não Utilizadas (respeita a estação ativa) */
 function importAcasalExcel(file){
+  if(acasalAtual()===ACASAL_TODOS)return alert('Escolha uma data em cima pra subir o Excel.');
   readExcel(file,rows=>{
     if(!rows.length)return alert('O Excel não possui linhas para importar.');
     const errs=[],prepared=[];
