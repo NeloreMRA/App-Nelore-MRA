@@ -116,6 +116,12 @@ td.cell-selected{background:#dbe9ff!important}
 .animals-page .cell-input[style*="min-width:110px"]{min-width:92px!important}
 .animals-page .cell-input[style*="min-width:210px"],.stock-page .cell-input[style*="min-width:210px"]{min-width:175px!important}
 .animals-page select.cell-input{min-width:104px!important}
+/* Células estilo Excel: o campo ocupa a célula inteira (sem caixinha dentro); a célula ativa ganha borda verde */
+td:has(> .cell-input){padding:0!important}
+td > .cell-input{display:block;width:100%;min-height:30px;margin:0;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;padding:4px 7px!important}
+td > .cell-input:hover{border:0!important}
+td > .cell-input:focus{outline:none!important;background:transparent!important}
+td:has(> .cell-input:focus){outline:2px solid #1f7a4d;outline-offset:-2px;background:#fff!important}
 .category-select.cat-vacas{background:#e7f0ff!important;color:#245a9c!important;font-weight:700}
 .category-select.cat-primi{background:#fff0da!important;color:#8a5919!important;font-weight:700}
 .category-select.cat-preco{background:#efe8ff!important;color:#6743a0!important;font-weight:700}
@@ -205,7 +211,7 @@ body.authenticated #loginScreen{display:none}
   /* RGD fica parado na esquerda ao rolar a tabela pro lado */
   #animalTable :is(th,td):nth-child(2),#acasalTable :is(th,td):nth-child(2),#iatfTable :is(th,td):nth-child(3),#fivTable :is(th,td):nth-child(3){position:sticky;left:0;z-index:2;background:#fff;box-shadow:2px 0 0 #e3e7e4}
   #animalTable thead th:nth-child(2),#acasalTable thead th:nth-child(2),#iatfTable thead th:nth-child(3),#fivTable thead th:nth-child(3){z-index:4;background:#f6f8f6}
-  .cell-input{min-height:34px}
+  .cell-input,td > .cell-input{min-height:36px}
   /* menu de baixo com nome embaixo do ícone, rola pro lado */
   .sidebar nav{justify-content:flex-start!important;gap:2px}
   .nav{flex-direction:column;gap:1px!important;padding:5px 7px!important;font-size:17px;min-width:58px;flex:0 0 auto}
