@@ -828,8 +828,8 @@ function colResizeStart(e,id,lab,th){
   const up=()=>{document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);h.classList.remove('dragging');document.body.style.cursor='';saveColWidths()};
   document.addEventListener('mousemove',move);document.addEventListener('mouseup',up);
 }
-/* TELA/FILTROS/ORDENAÇÃO LEMBRADOS NO F5 — guarda neste navegador a tela aberta, a IATF escolhida,
-   os filtros ▼ e o A→Z/Z→A de cada tabela. Filtros e IATF só voltam se for a mesma estação. */
+/* LEMBRADO NO F5 — guarda neste navegador a tela aberta e a IATF/FIV/data escolhida (mesma estação).
+   Filtros ▼ e A→Z/Z→A NÃO voltam: abrir o app ou dar F5 começa sem filtro (pedido do dono). */
 const VIEW_KEY='app-nelore-mra-iatf-view-state';
 function saveViewState(){
   try{localStorage.setItem(VIEW_KEY,JSON.stringify({seasonId:db&&db.meta?db.meta.activeSeasonId:'',page,iatfCycle,fivData,acasalData,excelFilters,
@@ -840,13 +840,10 @@ function loadViewState(){
   if(!v||typeof v!=='object')return;
   const pages=['dashboard','animals','iatf','stock','acasal','fiv','embrioes','deleted','settings'];
   if(pages.includes(v.page)){page=v.page;$$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page))}
-  const so=v.sorts||{},ok=x=>x&&typeof x==='object'&&typeof x.key==='string'?{key:x.key,dir:x.dir===-1?-1:1}:{key:'',dir:1};
-  animalSort=ok(so.animalSort);iatfSort=ok(so.iatfSort);stockSort=ok(so.stockSort);acasalSort=ok(so.acasalSort);embrioesSort=ok(so.embrioesSort);fivSort=ok(so.fivSort);
   if(v.seasonId===db.meta.activeSeasonId){
     if(Number(v.iatfCycle)>=1)iatfCycle=Number(v.iatfCycle);
     if(typeof v.acasalData==='string')acasalData=v.acasalData;
     if(typeof v.fivData==='string')fivData=v.fivData; // FIV que estava aberta (se ainda existir; senão fivAtual escolhe outra)
-    if(v.excelFilters&&typeof v.excelFilters==='object')Object.keys(excelFilters).forEach(k=>{const f=v.excelFilters[k];excelFilters[k]=f&&typeof f==='object'?f:{}});
   }
 }
 function restoreViewPosition(pos){
@@ -1287,9 +1284,9 @@ function renderByKind(k){
 }
 function excelApply(){if(!excelFilterContext)return;const {kind,key,values}=excelFilterContext;let selected=excelFilterContext.selected;
   // digitou na busca: vale só o que aparece na lista (marcado), igual Excel
-  const q=($('#excelFilterPopup .excel-search')||{}).value;if(q&&q.trim()){const vis=new Set(excelVisiveis().map(i=>values[i]));selected=new Set([...selected].filter(v=>vis.has(v)));if(!selected.size)return}if(selected.size===values.length)delete excelFilters[kind][key];else excelFilters[kind][key]=[...selected];const k=kind;closeExcelFilter();renderByKind(k)} window.excelApply=excelApply;
-function excelClear(){if(!excelFilterContext)return;const {kind,key}=excelFilterContext;delete excelFilters[kind][key];const k=kind;closeExcelFilter();renderByKind(k)} window.excelClear=excelClear;
-function excelSort(dir){if(!excelFilterContext)return;const {kind,key}=excelFilterContext;if(kind==='animals')animalSort={key,dir};else if(kind==='iatf')iatfSort={key,dir};else if(kind==='acasal')acasalSort={key,dir};else if(kind==='embrioes')embrioesSort={key,dir};else if(kind==='fiv')fivSort={key,dir};else stockSort={key,dir};closeExcelFilter();renderByKind(kind)} window.excelSort=excelSort;
+  const q=($('#excelFilterPopup .excel-search')||{}).value;if(q&&q.trim()){const vis=new Set(excelVisiveis().map(i=>values[i]));selected=new Set([...selected].filter(v=>vis.has(v)));if(!selected.size)return}if(selected.size===values.length)delete excelFilters[kind][key];else excelFilters[kind][key]=[...selected];const k=kind;novaOrdem(k);closeExcelFilter();renderByKind(k)} window.excelApply=excelApply;
+function excelClear(){if(!excelFilterContext)return;const {kind,key}=excelFilterContext;delete excelFilters[kind][key];const k=kind;novaOrdem(k);closeExcelFilter();renderByKind(k)} window.excelClear=excelClear;
+function excelSort(dir){if(!excelFilterContext)return;const {kind,key}=excelFilterContext;if(kind==='animals')animalSort={key,dir};else if(kind==='iatf')iatfSort={key,dir};else if(kind==='acasal')acasalSort={key,dir};else if(kind==='embrioes')embrioesSort={key,dir};else if(kind==='fiv')fivSort={key,dir};else stockSort={key,dir};novaOrdem(kind);closeExcelFilter();renderByKind(kind)} window.excelSort=excelSort;
 document.addEventListener('click',e=>{const p=$('#excelFilterPopup');if(p&&!p.contains(e.target)&&!e.target.closest('.excel-filter-btn'))closeExcelFilter()});
 
 /* DASHBOARD */
@@ -1489,13 +1486,26 @@ function setAnimalIatfCycle(id,val,el){
   }
   el.value=depois;
 } window.setAnimalIatfCycle=setAnimalIatfCycle;
-function animalRowsFiltered(){
-  let rows=seasonAnimals().map(a=>({...a,firstSire:currentSire(a),status:latestStatus(a.rgd),curCycle:matrizCurrentCycle(a.rgd)})).filter(a=>excelPass('animals',a));
-  const k=animalSort.key,d=animalSort.dir;
-  if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);
-  return rows
+/* ORDEM FIXA NA TELA (igual Excel): depois de ordenar/filtrar, a tabela mantém as linhas onde estão.
+   Digitar numa linha NÃO faz ela pular de lugar nem sumir do filtro; só reordena/refiltra quando você
+   mexe de novo no ▼ (A→Z, filtro) ou troca de IATF/FIV/data. Linha nova entra no fim. */
+const ordemTela={},ordemVer={};
+function novaOrdem(kind){ordemVer[kind]=(ordemVer[kind]||0)+1}
+function linhasEstaveis(kind,all,passa,ordenar,ctx){
+  const sig=JSON.stringify([ordemVer[kind]||0,ctx,excelFilters[kind]||{}]);
+  const o=ordemTela[kind];
+  if(!o||o.sig!==sig){const rows=ordenar(all.filter(passa));ordemTela[kind]={sig,ids:rows.map(r=>r.id)};return rows}
+  const byId=new Map(all.map(r=>[r.id,r])),ja=new Set(o.ids);
+  const rows=o.ids.map(id=>byId.get(id)).filter(Boolean);
+  all.forEach(r=>{if(!ja.has(r.id)&&passa(r))rows.push(r)});
+  o.ids=rows.map(r=>r.id);return rows;
 }
-function sortAnimal(k){if(animalSort.key===k)animalSort.dir*=-1;else animalSort={key:k,dir:1};renderAnimalTable()}
+function animalRowsFiltered(){
+  const all=seasonAnimals().map(a=>({...a,firstSire:currentSire(a),status:latestStatus(a.rgd),curCycle:matrizCurrentCycle(a.rgd)}));
+  const k=animalSort.key,d=animalSort.dir;
+  return linhasEstaveis('animals',all,a=>excelPass('animals',a),rows=>k?rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d):rows,[db.meta.activeSeasonId,animalSort,animalFilters]);
+}
+function sortAnimal(k){novaOrdem('animals');if(animalSort.key===k)animalSort.dir*=-1;else animalSort={key:k,dir:1};renderAnimalTable()}
 window.sortAnimal=sortAnimal;
 function af(k,v){animalFilters[k]=v;renderAnimalTable()} window.af=af;
 function animals(){
@@ -1644,12 +1654,13 @@ function iatfRowsFiltered(){
   // As caixinhas de categoria só controlam a montagem automática em massa (ver toggleIatfCategory).
   // A tabela sempre mostra TUDO que já está nesta IATF, categoria marcada ou não — inclusive uma
   // matriz que você colocou manualmente pela coluna "IATF atual" em Matrizes.
-  let rows=seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle)).filter(r=>excelPass('iatf',r));
+  const all=seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle));
   const k=iatfSort.key,d=iatfSort.dir;
-  if(k==='n')rows.sort((a,b)=>((Number(a.n)||0)-(Number(b.n)||0))*d);
-  else if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);return rows
+  return linhasEstaveis('iatf',all,r=>excelPass('iatf',r),rows=>{
+    if(k==='n')rows.sort((a,b)=>((Number(a.n)||0)-(Number(b.n)||0))*d);
+    else if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);return rows},[db.meta.activeSeasonId,iatfCycle,iatfSort]);
 }
-function sortIatf(k){if(iatfSort.key===k)iatfSort.dir*=-1;else iatfSort={key:k,dir:1};renderIatfRows()} window.sortIatf=sortIatf;
+function sortIatf(k){novaOrdem('iatf');if(iatfSort.key===k)iatfSort.dir*=-1;else iatfSort={key:k,dir:1};renderIatfRows()} window.sortIatf=sortIatf;
 function iff(k,v){iatfFilters[k]=v;renderIatfRows()} window.iff=iff;
 function eligibleForIatf(a,cycle){
   if(!a||!a.rgd)return false;
@@ -2068,10 +2079,8 @@ function excluirAcasalData(){
   acasalData=null;save();acasalPage();saveViewState();
 } window.excluirAcasalData=excluirAcasalData;
 function acasalRowsFiltered(){
-  let rows=acasalDaData().filter(a=>excelPass('acasal',a));
   const k=acasalSort.key,d=acasalSort.dir;
-  if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);
-  return rows;
+  return linhasEstaveis('acasal',acasalDaData(),a=>excelPass('acasal',a),rows=>k?rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d):rows,[db.meta.activeSeasonId,acasalAtual(),acasalSort]);
 }
 function acasalPage(){
   title('Acasalamentos','Planejamento de touros por IATF/FIV — independente das abas Matrizes e IATF. Pertence à estação '+activeSeason().name+'.');
@@ -2308,14 +2317,12 @@ function embRowCalc(e){
   return {estTotal,saidaTotal,usoFresco,usoVit,usoDt,usoTotal,saldoFresco,saldoVit,saldoDt,saldoTotal};
 }
 function embrioesRowsFiltered(){
-  let rows=(db.embrioes||[]).map(e=>({...e,...embRowCalc(e)})).filter(e=>excelPass('embrioes',e));
   const k=embrioesSort.key,d=embrioesSort.dir;
-  if(k)rows.sort((a,b)=>{
+  return linhasEstaveis('embrioes',(db.embrioes||[]).map(e=>({...e,...embRowCalc(e)})),e=>excelPass('embrioes',e),rows=>k?rows.sort((a,b)=>{
     const av=a[k],bv=b[k];
     if(typeof av==='number'||typeof bv==='number')return ((Number(av)||0)-(Number(bv)||0))*d;
     return String(av??'').localeCompare(String(bv??''),'pt-BR',{numeric:true})*d;
-  });
-  return rows;
+  }):rows,[embrioesSort]);
 }
 function toggleFivBaixa(){
   const ligar=!db.settings.fivBaixaEmbrioes;
@@ -2574,11 +2581,10 @@ function excluirFivVazia(){
   fivData=null;save();fivPage();
 } window.excluirFivVazia=excluirFivVazia;
 function fivRowsFiltered(){
-  let rows=fivDaData().filter(r=>excelPass('fiv',r));
   const k=fivSort.key,d=fivSort.dir;
-  if(k==='n')rows.sort((a,b)=>((Number(a.n)||0)-(Number(b.n)||0))*d);
-  else if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);
-  return rows;
+  return linhasEstaveis('fiv',fivDaData(),r=>excelPass('fiv',r),rows=>{
+    if(k==='n')rows.sort((a,b)=>((Number(a.n)||0)-(Number(b.n)||0))*d);
+    else if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);return rows},[db.meta.activeSeasonId,fivAtual(),fivSort]);
 }
 function fivPage(){
   title('FIV','RGD Doadora livre; touro do Estoque de Sêmen. Lançamentos pertencem à estação '+activeSeason().name+'.');
@@ -2783,10 +2789,10 @@ function saveFivEntryModal(){
 
 /* ESTOQUE - SÊMEN */
 function stockRowsFiltered(){
-  let rows=db.semen.map(s=>({...s,saldo:stockBalance(s),used:usedEffective(s)})).filter(s=>excelPass('stock',s));
-  const k=stockSort.key,d=stockSort.dir;if(k)rows.sort((a,b)=>typeof a[k]==='number'?(a[k]-b[k])*d:String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);return rows
+  const k=stockSort.key,d=stockSort.dir;
+  return linhasEstaveis('stock',db.semen.map(s=>({...s,saldo:stockBalance(s),used:usedEffective(s)})),s=>excelPass('stock',s),rows=>k?rows.sort((a,b)=>typeof a[k]==='number'?(a[k]-b[k])*d:String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d):rows,[stockSort,stockFilters]);
 }
-function sortStock(k){if(stockSort.key===k)stockSort.dir*=-1;else stockSort={key:k,dir:1};renderStock()} window.sortStock=sortStock;
+function sortStock(k){novaOrdem('stock');if(stockSort.key===k)stockSort.dir*=-1;else stockSort={key:k,dir:1};renderStock()} window.sortStock=sortStock;
 function sf(k,v){stockFilters[k]=v;renderStock()} window.sf=sf;
 function stock(){
   title('Estoque - Sêmen','Cadastro de sêmen, entradas e saldo automático. É estoque de verdade: continua igual entre estações.');setActions('');
