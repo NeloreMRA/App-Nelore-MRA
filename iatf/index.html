@@ -895,7 +895,7 @@ function setActions(h){$('#pageActions').innerHTML=h||''}
 // Colar mais linhas do que a tabela tem: cria as que faltam (por id do container da tabela)
 const GRID_ADD_ROWS={
   fivTable:n=>{const d=fivAtual();if(d===null)return;fivSort={key:'',dir:1};
-    for(let i=0;i<n;i++)db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,n:fivProxN(d),rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});renderFivTable()},
+    for(let i=0;i<n;i++)db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,n:fivProxN(d),rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:'',sexagem:''});renderFivTable()},
   acasalTable:n=>{acasalSort={key:'',dir:1};
     if(acasalAtual()===ACASAL_TODOS)return; // em "Todos" não cria linha (não saberia a data)
     for(let i=0;i<n;i++)db.acasalamentos.push({id:uid('ac'),seasonId:db.meta.activeSeasonId,rgd:'',category:'',iatf1:'',iatf2:'',iatf3:'',iatf4:'',fiv1:'',fiv2:'',createdAt:acasalDataNova()});renderAcasalTable()},
@@ -1029,7 +1029,9 @@ function gridSelectionOf(table){
 }
 function gridSetValue(cellInput,val){
   if(cellInput.tagName==='SELECT'){
-    const opt=Array.from(cellInput.options).find(o=>o.value===val||o.textContent.trim()===val);
+    if(cellInput.classList.contains('nav-fiv-sex')){const n=norm(val);val=n==='MACHO'?'M':n==='FEMEA'||n==='FÊMEA'?'F':val} // sexagem: macho/fêmea
+    const opts=Array.from(cellInput.options);
+    const opt=opts.find(o=>o.value===val||o.textContent.trim()===val)||opts.find(o=>norm(o.value)===norm(val)||norm(o.textContent)===norm(val)); // aceita minúscula
     if(!opt)return false;
     cellInput.value=opt.value;
   }else{
@@ -1328,7 +1330,7 @@ function excelDisplay(kind,key,v){
   if(kind==='animals'&&key==='createdAt')return v===''?'(Vazios)':fmtDate(v);
   if(kind==='animals'&&key==='curCycle')return v===''?'(Sem IATF)':v+'ª IATF';
   if(kind==='acasal'&&key==='createdAt')return v===''?'(Vazios)':fmtDate(v);
-  if(kind==='fiv'&&key==='resultado')return v===''?'(Vazio)':v;
+  if(kind==='fiv'&&(key==='resultado'||key==='sexagem'))return v===''?'(Vazio)':v;
   if(kind==='fiv'&&key==='data')return v===''?'(Vazios)':fmtDate(v);
   if(kind==='iatf'&&key==='result')return v===''?'(Vazio)':v;
   if(kind==='iatf'&&key==='return')return v===''?'(Sem retorno)':fmtDate(v);
@@ -2707,7 +2709,7 @@ function fivPage(){
 function addBlankFiv(){
   const d=fivAtual();if(d===null)return openCriarFiv();
   db.fiv=db.fiv||[];
-  db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,n:fivProxN(d),rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:''});
+  db.fiv.push({id:uid('fiv'),seasonId:db.meta.activeSeasonId,n:fivProxN(d),rgdDoadora:'',sire:'',receptora:'',abcz:'',tipo:'',data:d,resultado:'',sexagem:''});
   save();fivPage();
   setTimeout(()=>{const els=$$('.nav-fiv-rgd');const last=els[els.length-1];if(last){last.scrollIntoView({block:'nearest'});last.focus()}},30)
 } window.addBlankFiv=addBlankFiv;
@@ -2761,7 +2763,7 @@ function renderFivTable(){
   atualizarResumoFiv();
   const rows=fivRowsFiltered();
   root.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c">${fivStatsHTML(rows)}<span><strong style="color:#233129;margin-right:4px">${rows.length}</strong> linha(s)</span></div><div class="table-wrap"><table><thead>
-  <tr><th></th><th style="width:44px;min-width:44px">${excelHead('fiv','n','Nº')}</th><th>${excelHead('fiv','rgdDoadora','RGD Doadora')}</th><th>${excelHead('fiv','sire','1º Acasalamento')}</th><th>${excelHead('fiv','receptora','Nº Receptora')}</th><th>${excelHead('fiv','abcz','Nº ABCZ')}</th><th>${excelHead('fiv','tipo','Tipo')}</th><th>${excelHead('fiv','resultado','Resultado')}</th><th></th></tr>
+  <tr><th></th><th style="width:44px;min-width:44px">${excelHead('fiv','n','Nº')}</th><th>${excelHead('fiv','rgdDoadora','RGD Doadora')}</th><th>${excelHead('fiv','sire','1º Acasalamento')}</th><th>${excelHead('fiv','receptora','Nº Receptora')}</th><th>${excelHead('fiv','abcz','Nº ABCZ')}</th><th>${excelHead('fiv','tipo','Tipo')}</th><th>${excelHead('fiv','resultado','Resultado')}</th><th>${excelHead('fiv','sexagem','Sexagem')}</th><th></th></tr>
   </thead><tbody>${rows.map(r=>`<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'fiv','${r.id}')">
   ${rowHandleTd('fiv',r.id)}
   <td style="text-align:center;color:#69746c;font-size:10.5px">${r.n||''}</td>
@@ -2771,6 +2773,7 @@ function renderFivTable(){
   <td><input class="cell-input nav-fiv-abcz" style="min-width:110px" value="${esc(r.abcz||'')}" onkeydown="iatfEnter(event,'nav-fiv-abcz')" onchange="editFiv('${r.id}','abcz',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-tipo" list="fivTipoList" style="width:80px" value="${esc(r.tipo||'')}" onchange="editFiv('${r.id}','tipo',this.value,this)"></td>
   <td><input class="cell-input nav-fiv-res" list="fivResultList" maxlength="3" style="width:70px;text-align:center" value="${esc(r.resultado||'')}" oninput="this.value=this.value.toUpperCase()" onkeydown="iatfEnter(event,'nav-fiv-res')" onchange="editFiv('${r.id}','resultado',this.value,this)"></td>
+  <td><select class="cell-input nav-fiv-sex" style="width:92px;min-width:92px;text-align:center" onchange="editFiv('${r.id}','sexagem',this.value,this)"><option value=""></option>${['M','F'].map(x=>`<option ${r.sexagem===x?'selected':''}>${x}</option>`).join('')}</select></td>
   <td><button class="mini" onclick="deleteFiv('${r.id}')">Excluir</button></td></tr>`).join('')}</tbody></table></div>`;
   restoreViewPosition(__view);
 }
@@ -2784,6 +2787,11 @@ function editFiv(id,key,val,el){
     const v=fivTipoNorm(val);
     if(val && !v){alert('Tipo deve ser Fresco, VIT ou DT.');el.value=r.tipo||'';return}
     val=v;el.value=v;
+  }
+  if(key==='sexagem'){ // M ou F (aceita macho/fêmea, minúscula)
+    const n=norm(val),v=n==='M'||n==='MACHO'?'M':n==='F'||n==='FEMEA'||n==='FÊMEA'?'F':'';
+    if(val && !v){alert('Sexagem deve ser M ou F.');el.value=r.sexagem||'';return}
+    val=v;
   }
   if(key==='resultado'){
     const v=normResult(val);
@@ -2810,8 +2818,8 @@ function fivTituloSaida(){const d=fivAtual(),l=fivLocal(d),t=fivToque(d);return 
 async function exportFiv(comResumo=true){
   const rows=fivRowsFiltered().filter(r=>String(r.rgdDoadora||'').trim());
   if(!rows.length)return alert('Nenhuma linha pra exportar.');
-  const cab=['Nº','RGD DOADORA','1º ACASALAMENTO','Nº RECEPTORA','Nº ABCZ','TIPO','DATA','DATA DO TOQUE','LOCAL','RESULTADO'];
-  const dados=rows.map(r=>[r.n||'',r.rgdDoadora,r.sire||'',r.receptora||'',r.abcz||'',r.tipo||'',fmtDate(r.data||''),fmtDate(fivToque(r.data)),fivLocal(r.data),r.resultado||'']);
+  const cab=['Nº','RGD DOADORA','1º ACASALAMENTO','Nº RECEPTORA','Nº ABCZ','TIPO','DATA','DATA DO TOQUE','LOCAL','RESULTADO','SEXAGEM'];
+  const dados=rows.map(r=>[r.n||'',r.rgdDoadora,r.sire||'',r.receptora||'',r.abcz||'',r.tipo||'',fmtDate(r.data||''),fmtDate(fivToque(r.data)),fivLocal(r.data),r.resultado||'',r.sexagem||'']);
   const q=fivResumo(fivDaData());
   const topo=comResumo?[[fivTituloSaida()],[],['PRENHA','VAZIA','PRT','TOTAL'],[q.p,q.v,q.prt,q.total],[],['% PRENHA','% VAZIA'],[pctTxt(q.pctP),pctTxt(q.pctV)],[]]:[];
   const negrito=comResumo?[1,3,6,9]:[1];
@@ -2823,7 +2831,7 @@ async function exportFiv(comResumo=true){
   }
   const wb=new ExcelJS.Workbook();const ws=wb.addWorksheet('FIV');
   linhas.forEach(l=>ws.addRow(l));negrito.forEach(i=>{ws.getRow(i).font={bold:true}});
-  ws.columns.forEach((c,i)=>{c.width=[6,16,26,14,14,9,12,14,18,11][i]||12});
+  ws.columns.forEach((c,i)=>{c.width=[6,16,26,14,14,9,12,14,18,11,10][i]||12});
   await downloadExcelJSWorkbook(wb,nome);
 } window.exportFiv=exportFiv;
 function printFiv(comResumo=true){
@@ -2831,8 +2839,8 @@ function printFiv(comResumo=true){
   if(!rows.length)return alert('Nenhuma linha pra imprimir.');
   const q=fivResumo(fivDaData());
   const resumo=comResumo?resumoPrintHTML(q):'';
-  const trs=rows.map(r=>`<tr><td style="width:34px">${r.n||''}</td><td>${esc(r.rgdDoadora)}</td><td>${esc(r.sire||'')}</td><td>${esc(r.receptora||'')}</td><td>${esc(r.abcz||'')}</td><td>${esc(r.tipo||'')}</td><td>${esc(r.resultado||'')}</td></tr>`).join('');
-  printHTML(fivTituloSaida(),`${resumo}<table><thead><tr><th>Nº</th><th>RGD Doadora</th><th>1º Acasalamento</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Resultado</th></tr></thead><tbody>${trs}</tbody></table>`);
+  const trs=rows.map(r=>`<tr><td style="width:34px">${r.n||''}</td><td>${esc(r.rgdDoadora)}</td><td>${esc(r.sire||'')}</td><td>${esc(r.receptora||'')}</td><td>${esc(r.abcz||'')}</td><td>${esc(r.tipo||'')}</td><td>${esc(r.resultado||'')}</td><td>${esc(r.sexagem||'')}</td></tr>`).join('');
+  printHTML(fivTituloSaida(),`${resumo}<table><thead><tr><th>Nº</th><th>RGD Doadora</th><th>1º Acasalamento</th><th>Nº Receptora</th><th>Nº ABCZ</th><th>Tipo</th><th>Resultado</th><th>Sexagem</th></tr></thead><tbody>${trs}</tbody></table>`);
 } window.printFiv=printFiv;
 
 /* Ficha de cadastro da FIV em tela (alternativa ao "+ Linha em branco") — mesmas regras de
@@ -2853,6 +2861,7 @@ function openFivEntryModal(){
     <div class="field"><label>Nº ABCZ</label><input id="fmAbcz" class="input"></div>
     <div class="field"><label>Tipo</label><select id="fmTipo"><option value="">—</option><option>Fresco</option><option>VIT</option><option>DT</option></select></div>
     <div class="field full"><label>Resultado (opcional)</label><select id="fmResultado"><option value="">—</option><option>P</option><option>V</option><option>PRT</option></select></div>
+    <div class="field full"><label>Sexagem (opcional)</label><select id="fmSexagem"><option value="">—</option><option>M</option><option>F</option></select></div>
   </div>
   <div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="primary" onclick="saveFivEntryModal()">Salvar</button></div>`);
 } window.openFivEntryModal=openFivEntryModal;
@@ -2876,7 +2885,8 @@ function saveFivEntryModal(){
     abcz:$('#fmAbcz').value.trim(),
     tipo:$('#fmTipo').value,
     data:fivAtual()||'',
-    resultado
+    resultado,
+    sexagem:$('#fmSexagem').value
   });
   save();closeModal();
   if(page==='fiv')fivPage();
@@ -3186,7 +3196,7 @@ async function exportSeasonAll(){
   const retRows=returnRows().map(r=>({DATA_RETORNO:fmtDate(r.return),RGD:r.rgd,CATEGORIA:r.category||'',APOS_IATF:Number(r.cycle),TOURO_RETORNO:r.returnSire||'',RESULTADO_RETORNO:r.returnResult||''}));
   const acRows=seasonAcasal().filter(a=>String(a.rgd||'').trim()).map(a=>({RGD:a.rgd,CATEGORIA:a.category||'','1_IATF':a.iatf1||'','2_IATF':a.iatf2||'','3_IATF':a.iatf3||'','4_IATF':a.iatf4||'','1_FIV':a.fiv1||'','2_FIV':a.fiv2||''}));
   const nuRows=seasonNaoUtil().filter(r=>String(r.rgd||'').trim()).map(r=>({RGD:r.rgd,CATEGORIA:r.category||'',DESTINACAO:r.destino||'',MOTIVO:r.motivo||''}));
-  const fivRows=seasonFiv().filter(r=>String(r.rgdDoadora||'').trim()).map(r=>({RGD_DOADORA:r.rgdDoadora,'1_ACASALAMENTO':r.sire||'',N_RECEPTORA:r.receptora||'',N_ABCZ:r.abcz||'',TIPO:r.tipo||'',DATA:fmtDate(r.data),RESULTADO:r.resultado||''}));
+  const fivRows=seasonFiv().filter(r=>String(r.rgdDoadora||'').trim()).map(r=>({RGD_DOADORA:r.rgdDoadora,'1_ACASALAMENTO':r.sire||'',N_RECEPTORA:r.receptora||'',N_ABCZ:r.abcz||'',TIPO:r.tipo||'',DATA:fmtDate(r.data),RESULTADO:r.resultado||'',SEXAGEM:r.sexagem||''}));
   const stkRows=db.semen.slice().sort((a,b)=>String(a.name).localeCompare(b.name,'pt-BR',{numeric:true}))
     .map(s=>({TOURO:s.name,RGD_TOURO:s.rgdTouro||'',BOTIJAO:s.tank||'',CANECA:s.caneca||'',QTD_DOSES:Number(s.initial||0),UTILIZADO:usedEffective(s),SALDO:stockBalance(s),DATA_ENTRADA:fmtDate(s.addedDate)}));
   const embRows=(db.embrioes||[]).filter(e=>String(e.rgd||'').trim()).map(e=>{const c=embRowCalc(e);return {RGD:e.rgd,TOURO:e.touro||'',ESTOQUE_FRESCO:e.estFresco||0,ESTOQUE_VIT:e.estVit||0,ESTOQUE_DT:e.estDt||0,ESTOQUE_TOTAL:c.estTotal,SAIDA_FRESCO:e.saidaFresco||0,SAIDA_VIT:e.saidaVit||0,SAIDA_DT:e.saidaDt||0,SAIDA_TOTAL:c.saidaTotal,USADOS_FRESCO:c.usoFresco,USADOS_VIT:c.usoVit,USADOS_DT:c.usoDt,USADOS_TOTAL:c.usoTotal,SALDO_FRESCO:c.saldoFresco,SALDO_VIT:c.saldoVit,SALDO_DT:c.saldoDt,SALDO_TOTAL:c.saldoTotal}});
