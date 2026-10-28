@@ -116,6 +116,7 @@ td.cell-selected{background:#dbe9ff!important}
 .animals-page .cell-input[style*="min-width:110px"]{min-width:92px!important}
 .animals-page .cell-input[style*="min-width:210px"],.stock-page .cell-input[style*="min-width:210px"]{min-width:175px!important}
 .animals-page select.cell-input{min-width:104px!important}
+.cell-input.cel-nav{caret-color:transparent;cursor:cell}.cell-input.cel-nav::selection{background:transparent}
 /* Células estilo Excel: o campo ocupa a célula inteira (sem caixinha dentro); a célula ativa ganha borda verde */
 td:has(> .cell-input){padding:0!important}
 td > .cell-input{display:block;width:100%;min-height:30px;margin:0;border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;padding:4px 7px!important}
@@ -690,7 +691,11 @@ async function init(){
       // Se você está DIGITANDO numa célula, não redesenha agora (isso jogava o cursor pro começo:
       // "MRA 9492" virava "9492MRA"). Os dados novos já estão no banco; a tela atualiza quando você sai da célula.
       const fa=document.activeElement;
-      if(fa&&fa.classList&&fa.classList.contains('cell-input')&&!fa.closest('#modal')){remotoPendente=true;setSyncStatus('ok','Sincronizado');return}
+      if(fa&&fa.classList&&fa.classList.contains('cell-input')&&!fa.closest('#modal')){
+        if(GRID_TOQUE||(gridEdit&&gridEdit.el===fa)||celSemNav(fa)){remotoPendente=true;setSyncStatus('ok','Sincronizado');return}
+        const fi=gridInfo(fa),fh=fi&&gridHostId(fi.table);render();
+        if(fi){const t=gridCellInputAt(gridTableOf(fh,fi.table),fi.r,fi.c);if(t){t.focus({preventScroll:true});gridHighlight(gridTableOf(fh,fi.table),fi.r,fi.c,fi.r,fi.c)}}
+        setSyncStatus('ok','Sincronizado');return}
       render();
       setSyncStatus('ok','Sincronizado');
     },err=>{
@@ -1171,6 +1176,96 @@ document.addEventListener('click',e=>{
     gridAnchor=null;gridFocusCell=null;
   }
 });
+/* ===== MODO EXCEL: NAVEGAR x ESCREVER =============================================
+   Igual Excel (no computador): clicar numa célula só SELECIONA (sem cursor de texto); as setas
+   andam entre as células; começar a digitar apaga e escreve; F2 ou duplo clique editam o que já
+   tem; Esc desiste; Delete apaga todas as células selecionadas; Ctrl+C/Ctrl+X copiam a célula.
+   Escrevendo (depois de digitar), seta grava e anda pra próxima célula. Lista suspensa e data
+   continuam abrindo no clique. No celular (toque) nada muda: tocar já abre pra escrever. */
+const GRID_TOQUE=matchMedia('(hover:none)').matches;
+let gridEdit=null; // célula que está sendo escrita: {el, modo:'digitando'|'f2', orig}
+const GRID_SETAS=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
+const ehCel=el=>!!(el&&el.classList&&el.classList.contains('cell-input')&&!el.closest('#modal')&&el.closest('tbody'));
+const celSemNav=el=>el.tagName==='SELECT'||el.type==='date';
+function gridNavegar(el){
+  if(GRID_TOQUE||celSemNav(el))return;
+  if(el.dataset.roOrig===undefined)el.dataset.roOrig=el.readOnly?'1':'';
+  el.readOnly=true;el.classList.add('cel-nav');
+  if(gridEdit&&gridEdit.el===el)gridEdit=null;
+}
+function gridEditar(el,modo,limpar){
+  if(el.dataset.roOrig==='1')return false;
+  el.readOnly=false;el.classList.remove('cel-nav');gridEdit={el,modo,orig:el.value};
+  if(limpar)el.value='';else{const n=el.value.length;try{el.setSelectionRange(n,n)}catch(x){}}
+  return true;
+}
+document.addEventListener('focusin',e=>{const el=e.target;if(ehCel(el)&&!(gridEdit&&gridEdit.el===el))gridNavegar(el)},true);
+document.addEventListener('focusout',e=>{if(gridEdit&&gridEdit.el===e.target){gridEdit=null;if(!celSemNav(e.target)&&!GRID_TOQUE){e.target.readOnly=true;e.target.classList.add('cel-nav')}}},true);
+// clique: só seleciona (sem cursor). Duplo clique: escreve.
+document.addEventListener('mousedown',e=>{
+  if(GRID_TOQUE||e.button!==0)return;
+  const el=e.target.closest&&e.target.closest('.cell-input');
+  if(!ehCel(el)||celSemNav(el)||(gridEdit&&gridEdit.el===el))return;
+  e.preventDefault();if(document.activeElement!==el)el.focus({preventScroll:true});
+},true);
+document.addEventListener('dblclick',e=>{
+  if(GRID_TOQUE)return;const el=e.target.closest&&e.target.closest('.cell-input');
+  if(!ehCel(el)||celSemNav(el))return;if(document.activeElement!==el)el.focus();gridEditar(el,'f2');
+});
+// anda pra célula do lado (grava antes se estava escrevendo)
+function gridMover(el,k,ctrl){
+  const info=gridInfo(el);if(!info)return;const {table,r,c}=info;
+  const dr=k==='ArrowDown'?1:k==='ArrowUp'?-1:0,dc=k==='ArrowRight'?1:k==='ArrowLeft'?-1:0;
+  let tr=r,tc=c;
+  if(dr)tr=ctrl?gridJump(table,r,c,dr,0):r+dr;
+  else if(ctrl)tc=gridJump(table,r,c,0,dc);
+  else{const cols=[...info.tr.children].map((td,i)=>td.querySelector('.cell-input')?i:-1).filter(i=>i>=0);const nx=dc>0?cols.find(i=>i>c):cols.filter(i=>i<c).pop();if(nx===undefined)return;tc=nx}
+  if(!gridCellInputAt(table,tr,tc)||(tr===r&&tc===c))return;
+  const hostId=gridHostId(table);
+  if(gridEdit&&gridEdit.el===el){completarTouro(el);el.blur()}
+  setTimeout(()=>{
+    const tb=gridTableOf(hostId,table),t=gridCellInputAt(tb,tr,tc);if(!t)return;
+    t.focus({preventScroll:true});gridAnchor={table:tb,r:tr,c:tc};gridFocusCell={r:tr,c:tc};gridHighlight(tb,tr,tc,tr,tc);gridScrollTo(tb,tr,tc);
+  },0);
+}
+// Delete: apaga todas as células selecionadas (um salvamento e um Desfazer só)
+function gridApagar(el){
+  const info=gridInfo(el);if(!info)return;
+  const sel=gridSelectionOf(info.table)||{r1:info.r,r2:info.r,c1:info.c,c2:info.c};
+  const hostId=gridHostId(info.table),avisos=[],alertOrig=window.alert;
+  gridBatch=true;window.alert=m=>{if(!avisos.includes(m))avisos.push(m)};
+  try{
+    for(let r=sel.r1;r<=sel.r2;r++)for(let c=sel.c1;c<=sel.c2;c++){
+      const ci=gridCellInputAt(info.table,r,c);if(!ci||ci.dataset.roOrig==='1'||String(ci.value||'')==='')continue;
+      gridSetValue(ci,'');
+    }
+  }finally{window.alert=alertOrig;gridBatch=false;if(gridBatchDirty){gridBatchDirty=false;save()}}
+  setTimeout(()=>{const tb=gridTableOf(hostId,info.table),t=gridCellInputAt(tb,info.r,info.c);if(t)t.focus({preventScroll:true});gridAnchor={table:tb,r:info.r,c:info.c};gridFocusCell={r:sel.r2,c:sel.c2};gridHighlight(tb,sel.r1,sel.c1,sel.r2,sel.c2)},0);
+  if(avisos.length)alert('Algumas células não puderam ser apagadas:\n\n'+avisos.slice(0,8).join('\n'));
+}
+document.addEventListener('keydown',e=>{
+  if(GRID_TOQUE)return;
+  const el=document.activeElement;if(!ehCel(el))return;
+  const k=e.key,ctrl=e.ctrlKey||e.metaKey;
+  if(gridEdit&&gridEdit.el===el){ // escrevendo
+    if(k==='Escape'){e.preventDefault();el.value=gridEdit.orig;gridNavegar(el);return}
+    const listaAberta=el.getAttribute('list')&&(k==='ArrowUp'||k==='ArrowDown');
+    if(GRID_SETAS.includes(k)&&gridEdit.modo==='digitando'&&!e.shiftKey&&!listaAberta){e.preventDefault();e.stopPropagation();gridMover(el,k,ctrl)}
+    return;
+  }
+  const multi=(()=>{const s=gridSelectionOf(el.closest('table'));return !!s&&(s.r2>s.r1||s.c2>s.c1)})();
+  if(k==='Delete'&&(multi||el.classList.contains('cel-nav')||el.tagName==='SELECT')){e.preventDefault();gridApagar(el);return}
+  if(celSemNav(el)){ // lista suspensa e data: setas andam entre células (Alt+↓ abre a lista)
+    if(GRID_SETAS.includes(k)&&!e.shiftKey&&!e.altKey){e.preventDefault();e.stopPropagation();gridMover(el,k,ctrl)}
+    return;
+  }
+  if(!el.classList.contains('cel-nav'))return;
+  if(GRID_SETAS.includes(k)&&!e.shiftKey){e.preventDefault();gridMover(el,k,ctrl);return}
+  if(k==='Backspace'){e.preventDefault();if(gridEditar(el,'digitando',true))el.dispatchEvent(new Event('input',{bubbles:true}));return}
+  if(k==='F2'){e.preventDefault();gridEditar(el,'f2');return}
+  if(ctrl&&!multi&&(k.toLowerCase()==='c'||k.toLowerCase()==='x')){e.preventDefault();navigator.clipboard?.writeText(el.value||'').catch(()=>{});if(k.toLowerCase()==='x')gridApagar(el);return}
+  if(!ctrl&&!e.altKey&&(k.length===1||k==='Dead'||k==='Process'))gridEditar(el,'digitando',true); // deixa a tecla escrever
+},true);
 /* ===== FIM MINI-EXCEL ============================================================== */
 
 /* ===== ARRASTAR LINHA PRA REORDENAR ===================================================
