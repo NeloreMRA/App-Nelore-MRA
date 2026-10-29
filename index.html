@@ -309,7 +309,7 @@ async function atualizarApp(b){
   location.replace(location.pathname+'?v='+Date.now());
 }
 // mostra a versão instalada ao lado do botão (pra conferir se atualizou)
-fetch('sw.js',{cache:'no-cache'}).then(r=>r.text()).then(t=>{const m=t.match(/app-nelore-mra-v(\d+)/);const b=document.querySelector('button[onclick^="atualizarApp"]');if(m&&b)b.title='Versão '+m[1]+' — baixa a versão mais nova do App';const v=document.getElementById('versaoApp');if(m&&v)v.textContent='versão '+m[1]}).catch(()=>{});
+if(location.protocol!=='file:')fetch('sw.js',{cache:'no-cache'}).then(r=>r.text()).then(t=>{const m=t.match(/app-nelore-mra-v(\d+)/);const b=document.querySelector('button[onclick^="atualizarApp"]');if(m&&b)b.title='Versão '+m[1]+' — baixa a versão mais nova do App';const v=document.getElementById('versaoApp');if(m&&v)v.textContent='versão '+m[1]}).catch(()=>{});
 </script>
 </body>
 </html>
