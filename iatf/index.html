@@ -263,8 +263,8 @@ body.authenticated #loginScreen{display:none}
   .sidebar nav{overflow:visible!important;justify-content:space-around!important;width:100%;gap:0!important}
   .sidebar nav .nav{order:var(--ordem);flex:1 1 0!important;min-width:0!important;padding:6px 2px!important;font-size:19px}
   .sidebar nav .nav.nav-extra{display:none!important}
-  .sidebar{padding:5px 4px calc(5px + env(safe-area-inset-bottom))!important;background:#123526!important;border-top:1px solid #ffffff14;box-shadow:0 -6px 18px #0002}
-  main{padding-top:0!important;padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+  .sidebar{padding:5px 4px max(6px,calc(env(safe-area-inset-bottom) - 14px))!important;background:#123526!important;border-top:1px solid #ffffff14;box-shadow:0 -6px 18px #0002}
+  main{padding-top:0!important;padding-bottom:calc(84px + env(safe-area-inset-bottom))!important}
   /* topo sólido (título + Desfazer) parado em cima: nada rola por trás do relógio, sem a "névoa" do iPhone */
   body{overflow:visible!important}
   main>header{position:sticky;top:0;z-index:20;background:#f5f7f5;margin:0 -8px 10px!important;padding:calc(10px + env(safe-area-inset-top)) 8px 8px!important;box-shadow:0 1px 0 #e1e6e2}
@@ -277,7 +277,7 @@ body.authenticated #loginScreen{display:none}
   .sidebar nav .nav,.nav-mais.tem{display:grid!important;grid-template-rows:28px 15px;justify-items:center;align-content:center;row-gap:3px!important}
   .sidebar nav .nav span,.nav-mais span{display:block!important;line-height:15px!important;height:15px;overflow:visible;white-space:nowrap}.sidebar nav .nav span[data-curto]{line-height:0!important}.sidebar nav .nav span[data-curto]::after{display:block;line-height:15px}
   .sidebar nav .nav span:not([data-curto]),.sidebar nav .nav span[data-curto]::after{font-size:10.5px!important}.sidebar nav .nav span[data-curto]{font-size:0!important}
-  td > input.cell-input[list="bullsList"]{min-width:230px!important}td > input.cell-input[list="animalsList"],td > input.nav-a-rgd,td > input.nav-rgd{min-width:140px!important}
+  td > input.cell-input[list="bullsList"]{min-width:230px!important}#content td > input.cell-input:is([list="animalsList"],.nav-a-rgd,.nav-rgd,.nav-fiv-rgd){min-width:150px!important}#content td > select.cell-input.category-select{min-width:136px!important;width:136px}#content td > input.cell-input:is([list="bullsList"],.nav-sire,.nav-a-iatf1,.nav-a-iatf2,.nav-a-iatf3,.nav-a-iatf4,.nav-a-fiv1,.nav-a-fiv2,.iatf-sire,.iatf-rsire,.nav-fiv-sire,.nav-emb-touro){min-width:290px!important}#content td > input.cell-input:is(.iatf-result,.nav-fiv-res){width:80px!important;min-width:80px!important;max-width:80px!important}
   .nav-mais.tem{display:flex;order:99;flex:1 1 0;min-width:0;flex-direction:column;align-items:center;gap:1px;border:0;background:transparent;color:#dce9e2;font-size:19px;padding:6px 2px;border-radius:10px;cursor:pointer}
   .nav-mais span{display:block;font-size:10.5px}.nav-mais.active{background:#ffffff1f;color:#fff}
   /* letras maiores nas tabelas e campos (16px nos campos: o iPhone não dá zoom ao tocar) */
