@@ -2,7 +2,7 @@
    Páginas: tenta a internet primeiro (pega a versão nova) e cai pro guardado se estiver sem sinal.
    Bibliotecas (Firebase, Excel): usa o guardado e atualiza quando der. Dados do Firebase NÃO passam por aqui
    (o próprio Firebase guarda e envia quando a internet volta). */
-const CACHE = 'app-nelore-mra-v78';
+const CACHE = 'app-nelore-mra-v79';
 const PAGINAS = ['./', './index.html', './logo.webp', './icon-192.png', './manifest.webmanifest',
   './barra-app.js', './teclado.js', './caderneta/index.html', './estoque/index.html', './iatf/index.html', './custos/index.html', './contabil/index.html'];
 const LIBS = [
@@ -33,7 +33,8 @@ self.addEventListener('fetch', e => {
   const mesmoSite = url.origin === self.location.origin;
   if (mesmoSite) {
     // internet primeiro; sem sinal, usa o que está guardado
-    e.respondWith(fetch(req).then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put(req, cp)); return r; })
+    // no-cache: sempre confere com o servidor (rápido, 304 quando não mudou) — assim versão nova aparece na hora
+    e.respondWith(fetch(req.url, {cache: 'no-cache', credentials: 'same-origin'}).then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put(req, cp)); return r; })
       .catch(async () => (await caches.match(req, {ignoreSearch: true})) || (await caches.match('./index.html'))));
   } else if (/gstatic\.com|jsdelivr\.net|cdnjs\.cloudflare\.com/.test(url.host)) {
     e.respondWith(caches.match(req).then(g => g || fetch(req).then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put(req, cp)); return r; })));

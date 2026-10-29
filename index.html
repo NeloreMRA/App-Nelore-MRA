@@ -89,7 +89,7 @@ td input[type=checkbox]{width:18px;height:18px;cursor:pointer}
   <header class="topo"><div class="topo-in">
     <img src="logo.webp" alt="Nelore MRA">
     <div><div class="t">App Nelore MRA</div><div class="s" id="ola"></div></div>
-    <div class="acoes"><button id="btnInicio" class="hidden" onclick="irPara('inicio')">← Início</button><button id="btnConfig" class="hidden" onclick="irPara('config')">⚙ Configurações</button><button onclick="atualizarApp(this)" title="Baixa a versão mais nova do App">🔄 Atualizar</button><button onclick="sair()">Sair</button></div>
+    <div class="acoes"><button id="btnInicio" class="hidden" onclick="irPara('inicio')">← Início</button><button id="btnConfig" class="hidden" onclick="irPara('config')">⚙ Configurações</button><button onclick="atualizarApp(this)" title="Baixa a versão mais nova do App">🔄 Atualizar <small id="versaoApp" style="opacity:.6;font-size:10.5px"></small></button><button onclick="sair()">Sair</button></div>
   </div></header>
   <main id="conteudo"></main>
 </section>
@@ -296,14 +296,20 @@ async function salvarTelas(uid){
 <script>
 // Botão "Atualizar": apaga as telas guardadas no aparelho e baixa a versão mais nova de todos os apps.
 // (Os dados não são apagados: eles ficam no Firebase.)
+// No iPhone (app na tela inicial) o aparelho também guarda os arquivos por até 10 min: por isso
+// aqui baixa de novo cada tela direto do servidor (cache:'reload') antes de recarregar.
+const ARQUIVOS_APP=['./','index.html','sw.js','barra-app.js','teclado.js','iatf/index.html','caderneta/index.html','estoque/index.html','custos/index.html','contabil/index.html'];
 async function atualizarApp(b){
   if(b){b.disabled=true;b.textContent='Atualizando...'}
   try{
     if('serviceWorker' in navigator){for(const r of await navigator.serviceWorker.getRegistrations())await r.unregister()}
     if(window.caches){for(const k of await caches.keys())await caches.delete(k)}
+    await Promise.all(ARQUIVOS_APP.map(u=>fetch(u,{cache:'reload'}).catch(()=>{})));
   }catch(e){}
-  location.reload();
+  location.replace(location.pathname+'?v='+Date.now());
 }
+// mostra a versão instalada ao lado do botão (pra conferir se atualizou)
+fetch('sw.js',{cache:'no-cache'}).then(r=>r.text()).then(t=>{const m=t.match(/app-nelore-mra-v(\d+)/);const b=document.querySelector('button[onclick^="atualizarApp"]');if(m&&b)b.title='Versão '+m[1]+' — baixa a versão mais nova do App';const v=document.getElementById('versaoApp');if(m&&v)v.textContent='versão '+m[1]}).catch(()=>{});
 </script>
 </body>
 </html>
