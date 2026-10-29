@@ -882,7 +882,7 @@ function colResizeStart(e,id,lab,th){
   document.addEventListener('mousemove',move);document.addEventListener('mouseup',up);
 }
 /* LEMBRADO NO F5 — guarda neste navegador a tela aberta e a IATF/FIV/data escolhida (mesma estação).
-   Filtros ▼ e A→Z/Z→A NÃO voltam: abrir o app ou dar F5 começa sem filtro (pedido do dono). */
+   A→Z/Z→A (ordenação) volta; os filtros ▼ NÃO: abrir o app ou dar F5 começa sem filtro (pedido do dono). */
 const VIEW_KEY='app-nelore-mra-iatf-view-state';
 function saveViewState(){
   try{localStorage.setItem(VIEW_KEY,JSON.stringify({seasonId:db&&db.meta?db.meta.activeSeasonId:'',page,iatfCycle,fivData,acasalData,excelFilters,
@@ -893,6 +893,9 @@ function loadViewState(){
   if(!v||typeof v!=='object')return;
   const pages=['dashboard','animals','iatf','stock','acasal','fiv','embrioes','deleted','settings'];
   if(pages.includes(v.page)){page=v.page;$$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page))}
+  // A→Z / Z→A (maior→menor) continua depois do F5; os filtros ▼ não (pedido do dono)
+  const so=v.sorts||{},ok=x=>x&&typeof x==='object'&&typeof x.key==='string'?{key:x.key,dir:x.dir===-1?-1:1}:{key:'',dir:1};
+  animalSort=ok(so.animalSort);iatfSort=ok(so.iatfSort);stockSort=ok(so.stockSort);acasalSort=ok(so.acasalSort);embrioesSort=ok(so.embrioesSort);fivSort=ok(so.fivSort);
   if(v.seasonId===db.meta.activeSeasonId){
     if(Number(v.iatfCycle)>=1)iatfCycle=Number(v.iatfCycle);
     if(typeof v.acasalData==='string')acasalData=v.acasalData;
