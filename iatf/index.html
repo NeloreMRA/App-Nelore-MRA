@@ -44,6 +44,12 @@ td{padding:8px 10px;border-bottom:1px solid #edf0ee;white-space:nowrap}tbody tr:
 .bar-track{height:10px;border-radius:99px;background:#eef1ef;overflow:hidden}.bar-fill{height:100%;background:#367955;border-radius:99px}.bar-fill.gold{background:#bd9035}.bar-value{text-align:right}
 .rank-row{display:grid;grid-template-columns:28px minmax(0,1fr) 88px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #edf0ee}.rank-row:last-child{border-bottom:0}.rank-num{width:24px;height:24px;border-radius:50%;background:#eff4f0;display:grid;place-items:center;font-size:11px}.rank-name{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rank-metric{text-align:right;font-size:12px;font-weight:700}
 .inline-stat{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #edf0ee;font-size:12px}.inline-stat:last-child{border-bottom:0}
+.stock-tab .tot-cel{display:none}.stock-tab th.st-curta,.stock-tab td.st-curta{width:72px;min-width:72px;max-width:72px}
+.stock-tab th.st-n,.stock-tab td.st-n{width:70px;min-width:70px;text-align:center;position:relative}
+.stock-tab th.st-doses{background:#e4eefb!important;color:#235fa8}.stock-tab td.st-doses{background:#f4f8fe}
+.stock-tab th.st-iatf{background:#efe8ff!important;color:#6743a0}.stock-tab td.st-iatf{background:#f9f6ff}
+.stock-tab th.st-saida{background:#fdf0dc!important;color:#9a5a12}.stock-tab td.st-saida{background:#fffaf2;color:#9a5a12;font-weight:700}
+.stock-tab th.st-saldo{background:#e3f3e8!important;color:#1f6a49}.stock-tab td.st-saldo{background:#f2faf5;font-size:13px}
 .stock-low{color:#a84d2b;font-weight:700}.stock-ok{color:#245f40}.empty{padding:35px;text-align:center;color:#7b877e}
 .modal{position:fixed;inset:0;background:#0007;display:grid;place-items:center;padding:20px;z-index:30}.modal.hidden{display:none}.modal-card{width:min(720px,100%);max-height:92vh;overflow:auto;background:white;border-radius:14px;padding:24px;position:relative}.x{position:absolute;right:15px;top:10px;border:0;background:none;font-size:25px;cursor:pointer}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:#69746c}.actions{justify-content:flex-end;margin-top:18px}
@@ -232,6 +238,11 @@ body.authenticated #loginScreen{display:none}
   #animalTable :is(th,td):nth-child(2),#acasalTable :is(th,td):nth-child(2),#iatfTable :is(th,td):nth-child(3),#fivTable :is(th,td):nth-child(3){position:sticky;left:0;z-index:2;background:#fff;box-shadow:2px 0 0 #e3e7e4}
   #animalTable thead th:nth-child(2),#acasalTable thead th:nth-child(2),#iatfTable thead th:nth-child(3),#fivTable thead th:nth-child(3){z-index:4;background:#f6f8f6}
   .cell-input,td > .cell-input{min-height:36px}
+  /* Estoque no celular: some RGD do touro e Data entrada; nome do touro fica parado na esquerda */
+  .stock-tab :is(thead th,tbody td):nth-child(3),.stock-tab :is(thead th,tbody td):nth-child(10),.stock-tab .tot-pc{display:none}.stock-tab .tot-cel{display:table-cell}
+  .stock-tab :is(thead th,tbody td):nth-child(2){position:sticky;left:0;z-index:2;background:#fff;box-shadow:2px 0 0 #e3e7e4}.stock-tab thead th:nth-child(2){z-index:4;background:#f6f8f6}
+  .stock-tab .nav-st-name{min-width:128px!important;font-size:12px}
+  .stock-tab th.st-curta,.stock-tab td.st-curta{width:56px;min-width:56px;max-width:56px}.stock-tab th.st-n,.stock-tab td.st-n{width:58px;min-width:58px}
   /* menu de baixo com nome embaixo do ícone, rola pro lado */
   .sidebar nav{justify-content:flex-start!important;gap:2px}
   .nav{flex-direction:column;gap:1px!important;padding:5px 7px!important;font-size:17px;min-width:58px;flex:0 0 auto}
@@ -612,6 +623,8 @@ function usedAuto(s){return usedSemen()[norm(s.name)]||0}
 function saidaMov(s){return (db.semenMov||[]).filter(m=>m.tipo==='saida'&&(m.semenId?m.semenId===s.id:norm(m.touro)===norm(s.name))).reduce((a,m)=>a+Number(m.qtd||0),0)}
 function usedEffective(s){return ((s.usedOverride===null||s.usedOverride===undefined)?usedAuto(s):Number(s.usedOverride||0))+saidaMov(s)}
 function stockBalance(s){return Number(s.initial||0)-usedEffective(s)}
+// linha do estoque pra tela/Excel: Doses, IATF (usado nas IATFs/retornos, ou o ajustado à mão), Saída (lançadas) e Saldo
+function stockLinha(s){const sa=saidaMov(s),u=usedEffective(s);return {...s,used:u,iatfUsed:u-sa,saida:sa,saldo:Number(s.initial||0)-u}}
 // touro cadastrado mas sem dose no estoque (saldo 0 ou negativo) — aparece em vermelho no 1º Acasalamento da IATF
 function semSaldo(nome){const n=norm(nome);if(!n)return false;const s=(db.semen||[]).find(x=>norm(x.name)===n);return !!s&&stockBalance(s)<=0}
 const corSemSaldo=nome=>semSaldo(nome)?'color:#c0392b!important;font-weight:700':'';
@@ -1339,7 +1352,7 @@ function rowHandleTd(tableKey,id){
 function rawRowsForExcel(kind){
   if(kind==='animals')return seasonAnimals().map(a=>({...a,firstSire:currentSire(a),status:latestStatus(a.rgd),curCycle:matrizCurrentCycle(a.rgd)}));
   if(kind==='iatf')return seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle));
-  if(kind==='stock')return db.semen.map(s=>({...s,used:usedEffective(s),saldo:stockBalance(s)}));
+  if(kind==='stock')return db.semen.map(stockLinha);
   if(kind==='acasal')return acasalDaData();
   if(kind==='embrioes')return (db.embrioes||[]).map(e=>({...e,...embRowCalc(e)}));
   if(kind==='fiv')return fivDaData();
@@ -2938,7 +2951,7 @@ function saveFivEntryModal(){
 /* ESTOQUE - SÊMEN */
 function stockRowsFiltered(){
   const k=stockSort.key,d=stockSort.dir;
-  return linhasEstaveis('stock',db.semen.map(s=>({...s,saldo:stockBalance(s),used:usedEffective(s)})),s=>excelPass('stock',s),rows=>k?rows.sort((a,b)=>typeof a[k]==='number'?(a[k]-b[k])*d:String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d):rows,[stockSort,stockFilters]);
+  return linhasEstaveis('stock',db.semen.map(stockLinha),s=>excelPass('stock',s),rows=>k?rows.sort((a,b)=>typeof a[k]==='number'?(a[k]-b[k])*d:String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d):rows,[stockSort,stockFilters]);
 }
 function sortStock(k){novaOrdem('stock');if(stockSort.key===k)stockSort.dir*=-1;else stockSort={key:k,dir:1};renderStock()} window.sortStock=sortStock;
 function sf(k,v){stockFilters[k]=v;renderStock()} window.sf=sf;
@@ -2957,23 +2970,25 @@ function renderStock(){
   const root=$('#stockTable');if(!root)return;
   const __view=captureViewPosition();
   const rows=stockRowsFiltered();
-  const totalDoses=rows.reduce((a,s)=>a+Number(s.initial||0),0),totalUsado=rows.reduce((a,s)=>a+Number(s.used||0),0),totalSaldo=rows.reduce((a,s)=>a+Number(s.saldo||0),0);
+  const tot=k=>rows.reduce((a,s)=>a+Number(s[k]||0),0);
   const fmt=n=>Number(n||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
-  root.innerHTML=`<div style="display:flex;justify-content:flex-end;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c"><strong style="color:#233129;margin-right:4px">${rows.length}</strong> registros no filtro</div><div class="table-wrap"><table><thead>
-  <tr><th></th><th>${excelHead('stock','name','Touro')}</th><th>${excelHead('stock','rgdTouro','RGD do touro')}</th><th>${excelHead('stock','tank','Botijão')}</th><th>${excelHead('stock','caneca','Caneca')}</th><th>${excelHead('stock','initial','Qtd doses')}</th><th>${excelHead('stock','used','Usado')}</th><th>${excelHead('stock','saldo','Saldo')}</th><th>${excelHead('stock','addedDate','Data entrada')}</th><th></th></tr>
+  // Doses (azul) · IATF (roxo) · Saída (laranja) · Saldo (verde): Saldo = Doses − IATF − Saída
+  root.innerHTML=`<div style="display:flex;justify-content:flex-end;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c"><strong style="color:#233129;margin-right:4px">${rows.length}</strong> registros no filtro</div><div class="table-wrap"><table class="stock-tab"><thead>
+  <tr><th></th><th>${excelHead('stock','name','Touro')}</th><th>${excelHead('stock','rgdTouro','RGD do touro')}</th><th class="st-curta">${excelHead('stock','tank','Botijão')}</th><th class="st-curta">${excelHead('stock','caneca','Caneca')}</th><th class="st-n st-doses">${excelHead('stock','initial','Doses')}</th><th class="st-n st-iatf">${excelHead('stock','iatfUsed','IATF')}</th><th class="st-n st-saida">${excelHead('stock','saida','Saída')}</th><th class="st-n st-saldo">${excelHead('stock','saldo','Saldo')}</th><th>${excelHead('stock','addedDate','Data entrada')}</th><th></th></tr>
   </thead><tbody>${rows.map(s=>{
     const auto=usedAuto(s), manual=!(s.usedOverride===null||s.usedOverride===undefined);
     return `<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'stock','${s.id}')">
   ${rowHandleTd('stock',s.id)}
   <td><input class="cell-input nav-st-name" style="min-width:210px;font-weight:600" value="${esc(s.name)}" data-old="${esc(s.name)}" onkeydown="iatfEnter(event,'nav-st-name')" onchange="editStockCell('${s.id}','name',this.value,this)"></td>
   <td><input class="cell-input nav-st-rgd" value="${esc(s.rgdTouro||'')}" placeholder="—" onkeydown="iatfEnter(event,'nav-st-rgd')" onchange="editStockCell('${s.id}','rgdTouro',this.value,this)"></td>
-  <td><input class="cell-input nav-st-tank" value="${esc(s.tank||'')}" onkeydown="iatfEnter(event,'nav-st-tank')" onchange="editStockCell('${s.id}','tank',this.value,this)"></td>
-  <td><input class="cell-input nav-st-caneca" value="${esc(s.caneca||'')}" onkeydown="iatfEnter(event,'nav-st-caneca')" onchange="editStockCell('${s.id}','caneca',this.value,this)"></td>
-  <td><input class="cell-input nav-st-initial" inputmode="decimal" value="${Number(s.initial||0)}" onkeydown="iatfEnter(event,'nav-st-initial')" onchange="editStockCell('${s.id}','initial',this.value,this)"></td>
-  <td style="white-space:nowrap"><input class="cell-input nav-st-used" style="width:62px;min-width:62px;text-align:center;${manual?'font-weight:700;color:#a84d2b':''}" inputmode="decimal" value="${s.used}" title="${manual?'Ajustado manualmente. Automático seria '+(auto+saidaMov(s)):'Calculado automaticamente (IATFs'+(saidaMov(s)?' + '+saidaMov(s)+' de saída':'')+')'}" onkeydown="iatfEnter(event,'nav-st-used')" onchange="editStockCell('${s.id}','used',this.value,this)">${manual?`<button class="mini" style="padding:2px 5px;margin-left:3px" title="Voltar ao cálculo automático (${auto+saidaMov(s)})" onclick="clearUsedOverride('${s.id}')">↺</button>`:''}</td>
-  <td class="${s.saldo<=0?'stock-low':'stock-ok'}"><strong>${s.saldo}</strong></td>
+  <td class="st-curta"><input class="cell-input nav-st-tank" style="min-width:0;text-align:center" value="${esc(s.tank||'')}" onkeydown="iatfEnter(event,'nav-st-tank')" onchange="editStockCell('${s.id}','tank',this.value,this)"></td>
+  <td class="st-curta"><input class="cell-input nav-st-caneca" style="min-width:0;text-align:center" value="${esc(s.caneca||'')}" onkeydown="iatfEnter(event,'nav-st-caneca')" onchange="editStockCell('${s.id}','caneca',this.value,this)"></td>
+  <td class="st-n st-doses"><input class="cell-input nav-st-initial" style="min-width:0;text-align:center" inputmode="decimal" value="${Number(s.initial||0)}" onkeydown="iatfEnter(event,'nav-st-initial')" onchange="editStockCell('${s.id}','initial',this.value,this)"></td>
+  <td class="st-n st-iatf" style="white-space:nowrap"><input class="cell-input nav-st-used" style="min-width:0;width:100%;text-align:center;${manual?'font-weight:700;color:#a84d2b':''}" inputmode="decimal" value="${s.iatfUsed}" title="${manual?'Ajustado manualmente. Automático pelas IATFs seria '+auto:'Calculado automaticamente pelas IATFs e retornos'}" onkeydown="iatfEnter(event,'nav-st-used')" onchange="editStockCell('${s.id}','iatfUsed',this.value,this)">${manual?`<button class="mini" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);padding:1px 4px" title="Voltar ao cálculo automático (${auto})" onclick="clearUsedOverride('${s.id}')">↺</button>`:''}</td>
+  <td class="st-n st-saida" title="Só muda pelo botão ⇅ Entrada / Saída">${s.saida?s.saida:'<span style="color:#c9b28c">–</span>'}</td>
+  <td class="st-n st-saldo ${s.saldo<=0?'stock-low':'stock-ok'}"><strong>${s.saldo}</strong></td>
   <td><input class="cell-input nav-st-date" type="date" value="${esc(s.addedDate||'')}" onkeydown="iatfEnter(event,'nav-st-date')" onchange="editStockCell('${s.id}','addedDate',this.value,this)"></td>
-  <td><button class="mini" onclick="deleteStock('${s.id}')">Excluir</button></td></tr>`}).join('')}</tbody><tfoot><tr style="background:#f3f6f4;font-weight:800;border-top:2px solid #cfd8d2"><td colspan="5" style="text-align:right">TOTAL</td><td>${fmt(totalDoses)}</td><td>${fmt(totalUsado)}</td><td>${fmt(totalSaldo)}</td><td></td><td></td></tr></tfoot></table></div>`;
+  <td><button class="mini" onclick="deleteStock('${s.id}')">Excluir</button></td></tr>`}).join('')}</tbody><tfoot><tr style="background:#f3f6f4;font-weight:800;border-top:2px solid #cfd8d2"><td colspan="5" class="tot-pc" style="text-align:right">TOTAL</td><td colspan="3" class="tot-cel" style="text-align:right">TOTAL</td><td class="st-n st-doses">${fmt(tot('initial'))}</td><td class="st-n st-iatf">${fmt(tot('iatfUsed'))}</td><td class="st-n st-saida">${fmt(tot('saida'))}</td><td class="st-n st-saldo">${fmt(tot('saldo'))}</td><td class="tot-pc"></td><td></td></tr></tfoot></table></div>`;
   restoreViewPosition(__view);
 }
 function addBlankStock(){
@@ -2990,6 +3005,11 @@ function editStockCell(id,key,val,el){
     if(db.semen.some(x=>x.id!==id&&norm(x.name)===norm(val))){alert('Já existe um cadastro com esse nome.');el.value=old;return}
     s.name=val;if(old)renameSireEverywhere(old,val)
   }else if(key==='initial'){s.initial=Number(String(val).replace(',','.'))||0}
+  else if(key==='iatfUsed'){                               // coluna IATF: só o usado nas IATFs (sem as saídas)
+    const v=String(val).trim();
+    if(v===''){s.usedOverride=null}
+    else{const n=Number(v.replace(',','.'));if(!Number.isFinite(n)||n<0){alert('Informe um número válido em "IATF".');renderStock();return}s.usedOverride=(n===usedAuto(s))?null:n}
+  }
   else if(key==='used'){
     const v=String(val).trim();
     if(v===''){s.usedOverride=null}                       // vazio = volta ao automático
@@ -3138,7 +3158,7 @@ function defaultNoticeTexts(){
     embrioes:'Uma doadora pode ter mais de uma linha, uma pra cada touro usado nela. Usados vem sozinho da aba FIV (conta as linhas de FIV com esse RGD + esse touro + esse Tipo). O − / + em cima de cada grupo (Estoque, Saída Fazenda, Usados, Saldo) esconde ou mostra as colunas dele, igual o Agrupar do Excel. Saldo = Estoque + Saída − Usados (cobre tanto embrião que sai direto do estoque central pra vaca quanto o que passa pela fazenda antes).',
     fiv:'RGD Doadora sugere da lista já cadastrada em Embriões (cadastre lá primeiro se ainda não existir). 1º Acasalamento só sugere os touros que essa doadora específica tem lançados em Embriões — troque o RGD que a lista de touros atualiza sozinha. O Tipo (Fresco/VIT/DT) é o que conta pro "Usados" lá em Embriões — sem ele, essa linha não entra na contagem.',
     deleted:'Ao excluir uma matriz, o cadastro e os lançamentos de IATF dela ficam guardados aqui. Recuperar devolve tudo para o sistema.',
-    stock:'Clique nas células para editar. Saldo = Qtd doses − Usado. O "Usado" é calculado sozinho pelas IATFs, mas você pode digitar por cima quando a contagem não bater — fica em vermelho e o ↺ volta ao automático. Botão ⇅ Entrada / Saída: entrada soma na Qtd doses (touro novo é cadastrado; botijão e caneca ficam os da última entrada); saída (venda, descarte...) entra no Usado. 📋 Movimentações mostra a lista; excluir uma volta o saldo como era.'
+    stock:'Clique nas células para editar. Saldo = Doses − IATF − Saída. "IATF" é calculado sozinho pelas IATFs e retornos, mas você pode digitar por cima quando a contagem não bater — fica em vermelho e o ↺ volta ao automático. "Saída" só muda pelo botão ⇅ Entrada / Saída. Botão ⇅ Entrada / Saída: entrada soma na Qtd doses (touro novo é cadastrado; botijão e caneca ficam os da última entrada); saída (venda, descarte...) entra na coluna Saída. 📋 Movimentações mostra a lista; excluir uma volta o saldo como era.'
   };
 }
 function openPageHelp(){
@@ -3334,7 +3354,7 @@ async function exportSeasonAll(){
   const nuRows=seasonNaoUtil().filter(r=>String(r.rgd||'').trim()).map(r=>({RGD:r.rgd,CATEGORIA:r.category||'',DESTINACAO:r.destino||'',MOTIVO:r.motivo||''}));
   const fivRows=seasonFiv().filter(r=>String(r.rgdDoadora||'').trim()).map(r=>({RGD_DOADORA:r.rgdDoadora,'1_ACASALAMENTO':r.sire||'',N_RECEPTORA:r.receptora||'',N_ABCZ:r.abcz||'',TIPO:r.tipo||'',DATA:fmtDate(r.data),RESULTADO:r.resultado||'',SEXAGEM:r.sexagem||''}));
   const stkRows=db.semen.slice().sort((a,b)=>String(a.name).localeCompare(b.name,'pt-BR',{numeric:true}))
-    .map(s=>({TOURO:s.name,RGD_TOURO:s.rgdTouro||'',BOTIJAO:s.tank||'',CANECA:s.caneca||'',QTD_DOSES:Number(s.initial||0),UTILIZADO:usedEffective(s),SALDO:stockBalance(s),DATA_ENTRADA:fmtDate(s.addedDate)}));
+    .map(s=>({TOURO:s.name,RGD_TOURO:s.rgdTouro||'',BOTIJAO:s.tank||'',CANECA:s.caneca||'',DOSES:Number(s.initial||0),IATF:stockLinha(s).iatfUsed,SAIDA:saidaMov(s),SALDO:stockBalance(s),DATA_ENTRADA:fmtDate(s.addedDate)}));
   const embRows=(db.embrioes||[]).filter(e=>String(e.rgd||'').trim()).map(e=>{const c=embRowCalc(e);return {RGD:e.rgd,TOURO:e.touro||'',ESTOQUE_FRESCO:e.estFresco||0,ESTOQUE_VIT:e.estVit||0,ESTOQUE_DT:e.estDt||0,ESTOQUE_TOTAL:c.estTotal,SAIDA_FRESCO:e.saidaFresco||0,SAIDA_VIT:e.saidaVit||0,SAIDA_DT:e.saidaDt||0,SAIDA_TOTAL:c.saidaTotal,USADOS_FRESCO:c.usoFresco,USADOS_VIT:c.usoVit,USADOS_DT:c.usoDt,USADOS_TOTAL:c.usoTotal,SALDO_FRESCO:c.saldoFresco,SALDO_VIT:c.saldoVit,SALDO_DT:c.saldoDt,SALDO_TOTAL:c.saldoTotal}});
   const oc=finalOutcomeCounts();
   const resumo=[
@@ -3457,7 +3477,7 @@ function importStockExcel(file){
     if(!rows.length)return alert('O Excel não possui linhas para importar.');
     const errs=[],prepared=[];
     rows.forEach((r,i)=>{
-      const line=i+2,name=String(pick(r,['TOURO','CADASTRO_SEMEN','CADASTRO SEMEN','SÊMEN','SEMEN','NOME_BOTIJAO'])).trim(),rgdTouro=String(pick(r,['RGD_TOURO','RGD TOURO','RGD'])).trim(),tank=String(pick(r,['BOTIJAO','BOTIJÃO'])).trim(),caneca=String(pick(r,['CANECA'])).trim(),qRaw=pick(r,['QTD_DOSES','QTD DOSES','QUANTIDADE']),q=Number(String(qRaw).replace(',','.')),date=String(pick(r,['DATA_ENTRADA','DATA ENTRADA'])).trim();
+      const line=i+2,name=String(pick(r,['TOURO','CADASTRO_SEMEN','CADASTRO SEMEN','SÊMEN','SEMEN','NOME_BOTIJAO'])).trim(),rgdTouro=String(pick(r,['RGD_TOURO','RGD TOURO','RGD'])).trim(),tank=String(pick(r,['BOTIJAO','BOTIJÃO'])).trim(),caneca=String(pick(r,['CANECA'])).trim(),qRaw=pick(r,['QTD_DOSES','QTD DOSES','QUANTIDADE','DOSES']),q=Number(String(qRaw).replace(',','.')),date=String(pick(r,['DATA_ENTRADA','DATA ENTRADA'])).trim();
       if(!name&&!rgdTouro&&!tank&&!caneca&&!qRaw&&!date)return;
       if(!name)errs.push(`Linha ${line}: TOURO vazio.`);
       if(!Number.isFinite(q)||q<0)errs.push(`Linha ${line}: QTD_DOSES inválida.`);
@@ -3504,7 +3524,7 @@ async function downloadSheetsComTopo(sheets,fname){
     const cols=xlsxColumnsFor(rows);cols.forEach((c,i)=>{ws.getColumn(i+1).width=c.width})});
   await downloadExcelJSWorkbook(wb,fname);
 }
-function exportStock(){if(!needXLSX())return;const out=stockRowsFiltered().map(s=>({TOURO:s.name,RGD_TOURO:s.rgdTouro||'',BOTIJAO:s.tank,CANECA:s.caneca,QTD_DOSES:s.initial,UTILIZADO:s.used,SALDO:s.saldo,DATA_ENTRADA:s.addedDate}));jsonToXlsx(out,'estoque_semen.xlsx','Estoque')} window.exportStock=exportStock;
+function exportStock(){if(!needXLSX())return;const out=stockRowsFiltered().map(s=>({TOURO:s.name,RGD_TOURO:s.rgdTouro||'',BOTIJAO:s.tank,CANECA:s.caneca,DOSES:s.initial,IATF:s.iatfUsed,SAIDA:s.saida,SALDO:s.saldo,DATA_ENTRADA:s.addedDate}));jsonToXlsx(out,'estoque_semen.xlsx','Estoque')} window.exportStock=exportStock;
 /* Excel "normal": só o cabeçalho em negrito e a largura das colunas ajustada. Sem cor, sem
    zebra, sem borda, sem filtro e sem congelar — planilha comum, livre pra formatar/editar como
    quiser. Todos os botões "Baixar Excel" do sistema passam por aqui. */
@@ -3570,16 +3590,16 @@ function printStock(){
   const blank=($('#pkBlank')||{value:'sim'}).value==='sim';
   const useFilters=($('#pkCurrent')||{value:'yes'}).value==='yes';
   const u=usedSemen();
-  let rows=useFilters?stockRowsFiltered():db.semen.map(s=>({...s,saldo:stockBalance(s),used:usedEffective(s)}));
+  let rows=useFilters?stockRowsFiltered():db.semen.map(stockLinha);
   if(!incZero)rows=rows.filter(s=>Number(s.saldo)>0);
   rows=rows.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'pt-BR',{numeric:true}));
   if(!rows.length){closeModal();return alert('Nenhum registro para imprimir com essa seleção.')}
   const extraH=blank?'<th style="width:70px">Conferido</th><th style="width:110px">Obs.</th>':'';
   const extraD=blank?'<td>&nbsp;</td><td>&nbsp;</td>':'';
-  const trs=rows.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.rgdTouro||'')}</td><td>${esc(s.tank||'')}</td><td>${esc(s.caneca||'')}</td><td>${s.initial}</td><td>${s.used}</td><td>${s.saldo}</td>${extraD}</tr>`).join('');
-  const tot=rows.reduce((a,s)=>({i:a.i+Number(s.initial||0),u:a.u+Number(s.used||0),sa:a.sa+Number(s.saldo||0)}),{i:0,u:0,sa:0});
+  const trs=rows.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.rgdTouro||'')}</td><td>${esc(s.tank||'')}</td><td>${esc(s.caneca||'')}</td><td>${s.initial}</td><td>${s.iatfUsed}</td><td>${s.saida||'–'}</td><td>${s.saldo}</td>${extraD}</tr>`).join('');
+  const tot=rows.reduce((a,s)=>({i:a.i+Number(s.initial||0),u:a.u+Number(s.iatfUsed||0),o:a.o+Number(s.saida||0),sa:a.sa+Number(s.saldo||0)}),{i:0,u:0,o:0,sa:0});
   closeModal();
-  printHTML('Estoque de sêmen'+(incZero?'':' (somente com saldo)'),`<table><thead><tr><th>Touro</th><th>RGD do touro</th><th>Botijão</th><th>Caneca</th><th>Qtd doses</th><th>Usado</th><th>Saldo</th>${extraH}</tr></thead><tbody>${trs}</tbody><tfoot><tr><td colspan="4" style="text-align:right"><strong>TOTAL</strong></td><td><strong>${tot.i}</strong></td><td><strong>${tot.u}</strong></td><td><strong>${tot.sa}</strong></td>${extraD}</tr></tfoot></table>`)
+  printHTML('Estoque de sêmen'+(incZero?'':' (somente com saldo)'),`<table><thead><tr><th>Touro</th><th>RGD do touro</th><th>Botijão</th><th>Caneca</th><th>Doses</th><th>IATF</th><th>Saída</th><th>Saldo</th>${extraH}</tr></thead><tbody>${trs}</tbody><tfoot><tr><td colspan="4" style="text-align:right"><strong>TOTAL</strong></td><td><strong>${tot.i}</strong></td><td><strong>${tot.u}</strong></td><td><strong>${tot.o}</strong></td><td><strong>${tot.sa}</strong></td>${extraD}</tr></tfoot></table>`)
 } window.printStock=printStock;
 
 /* Expose imports */
