@@ -68,7 +68,7 @@ td{padding:8px 10px;border-bottom:1px solid #edf0ee;white-space:nowrap}tbody tr:
 .bz-it{border-radius:10px;padding:8px 10px;background:#eaf5ee}.bz-it.fiv{background:#fbf3df}
 .bz-it span{display:block;font-size:10.5px;font-weight:800;letter-spacing:.05em;color:#1f6a49;text-transform:uppercase}.bz-it.fiv span{color:#8a6a12}.bz-it b{font-size:15px;color:#17211c}
 .bz-obs{margin-top:8px;font-size:13px;color:#4a5850}.bz-vazio{margin-top:8px;font-size:13px;color:#9aa49d}
-.btn-mov{background:linear-gradient(135deg,#1f6a49,#2c8a60)!important;color:#fff!important;border:0!important;font-weight:800!important;box-shadow:0 3px 10px #1f6a4933}
+.btn-mov{display:inline-flex;align-items:center;gap:7px;font-weight:800!important;padding-left:16px!important;padding-right:18px!important}.btn-mov .bm-ic{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:#ffffff2e;font-size:13px}.btn-sec{display:inline-flex;align-items:center;gap:6px}.btn-sec .bm-n{background:#eef3ef;color:#1f6a49;border-radius:99px;padding:1px 8px;font-size:11px;font-weight:800}
 .mov-tipo{display:flex;gap:8px;margin:4px 0 14px}.mov-tipo button{flex:1;padding:14px;border-radius:12px;border:2px solid #d7ded9;background:#fff;font-size:16px;font-weight:800;color:#5d6a62;cursor:pointer}
 .mov-tipo button.on.ent{background:#1f7a4d;border-color:#1f7a4d;color:#fff}.mov-tipo button.on.sai{background:#c0392b;border-color:#c0392b;color:#fff}
 .mov-info{font-size:12.5px;color:#5d6a62;margin-top:5px;min-height:16px}.mov-info.novo{color:#9a5a12;font-weight:700}
@@ -2946,9 +2946,9 @@ function stock(){
   title('Estoque - Sêmen','Cadastro de sêmen, entradas e saldo automático. É estoque de verdade: continua igual entre estações.');setActions('');
   $('#content').innerHTML=`<div class="stock-page"><div class="toolbar">
   <div class="quick-add">
-  <button class="primary" onclick="addBlankStock()">+ Linha em branco</button>
-  <button class="btn-mov" onclick="abrirMovSemen('entrada')">⇅ Entrada / Saída</button>
-  <button class="ghost" onclick="listaMovSemen()">📋 Movimentações (${(db.semenMov||[]).length})</button>
+  <button class="primary btn-mov" onclick="abrirMovSemen('entrada')"><span class="bm-ic">⇅</span> Entrada / Saída</button>
+  <button class="ghost btn-sec" onclick="listaMovSemen()">📋 Movimentações${(db.semenMov||[]).length?` <span class="bm-n">${(db.semenMov||[]).length}</span>`:''}</button>
+  <button class="ghost btn-sec" onclick="addBlankStock()">+ Linha em branco</button>
   </div>
   <div class="out-actions">${menuOpcoes([['⬆ Subir Excel',"document.getElementById('stockImportFile').click()"],['⬇ Modelo Excel','downloadStockTemplate()'],['⬇ Baixar Excel','exportStock()'],['🖨 Imprimir','openStockPrint()']])}</div></div>
   <div id="stockTable"></div></div>`;renderStock()
