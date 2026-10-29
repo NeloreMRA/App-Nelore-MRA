@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f7f5">
 <title>Cobertura MRA</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
@@ -263,7 +264,10 @@ body.authenticated #loginScreen{display:none}
   .sidebar nav .nav{order:var(--ordem);flex:1 1 0!important;min-width:0!important;padding:6px 2px!important;font-size:19px}
   .sidebar nav .nav.nav-extra{display:none!important}
   .sidebar{padding:5px 4px calc(5px + env(safe-area-inset-bottom))!important;background:#123526!important;border-top:1px solid #ffffff14;box-shadow:0 -6px 18px #0002}
-  main{padding-top:env(safe-area-inset-top)!important;padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+  main{padding-top:0!important;padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+  /* topo sólido (título + Desfazer) parado em cima: nada rola por trás do relógio, sem a "névoa" do iPhone */
+  body{overflow:visible!important}
+  main>header{position:sticky;top:0;z-index:20;background:#f5f7f5;margin:0 -8px 10px!important;padding:calc(10px + env(safe-area-inset-top)) 8px 8px!important;box-shadow:0 1px 0 #e1e6e2}
   .sidebar nav .nav,.nav-mais.tem{flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;color:#9fbcad!important;background:transparent!important;border-radius:0!important;padding:4px 0 2px!important}
   .sidebar nav .nav .ni,.nav-mais .ni{width:46px;height:28px;border-radius:14px;transition:background .15s}
   .sidebar nav .nav .ni svg,.nav-mais .ni svg{width:22px;height:22px}
