@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Cobertura MRA</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
@@ -19,7 +19,7 @@
 .brand{display:flex;gap:12px;align-items:center;padding:0 8px 28px}.logo{width:38px;height:38px;border-radius:10px;background:#e7b549;color:#153e2c;display:grid;place-items:center;font-weight:900;font-size:12px}
 .brand strong,.brand span{display:block}.brand span{font-size:12px;opacity:.7;margin-top:3px}.sidebar nav{display:flex;flex-direction:column;gap:6px}
 .nav{border:0;background:transparent;color:#dce9e2;padding:12px 14px;text-align:left;border-radius:9px;font-size:14px;cursor:pointer;display:flex;gap:10px;align-items:center}
-.nav:hover,.nav.active{background:#24583f;color:#fff}.sidebar-foot{margin-top:auto;font-size:11px;opacity:.82;padding:12px;display:flex;align-items:center;gap:8px}
+.nav:hover,.nav.active{background:#24583f;color:#fff}.nav .ni,.nav-mais .ni{display:inline-grid;place-items:center;flex:none}.nav .ni svg,.nav-mais .ni svg{width:18px;height:18px}.sidebar-foot{margin-top:auto;font-size:11px;opacity:.82;padding:12px;display:flex;align-items:center;gap:8px}
 .dot{width:8px;height:8px;border-radius:50%;background:#e0b84f;box-shadow:0 0 0 2px #ffffff18;transition:background .2s}main{padding:0 32px 20px;min-width:0;height:100vh;overflow:hidden;display:flex;flex-direction:column}
 header{min-height:62px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e1e6e2;margin-bottom:12px;gap:14px}
 #content{flex:1 1 auto;min-height:0;overflow-y:auto}
@@ -262,6 +262,16 @@ body.authenticated #loginScreen{display:none}
   .sidebar nav{overflow:visible!important;justify-content:space-around!important;width:100%;gap:0!important}
   .sidebar nav .nav{order:var(--ordem);flex:1 1 0!important;min-width:0!important;padding:6px 2px!important;font-size:19px}
   .sidebar nav .nav.nav-extra{display:none!important}
+  .sidebar{padding:5px 4px calc(5px + env(safe-area-inset-bottom))!important;background:#123526!important;border-top:1px solid #ffffff14;box-shadow:0 -6px 18px #0002}
+  main{padding-top:env(safe-area-inset-top)!important;padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+  .sidebar nav .nav,.nav-mais.tem{flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:3px!important;color:#9fbcad!important;background:transparent!important;border-radius:0!important;padding:4px 0 2px!important}
+  .sidebar nav .nav .ni,.nav-mais .ni{width:46px;height:28px;border-radius:14px;transition:background .15s}
+  .sidebar nav .nav .ni svg,.nav-mais .ni svg{width:22px;height:22px}
+  .sidebar nav .nav.active,.nav-mais.active{color:#fff!important}
+  .sidebar nav .nav.active .ni,.nav-mais.active .ni{background:#2f7d57}
+  .sidebar nav .nav span:not([data-curto]),.sidebar nav .nav span[data-curto]::after,.nav-mais span{font-size:11px!important;font-weight:600;letter-spacing:.01em}
+  .sidebar nav .nav,.nav-mais.tem{display:grid!important;grid-template-rows:28px 15px;justify-items:center;align-content:center;row-gap:3px!important}
+  .sidebar nav .nav span,.nav-mais span{display:block!important;line-height:15px!important;height:15px;overflow:visible;white-space:nowrap}.sidebar nav .nav span[data-curto]{line-height:0!important}.sidebar nav .nav span[data-curto]::after{display:block;line-height:15px}
   .sidebar nav .nav span:not([data-curto]),.sidebar nav .nav span[data-curto]::after{font-size:10.5px!important}.sidebar nav .nav span[data-curto]{font-size:0!important}
   td > input.cell-input[list="bullsList"]{min-width:230px!important}td > input.cell-input[list="animalsList"],td > input.nav-a-rgd,td > input.nav-rgd{min-width:140px!important}
   .nav-mais.tem{display:flex;order:99;flex:1 1 0;min-width:0;flex-direction:column;align-items:center;gap:1px;border:0;background:transparent;color:#dce9e2;font-size:19px;padding:6px 2px;border-radius:10px;cursor:pointer}
@@ -318,16 +328,16 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
 <aside class="sidebar">
   <div class="brand"><div class="logo">MRA</div><div><strong>Cobertura MRA</strong><span>Gestão reprodutiva</span></div></div>
   <nav>
-    <button data-page="dashboard" class="nav active">▦ <span data-curto="Painel">Dashboard</span></button>
-    <button data-page="animals" class="nav">◉ <span>Matrizes</span></button>
-    <button data-page="iatf" class="nav">✓ <span>IATF</span></button>
-    <button data-page="stock" class="nav">▤ <span data-curto="Sêmen">Estoque - Sêmen</span></button>
-    <button data-page="acasal" class="nav">⚤ <span data-curto="Acasal.">Acasalamentos</span></button>
-    <button data-page="fiv" class="nav" style="color:#a8dcc0">⚗ <span>FIV</span></button>
-    <button data-page="embrioes" class="nav" style="color:#a8dcc0">❄ <span>Embriões</span></button>
-    <button data-page="deleted" class="nav" style="color:#e0827b">↺ <span data-curto="Excluídas">Exclusões</span></button>
-    <button data-page="settings" class="nav">⚙ <span data-curto="Config.">Configurações</span></button>
-    <button type="button" class="nav-mais" onclick="abrirMaisCel()">☰ <span>Mais</span></button>
+    <button data-page="dashboard" class="nav active"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg></i> <span data-curto="Painel">Dashboard</span></button>
+    <button data-page="animals" class="nav"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/></svg></i> <span>Matrizes</span></button>
+    <button data-page="iatf" class="nav"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m18 2 4 4M17 7l3-3M19 9 8.7 19.3a2.4 2.4 0 0 1-3.4 0l-.6-.6a2.4 2.4 0 0 1 0-3.4L15 5M9 11l4 4M5 19l-3 3M14 4l6 6"/></svg></i> <span>IATF</span></button>
+    <button data-page="stock" class="nav"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v14c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg></i> <span data-curto="Sêmen">Estoque - Sêmen</span></button>
+    <button data-page="acasal" class="nav"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/></svg></i> <span data-curto="Acasal.">Acasalamentos</span></button>
+    <button data-page="fiv" class="nav" style="color:#a8dcc0"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5L4.5 18.5A2 2 0 0 0 6.2 21.5h11.6a2 2 0 0 0 1.7-3L14 9.5V3"/><path d="M7.2 15h9.6"/></svg></i> <span>FIV</span></button>
+    <button data-page="embrioes" class="nav" style="color:#a8dcc0"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M4.9 4.9l14.2 14.2M2 12h20M4.9 19.1 19.1 4.9"/></svg></i> <span>Embriões</span></button>
+    <button data-page="deleted" class="nav" style="color:#e0827b"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></i> <span data-curto="Excluídas">Exclusões</span></button>
+    <button data-page="settings" class="nav"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></i> <span data-curto="Config.">Configurações</span></button>
+    <button type="button" class="nav-mais" onclick="abrirMaisCel()"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></i> <span>Mais</span></button>
   </nav>
   <div class="side-season"><label>Estação</label><select id="seasonHeader"></select></div>
   <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
