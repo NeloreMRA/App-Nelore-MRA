@@ -3148,7 +3148,7 @@ function listaMovSemen(){
 function desenharMovs(){
   const v=movsFiltrados(),soma=t=>v.filter(m=>m.tipo===t).reduce((a,m)=>a+Number(m.qtd||0),0);
   $('#mvResumo').innerHTML=`<span class="ent">⬇ Entradas: <b>${soma('entrada')}</b></span><span class="sai">⬆ Saídas: <b>${soma('saida')}</b></span>`;
-  $('#mvLista').innerHTML=v.length?v.map(m=>{const e=m.tipo==='entrada';return `<div class="mv"><div class="d">${fmtDate(m.data)}</div><div class="c"><div class="t">${esc(m.touro)}</div><div class="s">${e?'Entrada':'Saída'}${m.tank?' · '+esc(m.tank):''}${m.caneca?' · caneca '+esc(m.caneca):''}${m.obs?' · '+esc(m.obs):''}${m.por?' · '+esc(nomePor(m.por)):''}</div></div><div class="q ${e?'ent':'sai'}">${e?'+':'−'}${Number(m.qtd||0)}</div><button class="mini" title="Excluir" onclick="excluirMov('${m.id}')">🗑</button></div>`}).join('')
+  $('#mvLista').innerHTML=v.length?v.map(m=>{const e=m.tipo==='entrada';return `<div class="mv"><div class="d">${fmtDate(m.data)}</div><div class="c"><div class="t">${esc(m.touro)}</div><div class="s">${[m.tank?esc(m.tank):'',m.caneca?'caneca '+esc(m.caneca):'',m.obs?esc(m.obs):'',m.por?esc(nomePor(m.por)):''].filter(Boolean).join(' · ')}</div></div><div class="q ${e?'ent':'sai'}">${e?'+':'−'}${Number(m.qtd||0)}</div><button class="mini" title="Excluir" onclick="excluirMov('${m.id}')">🗑</button></div>`}).join('')
     :'<div class="bz-dica">Nenhuma movimentação ainda.</div>';
 } window.desenharMovs=desenharMovs;
 function excluirMov(id){
