@@ -3102,14 +3102,14 @@ function renderStockCel(root){
   const q=norm(stockBuscaCel),rows=stockRowsFiltered().filter(s=>!q||norm(s.name).includes(q)||norm(s.rgdTouro).includes(q));
   const tot=k=>rows.reduce((a,s)=>a+Number(s[k]||0),0);
   root.innerHTML=`<input class="stk-busca" placeholder="🔎 Buscar touro..." value="${esc(stockBuscaCel)}" autocomplete="off" oninput="stockBuscaCel=this.value;clearTimeout(window.__sbT);window.__sbT=setTimeout(()=>{renderStock();const i=$('.stk-busca');if(i){i.focus();const n=i.value.length;i.setSelectionRange(n,n)}},250)">
-  <div class="stk-tot"><span class="d">Doses <b>${tot('initial')}</b></span><span class="i">IATF <b>${tot('iatfUsed')}</b></span><span class="o">Saída <b>${tot('saida')}</b></span><span class="s">Saldo <b>${tot('saldo')}</b></span></div>
+  <div class="stk-tot"><span class="d">Entrada <b>${tot('initial')}</b></span><span class="o">Saída <b>${tot('saida')}</b></span><span class="i">IATF <b>${tot('iatfUsed')}</b></span><span class="s">Saldo <b>${tot('saldo')}</b></span></div>
   ${rows.map(s=>`<div class="stk-card" onclick="editarTouroCel('${s.id}')"><div class="stk-top"><b>${esc(s.name||'(sem nome)')}</b><span>${[s.tank,s.caneca?'caneca '+s.caneca:''].filter(Boolean).map(esc).join(' · ')}</span></div>
-    <div class="stk-nums"><div class="d"><span>Doses</span><b>${s.initial||0}</b></div><div class="i"><span>IATF</span><b>${s.iatfUsed}</b></div><div class="o"><span>Saída</span><b>${s.saida||'–'}</b></div><div class="s ${s.saldo<=0?'zero':''}"><span>Saldo</span><b>${s.saldo}</b></div></div></div>`).join('')||'<div class="bz-dica">Nenhum touro encontrado.</div>'}`;
+    <div class="stk-nums"><div class="d"><span>Entrada</span><b>${s.initial||0}</b></div><div class="o"><span>Saída</span><b>${s.saida||'–'}</b></div><div class="i"><span>IATF</span><b>${s.iatfUsed}</b></div><div class="s ${s.saldo<=0?'zero':''}"><span>Saldo</span><b>${s.saldo}</b></div></div></div>`).join('')||'<div class="bz-dica">Nenhum touro encontrado.</div>'}`;
 }
 function editarTouroCel(id){
   const s=db.semen.find(x=>x.id===id);if(!s)return;const l=stockLinha(s);
   openModal(`<h2>${esc(s.name)}</h2>
-  <div class="stk-nums grande"><div class="d"><span>Doses</span><b>${l.initial||0}</b></div><div class="i"><span>IATF</span><b>${l.iatfUsed}</b></div><div class="o"><span>Saída</span><b>${l.saida||'–'}</b></div><div class="s"><span>Saldo</span><b>${l.saldo}</b></div></div>
+  <div class="stk-nums grande"><div class="d"><span>Entrada</span><b>${l.initial||0}</b></div><div class="o"><span>Saída</span><b>${l.saida||'–'}</b></div><div class="i"><span>IATF</span><b>${l.iatfUsed}</b></div><div class="s"><span>Saldo</span><b>${l.saldo}</b></div></div>
   <div class="form-grid" style="margin-top:12px">
     <div class="field full"><label>Touro</label><input class="input" value="${esc(s.name)}" onchange="editStockCell('${s.id}','name',this.value,this)"></div>
     <div class="field full"><label>RGD do touro</label><input class="input" value="${esc(s.rgdTouro||'')}" onchange="editStockCell('${s.id}','rgdTouro',this.value,this)"></div>
@@ -3126,9 +3126,9 @@ function renderStock(){
   const rows=stockRowsFiltered();
   const tot=k=>rows.reduce((a,s)=>a+Number(s[k]||0),0);
   const fmt=n=>Number(n||0).toLocaleString('pt-BR',{maximumFractionDigits:2});
-  // Doses (azul) · IATF (roxo) · Saída (laranja) · Saldo (verde): Saldo = Doses − IATF − Saída
+  // Entrada (azul) · Saída (laranja) · IATF (roxo) · Saldo (verde): Saldo = Entrada − Saída − IATF
   root.innerHTML=`<div style="display:flex;justify-content:flex-end;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c"><strong style="color:#233129;margin-right:4px">${rows.length}</strong> registros no filtro</div><div class="table-wrap"><table class="stock-tab"><thead>
-  <tr><th></th><th>${excelHead('stock','name','Touro')}</th><th>${excelHead('stock','rgdTouro','RGD do touro')}</th><th class="st-curta">${excelHead('stock','tank','Botijão')}</th><th class="st-curta">${excelHead('stock','caneca','Caneca')}</th><th class="st-n st-doses">${excelHead('stock','initial','Doses')}</th><th class="st-n st-iatf">${excelHead('stock','iatfUsed','IATF')}</th><th class="st-n st-saida">${excelHead('stock','saida','Saída')}</th><th class="st-n st-saldo">${excelHead('stock','saldo','Saldo')}</th><th>${excelHead('stock','addedDate','Data entrada')}</th><th></th></tr>
+  <tr><th></th><th>${excelHead('stock','name','Touro')}</th><th>${excelHead('stock','rgdTouro','RGD do touro')}</th><th class="st-curta">${excelHead('stock','tank','Botijão')}</th><th class="st-curta">${excelHead('stock','caneca','Caneca')}</th><th class="st-n st-doses">${excelHead('stock','initial','Entrada')}</th><th class="st-n st-saida">${excelHead('stock','saida','Saída')}</th><th class="st-n st-iatf">${excelHead('stock','iatfUsed','IATF')}</th><th class="st-n st-saldo">${excelHead('stock','saldo','Saldo')}</th><th>${excelHead('stock','addedDate','Data entrada')}</th><th></th></tr>
   </thead><tbody>${rows.map(s=>{
     return `<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'stock','${s.id}')">
   ${rowHandleTd('stock',s.id)}
@@ -3137,11 +3137,11 @@ function renderStock(){
   <td class="st-curta"><input class="cell-input nav-st-tank" style="min-width:0;text-align:center" value="${esc(s.tank||'')}" onkeydown="iatfEnter(event,'nav-st-tank')" onchange="editStockCell('${s.id}','tank',this.value,this)"></td>
   <td class="st-curta"><input class="cell-input nav-st-caneca" style="min-width:0;text-align:center" value="${esc(s.caneca||'')}" onkeydown="iatfEnter(event,'nav-st-caneca')" onchange="editStockCell('${s.id}','caneca',this.value,this)"></td>
   <td class="st-n st-doses"><input class="cell-input nav-st-initial" style="min-width:0;text-align:center" inputmode="decimal" value="${Number(s.initial||0)}" onkeydown="iatfEnter(event,'nav-st-initial')" onchange="editStockCell('${s.id}','initial',this.value,this)"></td>
-  <td class="st-n st-iatf" title="Automático: doses usadas nas IATFs e retornos">${s.iatfUsed}</td>
   <td class="st-n st-saida" title="Só muda pelo botão ⇅ Entrada / Saída">${s.saida?s.saida:'<span style="color:#c9b28c">–</span>'}</td>
+  <td class="st-n st-iatf" title="Automático: doses usadas nas IATFs e retornos">${s.iatfUsed}</td>
   <td class="st-n st-saldo ${s.saldo<=0?'stock-low':'stock-ok'}"><strong>${s.saldo}</strong></td>
   <td><input class="cell-input nav-st-date" type="date" value="${esc(s.addedDate||'')}" onkeydown="iatfEnter(event,'nav-st-date')" onchange="editStockCell('${s.id}','addedDate',this.value,this)"></td>
-  <td><button class="mini" onclick="deleteStock('${s.id}')">Excluir</button></td></tr>`}).join('')}</tbody><tfoot><tr style="background:#f3f6f4;font-weight:800;border-top:2px solid #cfd8d2"><td colspan="5" class="tot-pc" style="text-align:right">TOTAL</td><td colspan="3" class="tot-cel" style="text-align:right">TOTAL</td><td class="st-n st-doses">${fmt(tot('initial'))}</td><td class="st-n st-iatf">${fmt(tot('iatfUsed'))}</td><td class="st-n st-saida">${fmt(tot('saida'))}</td><td class="st-n st-saldo">${fmt(tot('saldo'))}</td><td class="tot-pc"></td><td></td></tr></tfoot></table></div>`;
+  <td><button class="mini" onclick="deleteStock('${s.id}')">Excluir</button></td></tr>`}).join('')}</tbody><tfoot><tr style="background:#f3f6f4;font-weight:800;border-top:2px solid #cfd8d2"><td colspan="5" class="tot-pc" style="text-align:right">TOTAL</td><td colspan="3" class="tot-cel" style="text-align:right">TOTAL</td><td class="st-n st-doses">${fmt(tot('initial'))}</td><td class="st-n st-saida">${fmt(tot('saida'))}</td><td class="st-n st-iatf">${fmt(tot('iatfUsed'))}</td><td class="st-n st-saldo">${fmt(tot('saldo'))}</td><td class="tot-pc"></td><td></td></tr></tfoot></table></div>`;
   restoreViewPosition(__view);
 }
 function addBlankStock(){
@@ -3211,7 +3211,7 @@ function saveStockManual(){
   save();closeModal();stock()
 } window.saveStockManual=saveStockManual;
 /* ENTRADA / SAÍDA DE SÊMEN — db.semenMov (não é por estação: o estoque continua entre estações).
-   Entrada: soma em "Qtd doses"; touro que não existe é cadastrado; botijão e caneca ficam os da
+   Entrada: soma na coluna Entrada (`initial`); touro que não existe é cadastrado; botijão e caneca ficam os da
    última entrada. Saída: entra no "Usado" (ver saidaMov). Excluir a movimentação desfaz o efeito. */
 let movTipo='entrada',movFiltro={q:'',tipo:''};
 const TANQUES_PADRAO=['BT01','BT02','BT03'];
@@ -3311,7 +3311,7 @@ function defaultNoticeTexts(){
     embrioes:'Uma doadora pode ter mais de uma linha, uma pra cada touro usado nela. Usados vem sozinho da aba FIV (conta as linhas de FIV com esse RGD + esse touro + esse Tipo). O − / + em cima de cada grupo (Estoque, Saída Fazenda, Usados, Saldo) esconde ou mostra as colunas dele, igual o Agrupar do Excel. Saldo = Estoque + Saída − Usados (cobre tanto embrião que sai direto do estoque central pra vaca quanto o que passa pela fazenda antes).',
     fiv:'RGD Doadora sugere da lista já cadastrada em Embriões (cadastre lá primeiro se ainda não existir). 1º Acasalamento só sugere os touros que essa doadora específica tem lançados em Embriões — troque o RGD que a lista de touros atualiza sozinha. O Tipo (Fresco/VIT/DT) é o que conta pro "Usados" lá em Embriões — sem ele, essa linha não entra na contagem.',
     deleted:'Ao excluir uma matriz, o cadastro e os lançamentos de IATF dela ficam guardados aqui. Recuperar devolve tudo para o sistema.',
-    stock:'Clique nas células para editar. Saldo = Doses − IATF − Saída. "IATF" é automático (doses usadas nas IATFs e retornos). Se a conta não bater, lance a diferença pelo botão ⇅ Entrada / Saída (entrada soma em Doses, saída vai pra coluna Saída). Botão ⇅ Entrada / Saída: entrada soma na Qtd doses (touro novo é cadastrado; botijão e caneca ficam os da última entrada); saída (enviado, venda...) entra na coluna Saída. 📋 Movimentações mostra a lista; excluir uma volta o saldo como era.'
+    stock:'Clique nas células para editar. Saldo = Entrada − Saída − IATF. "IATF" é automático (doses usadas nas IATFs e retornos). Se a conta não bater, lance a diferença pelo botão ⇅ Entrada / Saída (entrada soma na coluna Entrada, saída na coluna Saída). Botão ⇅ Entrada / Saída: entrada soma na Qtd doses (touro novo é cadastrado; botijão e caneca ficam os da última entrada); saída (enviado, venda...) entra na coluna Saída. 📋 Movimentações mostra a lista; excluir uma volta o saldo como era.'
   };
 }
 function openPageHelp(){
@@ -3507,7 +3507,7 @@ async function exportSeasonAll(){
   const nuRows=seasonNaoUtil().filter(r=>String(r.rgd||'').trim()).map(r=>({RGD:r.rgd,CATEGORIA:r.category||'',DESTINACAO:r.destino||'',MOTIVO:r.motivo||''}));
   const fivRows=seasonFiv().filter(r=>String(r.rgdDoadora||'').trim()).map(r=>({RGD_DOADORA:r.rgdDoadora,'1_ACASALAMENTO':r.sire||'',N_RECEPTORA:r.receptora||'',N_ABCZ:r.abcz||'',TIPO:r.tipo||'',DATA:fmtDate(r.data),RESULTADO:r.resultado||'',SEXAGEM:r.sexagem||''}));
   const stkRows=db.semen.slice().sort((a,b)=>String(a.name).localeCompare(b.name,'pt-BR',{numeric:true}))
-    .map(s=>({TOURO:s.name,RGD_TOURO:s.rgdTouro||'',BOTIJAO:s.tank||'',CANECA:s.caneca||'',DOSES:Number(s.initial||0),IATF:stockLinha(s).iatfUsed,SAIDA:saidaMov(s),SALDO:stockBalance(s),DATA_ENTRADA:fmtDate(s.addedDate)}));
+    .map(s=>({TOURO:s.name,RGD_TOURO:s.rgdTouro||'',BOTIJAO:s.tank||'',CANECA:s.caneca||'',ENTRADA:Number(s.initial||0),SAIDA:saidaMov(s),IATF:stockLinha(s).iatfUsed,SALDO:stockBalance(s),DATA_ENTRADA:fmtDate(s.addedDate)}));
   const embRows=(db.embrioes||[]).filter(e=>String(e.rgd||'').trim()).map(e=>{const c=embRowCalc(e);return {RGD:e.rgd,TOURO:e.touro||'',ESTOQUE_FRESCO:e.estFresco||0,ESTOQUE_VIT:e.estVit||0,ESTOQUE_DT:e.estDt||0,ESTOQUE_TOTAL:c.estTotal,SAIDA_FRESCO:e.saidaFresco||0,SAIDA_VIT:e.saidaVit||0,SAIDA_DT:e.saidaDt||0,SAIDA_TOTAL:c.saidaTotal,USADOS_FRESCO:c.usoFresco,USADOS_VIT:c.usoVit,USADOS_DT:c.usoDt,USADOS_TOTAL:c.usoTotal,SALDO_FRESCO:c.saldoFresco,SALDO_VIT:c.saldoVit,SALDO_DT:c.saldoDt,SALDO_TOTAL:c.saldoTotal}});
   const oc=finalOutcomeCounts();
   const resumo=[
@@ -3677,7 +3677,7 @@ async function downloadSheetsComTopo(sheets,fname){
     const cols=xlsxColumnsFor(rows);cols.forEach((c,i)=>{ws.getColumn(i+1).width=c.width})});
   await downloadExcelJSWorkbook(wb,fname);
 }
-function exportStock(){if(!needXLSX())return;const out=stockRowsFiltered().map(s=>({TOURO:s.name,RGD_TOURO:s.rgdTouro||'',BOTIJAO:s.tank,CANECA:s.caneca,DOSES:s.initial,IATF:s.iatfUsed,SAIDA:s.saida,SALDO:s.saldo,DATA_ENTRADA:s.addedDate}));jsonToXlsx(out,'estoque_semen.xlsx','Estoque')} window.exportStock=exportStock;
+function exportStock(){if(!needXLSX())return;const out=stockRowsFiltered().map(s=>({TOURO:s.name,RGD_TOURO:s.rgdTouro||'',BOTIJAO:s.tank,CANECA:s.caneca,ENTRADA:s.initial,SAIDA:s.saida,IATF:s.iatfUsed,SALDO:s.saldo,DATA_ENTRADA:s.addedDate}));jsonToXlsx(out,'estoque_semen.xlsx','Estoque')} window.exportStock=exportStock;
 /* Excel "normal": só o cabeçalho em negrito e a largura das colunas ajustada. Sem cor, sem
    zebra, sem borda, sem filtro e sem congelar — planilha comum, livre pra formatar/editar como
    quiser. Todos os botões "Baixar Excel" do sistema passam por aqui. */
@@ -3749,10 +3749,10 @@ function printStock(){
   if(!rows.length){closeModal();return alert('Nenhum registro para imprimir com essa seleção.')}
   const extraH=blank?'<th style="width:70px">Conferido</th><th style="width:110px">Obs.</th>':'';
   const extraD=blank?'<td>&nbsp;</td><td>&nbsp;</td>':'';
-  const trs=rows.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.rgdTouro||'')}</td><td>${esc(s.tank||'')}</td><td>${esc(s.caneca||'')}</td><td>${s.initial}</td><td>${s.iatfUsed}</td><td>${s.saida||'–'}</td><td>${s.saldo}</td>${extraD}</tr>`).join('');
+  const trs=rows.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.rgdTouro||'')}</td><td>${esc(s.tank||'')}</td><td>${esc(s.caneca||'')}</td><td>${s.initial}</td><td>${s.saida||'–'}</td><td>${s.iatfUsed}</td><td>${s.saldo}</td>${extraD}</tr>`).join('');
   const tot=rows.reduce((a,s)=>({i:a.i+Number(s.initial||0),u:a.u+Number(s.iatfUsed||0),o:a.o+Number(s.saida||0),sa:a.sa+Number(s.saldo||0)}),{i:0,u:0,o:0,sa:0});
   closeModal();
-  printHTML('Estoque de sêmen'+(incZero?'':' (somente com saldo)'),`<table><thead><tr><th>Touro</th><th>RGD do touro</th><th>Botijão</th><th>Caneca</th><th>Doses</th><th>IATF</th><th>Saída</th><th>Saldo</th>${extraH}</tr></thead><tbody>${trs}</tbody><tfoot><tr><td colspan="4" style="text-align:right"><strong>TOTAL</strong></td><td><strong>${tot.i}</strong></td><td><strong>${tot.u}</strong></td><td><strong>${tot.o}</strong></td><td><strong>${tot.sa}</strong></td>${extraD}</tr></tfoot></table>`)
+  printHTML('Estoque de sêmen'+(incZero?'':' (somente com saldo)'),`<table><thead><tr><th>Touro</th><th>RGD do touro</th><th>Botijão</th><th>Caneca</th><th>Entrada</th><th>Saída</th><th>IATF</th><th>Saldo</th>${extraH}</tr></thead><tbody>${trs}</tbody><tfoot><tr><td colspan="4" style="text-align:right"><strong>TOTAL</strong></td><td><strong>${tot.i}</strong></td><td><strong>${tot.o}</strong></td><td><strong>${tot.u}</strong></td><td><strong>${tot.sa}</strong></td>${extraD}</tr></tfoot></table>`)
 } window.printStock=printStock;
 
 /* Expose imports */
