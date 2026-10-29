@@ -252,6 +252,52 @@ body.authenticated #loginScreen{display:none}
   .dtable.fiv-compacta .bar .tr{display:none}.dtable.fiv-compacta .rk{display:none}.dtable.fiv-compacta td,.dtable.fiv-compacta th{white-space:normal}
 }
 @media(max-width:600px){.sidebar>.voltar-app{margin:0 4px 0 0;padding:9px 10px;align-self:center}.sidebar>.voltar-app .va-txt{display:none}.sidebar nav{min-width:0;overflow-x:auto;scrollbar-width:none}}
+.nav-mais{display:none}
+.mais-lista{display:flex;flex-direction:column;gap:8px;margin:6px 0 14px}.mais-it{display:block;text-align:left;border:1px solid #dfe5e1;background:#fff;border-radius:12px;padding:14px 16px;font-size:16px;font-weight:700;color:#26332b;text-decoration:none;cursor:pointer}.mais-it.on{border-color:#1f6a49;color:#1f6a49;background:#eef6f1}.mais-it.sair{color:#a33627}
+.mais-est{margin:0 0 14px}.mais-est label{display:block;font-size:12px;font-weight:700;color:#5d6a62;margin-bottom:6px}
+/* ===== CELULAR v2: barra com 5 telas + Mais, letras maiores, botões numa linha, janelas presas no topo ===== */
+@media(max-width:600px){
+  /* barra de baixo: 5 telas + Mais, todas cabem */
+  .sidebar>.voltar-app,#logoutBtn{display:none!important}
+  .sidebar nav{overflow:visible!important;justify-content:space-around!important;width:100%;gap:0!important}
+  .sidebar nav .nav{order:var(--ordem);flex:1 1 0!important;min-width:0!important;padding:6px 2px!important;font-size:19px}
+  .sidebar nav .nav.nav-extra{display:none!important}
+  .sidebar nav .nav span:not([data-curto]),.sidebar nav .nav span[data-curto]::after{font-size:10.5px!important}.sidebar nav .nav span[data-curto]{font-size:0!important}
+  td > input.cell-input[list="bullsList"]{min-width:230px!important}td > input.cell-input[list="animalsList"],td > input.nav-a-rgd,td > input.nav-rgd{min-width:140px!important}
+  .nav-mais.tem{display:flex;order:99;flex:1 1 0;min-width:0;flex-direction:column;align-items:center;gap:1px;border:0;background:transparent;color:#dce9e2;font-size:19px;padding:6px 2px;border-radius:10px;cursor:pointer}
+  .nav-mais span{display:block;font-size:10.5px}.nav-mais.active{background:#ffffff1f;color:#fff}
+  /* letras maiores nas tabelas e campos (16px nos campos: o iPhone não dá zoom ao tocar) */
+  .animals-page table,.iatf-page table,.stock-page table,.embrioes-page table,.fiv-page table,#acasalTable table{font-size:14px!important}
+  .animals-page th,.iatf-page th,.stock-page th,.fiv-page th,#acasalTable th,#embrioesTable th{font-size:11px!important;padding:9px 8px!important}
+  .cell-input,td > .cell-input{font-size:16px!important;min-height:44px!important;padding:6px 9px!important}
+  td{font-size:14px}
+  .badge{font-size:12px}
+  /* botões de cima numa linha só (arrasta pro lado se não couber) */
+  .quick-add{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;max-width:100%;padding-bottom:2px}.quick-add::-webkit-scrollbar{display:none}
+  .quick-add>*{flex:0 0 auto}
+  .toolbar button,.toolbar select,.quick-add button{padding:10px 13px!important;font-size:14px!important}
+  header h1{font-size:22px}
+  /* janelas ficam presas no topo (o teclado não empurra a tela) */
+  .modal{place-items:start center!important;padding:8px!important}
+  .modal-card{max-height:calc(100dvh - 16px)!important;width:100%!important}
+  .modal .input,.modal input,.modal select{font-size:16px!important}
+  .bz-in{position:sticky;top:-16px;z-index:2;box-shadow:0 4px 10px #fff}
+  /* busca do Acasalamento bem visível */
+  .busca-btn{max-width:none;background:#1f6a49;border-color:#1f6a49;color:#fff;font-size:17px;font-weight:700;padding:15px 16px;border-radius:14px}.busca-btn b{color:#fff!important}
+  /* painel: tabelas largas rolam dentro do cartão */
+  .dcard{overflow-x:auto;min-width:0}.dash-lado,.dash-lado>*{min-width:0}
+  .dtable.tab-abas{min-width:0!important;width:100%!important}.dtable.tab-abas .bar .tr,.dtable.tab-abas .rk{display:none}.dtable.tab-abas td,.dtable.tab-abas th{white-space:normal;padding-left:6px!important;padding-right:6px!important}
+  /* estoque em cartões */
+  .stk-busca{width:100%;font-size:16px;padding:12px 14px;border:1px solid #d7ded9;border-radius:12px;margin:0 0 10px;outline:none}
+  .stk-tot{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;font-size:11px;text-align:center}.stk-tot span{border-radius:10px;padding:6px 2px}.stk-tot b{display:block;font-size:16px}
+  .stk-tot .d,.stk-nums .d{background:#e4eefb;color:#235fa8}.stk-tot .i,.stk-nums .i{background:#efe8ff;color:#6743a0}.stk-tot .o,.stk-nums .o{background:#fdf0dc;color:#9a5a12}.stk-tot .s,.stk-nums .s{background:#e3f3e8;color:#1f6a49}
+  .stk-card{background:#fff;border:1px solid #e3e8e4;border-radius:14px;padding:12px;margin-bottom:8px}
+  .stk-top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.stk-top b{font-size:16px}.stk-top span{font-size:12.5px;color:#69746c;white-space:nowrap}
+  .stk-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px;text-align:center}.stk-nums div{border-radius:10px;padding:5px 2px}.stk-nums span{display:block;font-size:10.5px;font-weight:700}.stk-nums b{font-size:18px}
+  .stk-nums .s.zero{background:#fbe5e5;color:#b83a3a}
+  .stk-nums.grande b{font-size:22px}
+  .stock-page .quick-add .btn-sec:last-child{display:none} /* + Linha em branco: no celular entra pela Entrada */
+}
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
 </style>
 </head>
@@ -281,6 +327,7 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
     <button data-page="embrioes" class="nav" style="color:#a8dcc0">❄ <span>Embriões</span></button>
     <button data-page="deleted" class="nav" style="color:#e0827b">↺ <span data-curto="Excluídas">Exclusões</span></button>
     <button data-page="settings" class="nav">⚙ <span data-curto="Config.">Configurações</span></button>
+    <button type="button" class="nav-mais" onclick="abrirMaisCel()">☰ <span>Mais</span></button>
   </nav>
   <div class="side-season"><label>Estação</label><select id="seasonHeader"></select></div>
   <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
@@ -783,7 +830,23 @@ function firstAllowedPage(){const all=['dashboard','animals','iatf','stock','aca
 function applyAllowedPages(){$$('.nav').forEach(b=>b.style.display=pageAllowed(b.dataset.page)?'':'none');if(!pageAllowed(page)){page=firstAllowedPage();$$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===page))}}
 function go(p){if(!pageAllowed(p))p=firstAllowedPage();page=p;$$('.nav').forEach(x=>x.classList.toggle('active',x.dataset.page===p));render()}
 // celular: o menu de baixo rola pro lado — deixa o botão da tela aberta visível
-function mostrarNavAtiva(){const a=document.querySelector('.nav.active');if(a&&innerWidth<=600)try{a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}}
+/* CELULAR: barra de baixo com 5 telas fixas + "☰ Mais" (o resto, estação, voltar pro App e Sair).
+   Respeita as telas liberadas pro usuário; se forem até 6, aparecem todas e não tem "Mais". */
+const NAV_CEL=['dashboard','iatf','fiv','acasal','stock','animals','embrioes','deleted','settings'];
+function montarBarraCelular(){
+  const vis=NAV_CEL.filter(p=>pageAllowed(p)&&$(`.nav[data-page="${p}"]`));
+  const fixos=vis.length<=6?vis:vis.slice(0,5);
+  $$('.nav[data-page]').forEach(b=>{const i=NAV_CEL.indexOf(b.dataset.page);b.style.setProperty('--ordem',i<0?50:i);b.classList.toggle('nav-extra',!fixos.includes(b.dataset.page))});
+  const mais=$('.nav-mais');if(mais){mais.classList.toggle('tem',vis.length>fixos.length);mais.classList.toggle('active',!fixos.includes(page))}
+}
+function abrirMaisCel(){
+  const extras=NAV_CEL.filter(p=>pageAllowed(p)&&$(`.nav[data-page="${p}"]`)&&$(`.nav[data-page="${p}"]`).classList.contains('nav-extra'));
+  const nome=p=>{const b=$(`.nav[data-page="${p}"]`);return b?b.innerText.replace(/\s+/g,' ').trim():p};
+  openModal(`<h2>Mais</h2><div class="mais-lista">${extras.map(p=>`<button class="mais-it ${p===page?'on':''}" onclick="closeModal();go('${p}')">${esc(nome(p))}</button>`).join('')}</div>
+  <div class="mais-est"><label>Estação</label><select class="input" onchange="closeModal();activateSeason(this.value)">${db.seasons.map(x=>`<option value="${esc(x.id)}" ${x.id===db.meta.activeSeasonId?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
+  <div class="mais-lista"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a><button class="mais-it sair" onclick="document.getElementById('logoutBtn').click()">Sair</button></div>`);
+} window.abrirMaisCel=abrirMaisCel;
+function mostrarNavAtiva(){montarBarraCelular();const a=document.querySelector('.nav.active');if(a&&innerWidth<=600)try{a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}}
 window.go=go;
 function renderSeasonSelector(){
   $('#seasonHeader').innerHTML=db.seasons.map(s=>`<option value="${esc(s.id)}" ${s.id===db.meta.activeSeasonId?'selected':''}>${esc(s.name)}</option>`).join('')
@@ -2983,8 +3046,32 @@ function stock(){
   <div class="out-actions">${menuOpcoes([['⬆ Subir Excel',"document.getElementById('stockImportFile').click()"],['⬇ Modelo Excel','downloadStockTemplate()'],['⬇ Baixar Excel','exportStock()'],['🖨 Imprimir','openStockPrint()']])}</div></div>
   <div id="stockTable"></div></div>`;renderStock()
 }
+let stockBuscaCel='';
+const telaCel=()=>innerWidth<=600;
+function renderStockCel(root){
+  const q=norm(stockBuscaCel),rows=stockRowsFiltered().filter(s=>!q||norm(s.name).includes(q)||norm(s.rgdTouro).includes(q));
+  const tot=k=>rows.reduce((a,s)=>a+Number(s[k]||0),0);
+  root.innerHTML=`<input class="stk-busca" placeholder="🔎 Buscar touro..." value="${esc(stockBuscaCel)}" autocomplete="off" oninput="stockBuscaCel=this.value;clearTimeout(window.__sbT);window.__sbT=setTimeout(()=>{renderStock();const i=$('.stk-busca');if(i){i.focus();const n=i.value.length;i.setSelectionRange(n,n)}},250)">
+  <div class="stk-tot"><span class="d">Doses <b>${tot('initial')}</b></span><span class="i">IATF <b>${tot('iatfUsed')}</b></span><span class="o">Saída <b>${tot('saida')}</b></span><span class="s">Saldo <b>${tot('saldo')}</b></span></div>
+  ${rows.map(s=>`<div class="stk-card" onclick="editarTouroCel('${s.id}')"><div class="stk-top"><b>${esc(s.name||'(sem nome)')}</b><span>${[s.tank,s.caneca?'caneca '+s.caneca:''].filter(Boolean).map(esc).join(' · ')}</span></div>
+    <div class="stk-nums"><div class="d"><span>Doses</span><b>${s.initial||0}</b></div><div class="i"><span>IATF</span><b>${s.iatfUsed}</b></div><div class="o"><span>Saída</span><b>${s.saida||'–'}</b></div><div class="s ${s.saldo<=0?'zero':''}"><span>Saldo</span><b>${s.saldo}</b></div></div></div>`).join('')||'<div class="bz-dica">Nenhum touro encontrado.</div>'}`;
+}
+function editarTouroCel(id){
+  const s=db.semen.find(x=>x.id===id);if(!s)return;const l=stockLinha(s);
+  openModal(`<h2>${esc(s.name)}</h2>
+  <div class="stk-nums grande"><div class="d"><span>Doses</span><b>${l.initial||0}</b></div><div class="i"><span>IATF</span><b>${l.iatfUsed}</b></div><div class="o"><span>Saída</span><b>${l.saida||'–'}</b></div><div class="s"><span>Saldo</span><b>${l.saldo}</b></div></div>
+  <div class="form-grid" style="margin-top:12px">
+    <div class="field full"><label>Touro</label><input class="input" value="${esc(s.name)}" onchange="editStockCell('${s.id}','name',this.value,this)"></div>
+    <div class="field full"><label>RGD do touro</label><input class="input" value="${esc(s.rgdTouro||'')}" onchange="editStockCell('${s.id}','rgdTouro',this.value,this)"></div>
+    <div class="field"><label>Botijão</label><input class="input" value="${esc(s.tank||'')}" onchange="editStockCell('${s.id}','tank',this.value,this)"></div>
+    <div class="field"><label>Caneca</label><input class="input" value="${esc(s.caneca||'')}" onchange="editStockCell('${s.id}','caneca',this.value,this)"></div>
+  </div>
+  <div class="actions"><button class="ghost" style="color:#a33627;border-color:#e7bbb5;margin-right:auto" onclick="closeModal();deleteStock('${s.id}')">Excluir</button><button class="ghost" onclick="closeModal();abrirMovSemen('entrada');setTimeout(()=>{const t=$('#mvTouro');if(t){t.value=${JSON.stringify(s.name).replace(/"/g,'&quot;')};movTouroInfo(true)}},30)">⇅ Entrada / Saída</button><button class="primary" onclick="closeModal()">Pronto</button></div>`);
+} window.editarTouroCel=editarTouroCel;
+addEventListener('resize',()=>{const c=telaCel();if(c!==window.__eraCel){window.__eraCel=c;if(page==='stock')renderStock()}});window.__eraCel=innerWidth<=600;
 function renderStock(){
   const root=$('#stockTable');if(!root)return;
+  if(telaCel())return renderStockCel(root);
   const __view=captureViewPosition();
   const rows=stockRowsFiltered();
   const tot=k=>rows.reduce((a,s)=>a+Number(s[k]||0),0);
