@@ -417,6 +417,20 @@ function migrate(x){
     if(s.usedOverride===undefined)s.usedOverride=null;
     delete s.tankName;
   });
+  // Usado digitado à mão (modelo antigo) vira movimentação de 28/10/2026 e a coluna IATF fica só automática:
+  // digitado a mais = Saída da diferença; digitado a menos = Entrada da diferença (doses que entraram sem
+  // registro). O saldo continua o mesmo. Id fixo por touro: rodar de novo (ou em 2 aparelhos) não duplica.
+  {const usoX={};(x.iatf||[]).forEach(r=>{const f=norm(r.firstSire);if(f&&Number(r.qty)>0)usoX[f]=(usoX[f]||0)+Number(r.qty);const rs=norm(r.returnSire);if(rs)usoX[rs]=(usoX[rs]||0)+1});
+   x.semenMov=x.semenMov||[];
+   x.semen.forEach(s=>{
+     if(s.usedOverride===null||s.usedOverride===undefined)return;
+     let d=Number(s.usedOverride||0)-(usoX[norm(s.name)]||0);s.usedOverride=null;
+     // saída já lançada pelo botão ⇅ (ex.: RAIO, "saída para central") já é o ajuste: não lança de novo
+     if(d>0){const ja=x.semenMov.filter(m=>m.tipo==='saida'&&m.semenId===s.id&&!String(m.id).startsWith('mv-ajuste-')).reduce((a,m)=>a+Number(m.qtd||0),0);d=Math.max(0,d-ja)}
+     const id='mv-ajuste-'+s.id;if(!d||x.semenMov.some(m=>m.id===id))return;
+     if(d<0)s.initial=Number(s.initial||0)-d;
+     x.semenMov.push({id,tipo:d>0?'saida':'entrada',data:'2026-10-28',semenId:s.id,touro:s.name,tank:s.tank||'',caneca:s.caneca||'',qtd:Math.abs(d),obs:'Ajuste de saldo',por:'NeloreMRA',em:'2026-10-28T12:00:00.000Z'});
+   });}
   x.iatf.forEach(r=>{
     r.seasonId=r.seasonId||x.meta.activeSeasonId;
     if(r.date && !((x.cycleDates[r.seasonId]||{})[r.cycle])){
@@ -2976,7 +2990,6 @@ function renderStock(){
   root.innerHTML=`<div style="display:flex;justify-content:flex-end;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c"><strong style="color:#233129;margin-right:4px">${rows.length}</strong> registros no filtro</div><div class="table-wrap"><table class="stock-tab"><thead>
   <tr><th></th><th>${excelHead('stock','name','Touro')}</th><th>${excelHead('stock','rgdTouro','RGD do touro')}</th><th class="st-curta">${excelHead('stock','tank','Botijão')}</th><th class="st-curta">${excelHead('stock','caneca','Caneca')}</th><th class="st-n st-doses">${excelHead('stock','initial','Doses')}</th><th class="st-n st-iatf">${excelHead('stock','iatfUsed','IATF')}</th><th class="st-n st-saida">${excelHead('stock','saida','Saída')}</th><th class="st-n st-saldo">${excelHead('stock','saldo','Saldo')}</th><th>${excelHead('stock','addedDate','Data entrada')}</th><th></th></tr>
   </thead><tbody>${rows.map(s=>{
-    const auto=usedAuto(s), manual=!(s.usedOverride===null||s.usedOverride===undefined);
     return `<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'stock','${s.id}')">
   ${rowHandleTd('stock',s.id)}
   <td><input class="cell-input nav-st-name" style="min-width:210px;font-weight:600" value="${esc(s.name)}" data-old="${esc(s.name)}" onkeydown="iatfEnter(event,'nav-st-name')" onchange="editStockCell('${s.id}','name',this.value,this)"></td>
@@ -2984,7 +2997,7 @@ function renderStock(){
   <td class="st-curta"><input class="cell-input nav-st-tank" style="min-width:0;text-align:center" value="${esc(s.tank||'')}" onkeydown="iatfEnter(event,'nav-st-tank')" onchange="editStockCell('${s.id}','tank',this.value,this)"></td>
   <td class="st-curta"><input class="cell-input nav-st-caneca" style="min-width:0;text-align:center" value="${esc(s.caneca||'')}" onkeydown="iatfEnter(event,'nav-st-caneca')" onchange="editStockCell('${s.id}','caneca',this.value,this)"></td>
   <td class="st-n st-doses"><input class="cell-input nav-st-initial" style="min-width:0;text-align:center" inputmode="decimal" value="${Number(s.initial||0)}" onkeydown="iatfEnter(event,'nav-st-initial')" onchange="editStockCell('${s.id}','initial',this.value,this)"></td>
-  <td class="st-n st-iatf" style="white-space:nowrap"><input class="cell-input nav-st-used" style="min-width:0;width:100%;text-align:center;${manual?'font-weight:700;color:#a84d2b':''}" inputmode="decimal" value="${s.iatfUsed}" title="${manual?'Ajustado manualmente. Automático pelas IATFs seria '+auto:'Calculado automaticamente pelas IATFs e retornos'}" onkeydown="iatfEnter(event,'nav-st-used')" onchange="editStockCell('${s.id}','iatfUsed',this.value,this)">${manual?`<button class="mini" style="position:absolute;right:2px;top:50%;transform:translateY(-50%);padding:1px 4px" title="Voltar ao cálculo automático (${auto})" onclick="clearUsedOverride('${s.id}')">↺</button>`:''}</td>
+  <td class="st-n st-iatf" title="Automático: doses usadas nas IATFs e retornos">${s.iatfUsed}</td>
   <td class="st-n st-saida" title="Só muda pelo botão ⇅ Entrada / Saída">${s.saida?s.saida:'<span style="color:#c9b28c">–</span>'}</td>
   <td class="st-n st-saldo ${s.saldo<=0?'stock-low':'stock-ok'}"><strong>${s.saldo}</strong></td>
   <td><input class="cell-input nav-st-date" type="date" value="${esc(s.addedDate||'')}" onkeydown="iatfEnter(event,'nav-st-date')" onchange="editStockCell('${s.id}','addedDate',this.value,this)"></td>
@@ -3158,7 +3171,7 @@ function defaultNoticeTexts(){
     embrioes:'Uma doadora pode ter mais de uma linha, uma pra cada touro usado nela. Usados vem sozinho da aba FIV (conta as linhas de FIV com esse RGD + esse touro + esse Tipo). O − / + em cima de cada grupo (Estoque, Saída Fazenda, Usados, Saldo) esconde ou mostra as colunas dele, igual o Agrupar do Excel. Saldo = Estoque + Saída − Usados (cobre tanto embrião que sai direto do estoque central pra vaca quanto o que passa pela fazenda antes).',
     fiv:'RGD Doadora sugere da lista já cadastrada em Embriões (cadastre lá primeiro se ainda não existir). 1º Acasalamento só sugere os touros que essa doadora específica tem lançados em Embriões — troque o RGD que a lista de touros atualiza sozinha. O Tipo (Fresco/VIT/DT) é o que conta pro "Usados" lá em Embriões — sem ele, essa linha não entra na contagem.',
     deleted:'Ao excluir uma matriz, o cadastro e os lançamentos de IATF dela ficam guardados aqui. Recuperar devolve tudo para o sistema.',
-    stock:'Clique nas células para editar. Saldo = Doses − IATF − Saída. "IATF" é calculado sozinho pelas IATFs e retornos, mas você pode digitar por cima quando a contagem não bater — fica em vermelho e o ↺ volta ao automático. "Saída" só muda pelo botão ⇅ Entrada / Saída. Botão ⇅ Entrada / Saída: entrada soma na Qtd doses (touro novo é cadastrado; botijão e caneca ficam os da última entrada); saída (venda, descarte...) entra na coluna Saída. 📋 Movimentações mostra a lista; excluir uma volta o saldo como era.'
+    stock:'Clique nas células para editar. Saldo = Doses − IATF − Saída. "IATF" é automático (doses usadas nas IATFs e retornos). Se a conta não bater, lance a diferença pelo botão ⇅ Entrada / Saída (entrada soma em Doses, saída vai pra coluna Saída). Botão ⇅ Entrada / Saída: entrada soma na Qtd doses (touro novo é cadastrado; botijão e caneca ficam os da última entrada); saída (venda, descarte...) entra na coluna Saída. 📋 Movimentações mostra a lista; excluir uma volta o saldo como era.'
   };
 }
 function openPageHelp(){
