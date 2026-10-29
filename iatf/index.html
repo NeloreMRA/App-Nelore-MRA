@@ -311,6 +311,26 @@ body.authenticated #loginScreen{display:none}
   .stk-nums .s.zero{background:#fbe5e5;color:#b83a3a}
   .stk-nums.grande b{font-size:22px}
   .stock-page .quick-add .btn-sec:last-child{display:none} /* + Linha em branco: no celular entra pela Entrada */
+  /* Estoque: Entrada / Saída grandão em cima; Movimentações e Opções menores embaixo */
+  .stock-page>.toolbar{display:grid!important;grid-template-columns:1fr auto;gap:8px!important;align-items:stretch}
+  .stock-page>.toolbar .quick-add{display:contents!important}
+  .stock-page .btn-mov{grid-column:1/-1;justify-content:center;font-size:19px!important;padding:17px 16px!important;border-radius:16px!important;box-shadow:0 4px 14px #1f6a4940}
+  .stock-page .btn-mov .bm-ic{width:28px;height:28px;font-size:17px;border-radius:8px}
+  .stock-page .btn-sec{justify-content:center;font-size:14px!important;padding:10px 12px!important}
+  .stock-page>.toolbar .out-actions{margin:0!important}.stock-page>.toolbar .out-actions .ghost{height:100%}
+  /* Acasalamento: data, Criar data e Excluir menores numa linha */
+  .ac-datas .filters{flex-wrap:wrap;gap:6px!important;align-items:stretch}
+  .ac-datas select,.ac-datas button{padding:6px 10px!important;font-size:13px!important;min-height:0!important;border-radius:9px}
+  .ac-datas #acasalSel{font-size:14px!important;max-width:150px}
+  .ac-datas .date-box{flex:0 1 150px!important;padding:3px 7px!important}.ac-datas .date-box label{font-size:10px!important}.ac-datas .date-box input{font-size:14px!important;padding:3px 5px!important}
+  .ac-datas .filters{flex-wrap:nowrap!important;width:100%}.ac-datas #acasalSel{flex:1 1 auto;max-width:none;min-width:0}
+  .ac-datas .date-box{display:none!important} /* mudar a data de todas as linhas: só no computador */
+  .ac-datas button{white-space:nowrap;flex:none}
+  .ac-datas .mini{font-size:0!important;padding:6px 10px!important;align-self:stretch}.ac-datas .mini::before{content:"🗑";font-size:15px}
+  /* linha de baixo do Acasalamento: + Linha, Não utilizadas e Opções pequenos numa linha */
+  .animals-page:has(#acasalTable)>.toolbar:not(.ac-datas){flex-wrap:nowrap!important;gap:6px!important}
+  .animals-page:has(#acasalTable)>.toolbar:not(.ac-datas) button{padding:8px 8px!important;font-size:12.5px!important}
+  .animals-page:has(#acasalTable)>.toolbar:not(.ac-datas) .out-actions{flex:none}.animals-page:has(#acasalTable)>.toolbar:not(.ac-datas) .quick-add{flex:1 1 auto;min-width:0}.animals-page:has(#acasalTable)>.toolbar:not(.ac-datas) button{white-space:nowrap}
 }
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
 </style>
@@ -2337,7 +2357,7 @@ function acasalPage(){
   ${bullDatalist()}
   <div class="animals-page">
   <button class="busca-btn" onclick="abrirBuscaAcasal()"><span class="ic">🔎</span><span>Buscar acasalamento pelo <b style="color:#1f6a49">RGD</b></span></button>
-  <div class="toolbar" style="margin-bottom:9px">
+  <div class="toolbar ac-datas" style="margin-bottom:9px">
     <div class="filters">
       ${lista.length?`<select id="acasalSel" onchange="selectAcasalData(this.value)"><option value="${ACASAL_TODOS}" ${atual===ACASAL_TODOS?'selected':''}>Todos</option>${lista.map(d=>`<option value="${esc(d)}" ${d===atual?'selected':''}>${d?fmtDate(d):'Sem data'}</option>`).join('')}</select>`:''}<button class="ghost" onclick="openCriarAcasalData()">+ Criar data</button>
       ${atual!==null&&atual!==ACASAL_TODOS?`${caixaTopo('data','Data',atual,`<input type="date" class="input" style="min-width:145px" value="${esc(atual)}" onchange="mudarAcasalData(this.value,this)">`)}<button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirAcasalData()">Excluir esta data</button>`:''}
