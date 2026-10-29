@@ -346,7 +346,7 @@ function migrate(x){
   x.acasalDatas=x.acasalDatas||{}; // datas criadas em Acasalamentos (por estação)
   x.fivLocais=x.fivLocais||{};
   x.fivToques=x.fivToques||{}; // Data do Toque de cada FIV: fivToques[estação][data] // Local de cada FIV: fivLocais[estação][data] // FIVs criadas (por data) em cada estação
-  x.animals=x.animals||[];x.semen=x.semen||[];x.iatf=x.iatf||[];x.semenMov=x.semenMov||[]; // semenMov: entradas/saídas de sêmen (não é por estação)
+  x.animals=x.animals||[];x.semen=x.semen||[];x.iatf=x.iatf||[];x.semenMov=x.semenMov||[];x.semenMov.forEach(m=>{if(m.por)m.por=nomePor(m.por)}); // semenMov: entradas/saídas de sêmen (não é por estação)
   x.deletedAnimals=x.deletedAnimals||[];
   x.acasalamentos=x.acasalamentos||[];
   x.acasalamentos.forEach(a=>{if(!a.createdAt)a.createdAt='2026-08-30'});
@@ -3043,7 +3043,9 @@ function saveStockManual(){
 let movTipo='entrada',movFiltro={q:'',tipo:''};
 const TANQUES_PADRAO=['BT01','BT02','BT03'];
 function semenPorNome(n){n=norm(n);return n?db.semen.find(s=>norm(s.name)===n)||null:null}
-function quemLanca(){try{const u=firebase.auth().currentUser;return String(u&&u.email||'').replace('@app-nelore-mra.firebaseapp.com','')}catch(e){return ''}}
+// nome de quem lançou: o administrador aparece como "NeloreMRA" (nunca o e-mail)
+function nomePor(p){p=String(p||'');return p.toLowerCase()===ADMIN_EMAIL?'NeloreMRA':p.replace('@app-nelore-mra.firebaseapp.com','')}
+function quemLanca(){try{const u=firebase.auth().currentUser;return nomePor(u&&u.email)}catch(e){return ''}}
 function avisoRapido(t){const d=document.createElement('div');d.textContent=t;d.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#17211c;color:#fff;padding:11px 18px;border-radius:12px;font-size:14px;z-index:80;max-width:90vw;text-align:center;box-shadow:0 8px 24px #0004';document.body.appendChild(d);setTimeout(()=>d.remove(),3200)}
 function abrirMovSemen(tipo){
   movTipo=tipo||movTipo;
@@ -3110,7 +3112,7 @@ function listaMovSemen(){
 function desenharMovs(){
   const v=movsFiltrados(),soma=t=>v.filter(m=>m.tipo===t).reduce((a,m)=>a+Number(m.qtd||0),0);
   $('#mvResumo').innerHTML=`<span class="ent">⬇ Entradas: <b>${soma('entrada')}</b></span><span class="sai">⬆ Saídas: <b>${soma('saida')}</b></span>`;
-  $('#mvLista').innerHTML=v.length?v.map(m=>{const e=m.tipo==='entrada';return `<div class="mv"><div class="d">${fmtDate(m.data)}</div><div class="c"><div class="t">${esc(m.touro)}</div><div class="s">${e?'Entrada':'Saída'}${m.tank?' · '+esc(m.tank):''}${m.caneca?' · caneca '+esc(m.caneca):''}${m.obs?' · '+esc(m.obs):''}${m.por?' · '+esc(m.por):''}</div></div><div class="q ${e?'ent':'sai'}">${e?'+':'−'}${Number(m.qtd||0)}</div><button class="mini" title="Excluir" onclick="excluirMov('${m.id}')">🗑</button></div>`}).join('')
+  $('#mvLista').innerHTML=v.length?v.map(m=>{const e=m.tipo==='entrada';return `<div class="mv"><div class="d">${fmtDate(m.data)}</div><div class="c"><div class="t">${esc(m.touro)}</div><div class="s">${e?'Entrada':'Saída'}${m.tank?' · '+esc(m.tank):''}${m.caneca?' · caneca '+esc(m.caneca):''}${m.obs?' · '+esc(m.obs):''}${m.por?' · '+esc(nomePor(m.por)):''}</div></div><div class="q ${e?'ent':'sai'}">${e?'+':'−'}${Number(m.qtd||0)}</div><button class="mini" title="Excluir" onclick="excluirMov('${m.id}')">🗑</button></div>`}).join('')
     :'<div class="bz-dica">Nenhuma movimentação ainda.</div>';
 } window.desenharMovs=desenharMovs;
 function excluirMov(id){
@@ -3121,7 +3123,7 @@ function excluirMov(id){
 } window.excluirMov=excluirMov;
 function exportMovSemen(){
   if(!needXLSX())return;const v=movsFiltrados();if(!v.length)return alert('Nada pra exportar.');
-  const ws=XLSX.utils.json_to_sheet(v.map(m=>({DATA:fmtDate(m.data),TIPO:m.tipo==='entrada'?'Entrada':'Saída',TOURO:m.touro,BOTIJAO:m.tank||'',CANECA:m.caneca||'',QTD:Number(m.qtd||0),OBSERVACAO:m.obs||'',LANCADO_POR:m.por||''})));
+  const ws=XLSX.utils.json_to_sheet(v.map(m=>({DATA:fmtDate(m.data),TIPO:m.tipo==='entrada'?'Entrada':'Saída',TOURO:m.touro,BOTIJAO:m.tank||'',CANECA:m.caneca||'',QTD:Number(m.qtd||0),OBSERVACAO:m.obs||'',LANCADO_POR:nomePor(m.por)})));
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Movimentações');downloadWorkbook(wb,'movimentacoes-semen.xlsx');
 } window.exportMovSemen=exportMovSemen;
 function deleteStock(id){const s=db.semen.find(x=>x.id===id);if(!s)return;if(sireInUse(s.name))return alert('Esse touro está sendo usado em Matrizes/IATF/Acasalamentos/Embriões/FIV e não pode ser excluído. Edite o nome ou mantenha saldo zero.');const nm=(db.semenMov||[]).filter(m=>m.semenId===id).length;if(!confirm('Excluir este cadastro de sêmen?'+(nm?`\n\nAs ${nm} movimentação(ões) de entrada/saída dele também serão apagadas.`:'')))return;db.semen=db.semen.filter(x=>x.id!==id);db.semenMov=(db.semenMov||[]).filter(m=>m.semenId!==id);save();renderStock()} window.deleteStock=deleteStock;
@@ -3353,7 +3355,7 @@ async function exportSeasonAll(){
     ['Resumo',resumo],
     ...iatfSheets(iatfRows),
     ['Matrizes',matRows],['Retornos',retRows],['Acasalamentos',acRows],['Não utilizadas',nuRows],
-    ['FIV',fivRows],['Estoque Sêmen',stkRows],['Movimentações Sêmen',(db.semenMov||[]).slice().sort((a,b)=>String(a.data).localeCompare(String(b.data))).map(m=>({DATA:fmtDate(m.data),TIPO:m.tipo==='entrada'?'Entrada':'Saída',TOURO:m.touro,BOTIJAO:m.tank||'',CANECA:m.caneca||'',QTD:Number(m.qtd||0),OBSERVACAO:m.obs||'',LANCADO_POR:m.por||''}))],['Embriões',embRows]
+    ['FIV',fivRows],['Estoque Sêmen',stkRows],['Movimentações Sêmen',(db.semenMov||[]).slice().sort((a,b)=>String(a.data).localeCompare(String(b.data))).map(m=>({DATA:fmtDate(m.data),TIPO:m.tipo==='entrada'?'Entrada':'Saída',TOURO:m.touro,BOTIJAO:m.tank||'',CANECA:m.caneca||'',QTD:Number(m.qtd||0),OBSERVACAO:m.obs||'',LANCADO_POR:nomePor(m.por)}))],['Embriões',embRows]
   ],'estacao_'+fileSafe(est.name)+'.xlsx');
 } window.exportSeasonAll=exportSeasonAll;
 
