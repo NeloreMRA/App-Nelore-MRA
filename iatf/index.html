@@ -419,6 +419,8 @@ const $$=s=>Array.from(document.querySelectorAll(s));
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const uid=p=>p+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);
 const norm=s=>String(s??'').trim().toUpperCase();
+// RGD "MRA10033" / "mra 10033" vira "MRA 10033" (senão a mesma vaca aparecia 2x nas contas). Outros RGDs ficam como digitados.
+const fixRgd=v=>String(v??'').trim().replace(/^MRA\s*(\d+)$/i,(m,n)=>'MRA '+n);
 const pct=(a,b)=>b?Math.round(a/b*1000)/10:0;
 const fmtDate=s=>{if(!s)return'';const [y,m,d]=String(s).slice(0,10).split('-');return y&&m&&d?`${d}/${m}/${y}`:s};
 const csvSafe=s=>String(s??'');
@@ -446,6 +448,8 @@ function migrate(x){
   x.embrioes=x.embrioes||[];
   x.fiv=x.fiv||[];
   x.iatfExcluded=x.iatfExcluded||[];
+  // padroniza RGD MRA (com espaço) em todas as listas
+  [['animals','rgd'],['iatf','rgd'],['acasalamentos','rgd'],['fiv','rgdDoadora'],['embrioes','rgd'],['naoUtilizadas','rgd'],['iatfExcluded','rgd']].forEach(([l,k])=>(x[l]||[]).forEach(r=>{if(r&&typeof r[k]==='string'){const f=fixRgd(r[k]);if(f!==r[k])r[k]=f}}));
   x.animals.forEach(a=>{a.active=true;if(!a.seasonId)a.seasonId=x.meta.activeSeasonId;if(!a.createdAt)a.createdAt='2026-08-30'});
   (x.deletedAnimals||[]).forEach(d=>{if(d.animal&&!d.animal.seasonId)d.animal.seasonId=x.meta.activeSeasonId});
 
@@ -1800,7 +1804,7 @@ function renderAnimalTable(){
 // Edição direta na tabela de matrizes, espelhando no IATF (mesma estação, comparação tolerante a maiúsculas/espaços)
 function editAnimalCell(id,key,val,el){
   const a=db.animals.find(x=>x.id===id);if(!a)return;
-  val=String(val||'').trim();
+  val=String(val||'').trim();if(key==='rgd'){val=fixRgd(val);if(el)el.value=val}
   if(key==='rgd'){
     const old=a.rgd;
     if(!val){alert('O RGD não pode ficar vazio.');el.value=old;return}
@@ -2400,7 +2404,7 @@ function renderAcasalTable(){
 }
 function editAcasalCell(id,key,val,el){
   const a=(db.acasalamentos||[]).find(x=>x.id===id);if(!a)return;
-  val=String(val||'').trim();
+  val=String(val||'').trim();if(key==='rgd'){val=fixRgd(val);if(el)el.value=val}
   if(ACASAL_COLS.some(c=>c[0]===key) && val && !sireExists(val)){
     alert(`O touro "${val}" não existe no Estoque. Cadastre em Estoque primeiro.`);el.value=a[key]||'';return;
   }
@@ -2458,7 +2462,7 @@ function addBlankNaoUtilizada(){
 } window.addBlankNaoUtilizada=addBlankNaoUtilizada;
 function editNaoUtilizada(id,key,val,el){
   const r=(db.naoUtilizadas||[]).find(x=>x.id===id);if(!r)return;
-  val=String(val||'').trim();
+  val=String(val||'').trim();if(key==='rgd'){val=fixRgd(val);if(el)el.value=val}
   r[key]=val;
   if(key==='category'&&el){el.classList.remove('cat-vacas','cat-primi','cat-preco');if(val)el.classList.add(catClass(val));}
   save();
@@ -2669,7 +2673,7 @@ function embrioesTotalsRowHTML(rows){
 }
 function editEmbriao(id,key,val,el){
   const e=(db.embrioes||[]).find(x=>x.id===id);if(!e)return;
-  if(key==='rgd'){e.rgd=String(val||'').trim();save();return}
+  if(key==='rgd'){e.rgd=fixRgd(val);if(el)el.value=e.rgd;save();return}
   if(key==='touro'){
     val=String(val||'').trim();
     if(val && !sireExists(val)){alert(`O touro "${val}" não existe no Estoque. Cadastre em Estoque primeiro.`);el.value=e.touro||'';return}
@@ -2950,7 +2954,7 @@ function renderFivTable(){
 function fivTipoNorm(v){const n=norm(v);return n==='F'||n==='FRESCO'?'Fresco':n==='V'||n==='VIT'?'VIT':n==='DT'||n==='D'?'DT':''}
 function editFiv(id,key,val,el){
   const r=(db.fiv||[]).find(x=>x.id===id);if(!r)return;
-  val=String(val||'').trim();
+  val=String(val||'').trim();if(key==='rgdDoadora'){val=fixRgd(val);if(el)el.value=val}
   if(key==='sire' && val && !sireExists(val)){alert(`O touro "${val}" não existe no Estoque.`);el.value=r.sire||'';return}
   if(key==='tipo'){
     // Tipo é digitado (dá pra colar): F/Fresco, V/VIT, DT — maiúscula ou minúscula
