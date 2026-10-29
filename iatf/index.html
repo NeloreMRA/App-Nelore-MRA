@@ -253,7 +253,7 @@ body.authenticated #loginScreen{display:none}
   .dtable.fiv-compacta .bar .tr{display:none}.dtable.fiv-compacta .rk{display:none}.dtable.fiv-compacta td,.dtable.fiv-compacta th{white-space:normal}
 }
 @media(max-width:600px){.sidebar>.voltar-app{margin:0 4px 0 0;padding:9px 10px;align-self:center}.sidebar>.voltar-app .va-txt{display:none}.sidebar nav{min-width:0;overflow-x:auto;scrollbar-width:none}}
-.nav-mais{display:none}
+.nav-mais{display:none}.ac-ver{display:none}
 .mais-lista{display:flex;flex-direction:column;gap:8px;margin:6px 0 14px}.mais-it{display:block;text-align:left;border:1px solid #dfe5e1;background:#fff;border-radius:12px;padding:14px 16px;font-size:16px;font-weight:700;color:#26332b;text-decoration:none;cursor:pointer}.mais-it.on{border-color:#1f6a49;color:#1f6a49;background:#eef6f1}.mais-it.sair{color:#a33627}
 .mais-est{margin:0 0 14px}.mais-est label{display:block;font-size:12px;font-weight:700;color:#5d6a62;margin-bottom:6px}
 /* ===== CELULAR v2: barra com 5 telas + Mais, letras maiores, botões numa linha, janelas presas no topo ===== */
@@ -296,6 +296,11 @@ body.authenticated #loginScreen{display:none}
   .modal-card{max-height:calc(100dvh - 16px)!important;width:100%!important}
   .modal .input,.modal input,.modal select{font-size:16px!important}
   .bz-in{position:sticky;top:-16px;z-index:2;box-shadow:0 4px 10px #fff}
+  /* Acasalamentos no celular: só a busca; o resto em "Ver tabela completa" (no fim da tela) */
+  .acasal-fechado>:not(.busca-btn):not(.ac-ver){display:none!important}
+  .acasal-page{display:flex!important;flex-direction:column}.acasal-page>.ac-ver{order:5}
+  .acasal-fechado{min-height:calc(100dvh - 190px - env(safe-area-inset-bottom) - env(safe-area-inset-top));justify-content:center}.acasal-fechado>.busca-btn{padding:24px 18px;font-size:18px}.acasal-fechado>.ac-ver{margin:14px auto 0;width:auto;padding:10px 22px}
+  .ac-ver{display:block;width:100%;border:1px dashed #c9d6cd;background:#fff;color:#5d6a62;border-radius:12px;padding:12px;font-size:14px;margin:6px 0 10px;cursor:pointer}
   /* busca do Acasalamento bem visível */
   .busca-btn{max-width:none;background:#1f6a49;border-color:#1f6a49;color:#fff;font-size:17px;font-weight:700;padding:15px 16px;border-radius:14px}.busca-btn b{color:#fff!important}
   /* painel: tabelas largas rolam dentro do cartão */
@@ -2329,6 +2334,9 @@ function excluirAcasalData(){
 } window.excluirAcasalData=excluirAcasalData;
 /* BUSCA DE ACASALAMENTO — tela simples (celular e PC) pro pessoal da fazenda: digita o RGD e
    aparecem os touros de IATF e FIV daquela matriz, de todas as datas da estação. Só leitura. */
+// celular: Acasalamentos abre só com a busca; a tabela e os botões ficam em "Ver tabela completa"
+let acasalTabelaAberta=false;
+function toggleAcasalTabela(){acasalTabelaAberta=!acasalTabelaAberta;acasalPage()} window.toggleAcasalTabela=toggleAcasalTabela;
 function abrirBuscaAcasal(){
   openModal(`<h2>🔎 Buscar acasalamento</h2>
   <input id="bzIn" class="bz-in" placeholder="Digite o RGD (ex.: 9492)" autocomplete="off" inputmode="text" oninput="desenharBuscaAcasal()">
@@ -2359,7 +2367,7 @@ function acasalPage(){
   const lista=acasalDatasLista(),atual=acasalAtual();
   $('#content').innerHTML=`
   ${bullDatalist()}
-  <div class="animals-page">
+  <div class="animals-page acasal-page ${acasalTabelaAberta?'':'acasal-fechado'}">
   <button class="busca-btn" onclick="abrirBuscaAcasal()"><span class="ic">🔎</span><span>Buscar acasalamento pelo <b style="color:#1f6a49">RGD</b></span></button>
   <div class="toolbar ac-datas" style="margin-bottom:9px">
     <div class="filters">
@@ -2376,6 +2384,7 @@ function acasalPage(){
     <div class="out-actions">${menuOpcoes([atual===ACASAL_TODOS?null:['⬆ Subir Excel',"document.getElementById('acasalImportFile').click()"],['⬇ Baixar Acasalamentos (Excel)','exportAcasalFull()'],['⬇ Excel pra subir em Matrizes','exportAcasalToMatrizesTemplate()']])}</div>
   </div>
   <div id="acasalTable"></div>
+  <button class="ac-ver" onclick="toggleAcasalTabela()">${acasalTabelaAberta?'Esconder tabela ▴':'Ver tabela completa ▾'}</button>
   </div>`;
   renderAcasalTable();
 }
