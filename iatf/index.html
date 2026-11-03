@@ -338,7 +338,7 @@ body.authenticated #loginScreen{display:none}
   .animals-page:has(#acasalTable)>.toolbar:not(.ac-datas) .out-actions{flex:none}.animals-page:has(#acasalTable)>.toolbar:not(.ac-datas) .quick-add{flex:1 1 auto;min-width:0}.animals-page:has(#acasalTable)>.toolbar:not(.ac-datas) button{white-space:nowrap}
 }
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
-</style>
+.quick-add button.btn-prev,button.btn-prev{font-size:12px!important;padding:5px 10px!important;min-height:0!important;align-self:center}.prev-tab th,.prev-tab td{padding:8px 6px!important;white-space:nowrap}.prev-tab td:first-child{white-space:normal}</style>
 </head>
 <body class="auth-pending">
 <script src="../barra-app.js" data-alvo=".sidebar"></script>
@@ -1980,7 +1980,7 @@ function iatfPage(){
   </div>
   <div class="toolbar">
     <div class="filters">
-      <button class="primary" onclick="quickAddAnimalToCycle()">+ Matriz(es) nesta IATF</button><button class="ghost" onclick="openIatfExcluded()">Excluídas desta IATF (${iatfExcludedCurrent().length})</button><button class="ghost" onclick="openPrtPanel()">⟳ PRTs (${prtAnimals().length})</button><button class="ghost" onclick="openReturnsPanel()">↩ Retornos (${returnRows().length})</button>
+      <button class="primary" onclick="quickAddAnimalToCycle()">+ Matriz(es) nesta IATF</button><button class="ghost" onclick="openIatfExcluded()">Excluídas desta IATF (${iatfExcludedCurrent().length})</button><button class="ghost" onclick="openPrtPanel()">⟳ PRTs (${prtAnimals().length})</button><button class="ghost" onclick="openReturnsPanel()">↩ Retornos (${returnRows().length})</button><button class="ghost btn-prev" onclick="abrirPrevisaoDoses()" title="Previsão Doses x Tem no Estoque">🧪 Previsão doses</button>
       <div id="iatfResumo" class="fiv-resumo inline"></div>
     </div>
   </div>
@@ -2121,6 +2121,23 @@ function openPrtPanel(){
 function returnRows(){
   return seasonRows().filter(hasReturn).sort((a,b)=>String(b.return||'').localeCompare(String(a.return||''))||Number(b.cycle)-Number(a.cycle)||String(a.rgd).localeCompare(String(b.rgd),'pt-BR',{numeric:true}));
 }
+/* PREVISÃO DOSES x TEM NO ESTOQUE — linhas da estação com touro e SEM QTD (ainda não baixaram do
+   estoque; cada uma = 1 dose prevista) comparadas com o saldo. Mostra só os touros que vão faltar. */
+function previsaoDoses(){
+  const g={};
+  seasonRows().forEach(r=>{const n=norm(r.firstSire);if(!n||Number(r.qty)>0||normResult(r.result))return;
+    const s=(db.semen||[]).find(x=>norm(x.name)===n);const k=s?s.id:'?'+n;
+    g[k]=g[k]||{touro:s?s.name:r.firstSire,tem:s?stockBalance(s):0,prev:0,ciclos:{}};g[k].prev++;g[k].ciclos[r.cycle]=(g[k].ciclos[r.cycle]||0)+1});
+  return Object.values(g).map(x=>({...x,faltam:x.prev-Math.max(0,x.tem)})).filter(x=>x.faltam>0).sort((a,b)=>b.faltam-a.faltam||a.touro.localeCompare(b.touro,'pt-BR'));
+}
+function abrirPrevisaoDoses(){
+  const v=previsaoDoses();
+  openModal(`<h2>Previsão Doses x Tem no Estoque</h2>
+  ${v.length?`<div class="table-wrap" style="max-height:420px"><table class="prev-tab"><thead><tr><th>Touro</th><th style="text-align:center">Previsão</th><th style="text-align:center">Estoque</th><th style="text-align:center">Faltam</th></tr></thead><tbody>
+  ${v.map(x=>`<tr><td><strong>${esc(x.touro)}</strong><div style="font-size:11px;color:#69746c">${Object.keys(x.ciclos).sort((a,b)=>a-b).map(c=>`${c}ª IATF: ${x.ciclos[c]}`).join(' · ')}</div></td><td style="text-align:center">${x.prev}</td><td style="text-align:center">${Math.max(0,x.tem)}</td><td style="text-align:center;color:#c0392b;font-weight:800;font-size:16px">${x.faltam}</td></tr>`).join('')}
+  </tbody></table></div>`:'<div class="notice green">✅ Nenhum touro vai faltar.</div>'}
+  <div class="actions"><button class="primary" onclick="closeModal()">Fechar</button></div>`);
+} window.abrirPrevisaoDoses=abrirPrevisaoDoses;
 function openReturnsPanel(){
   const list=returnRows();
   if(!list.length)return openModal(`<h2>Retornos</h2><div class="notice green">Nenhum retorno lançado nesta estação. Preencha Retorno (data) e Touro Retorno na tabela da IATF.</div><div class="actions"><button class="primary" onclick="closeModal()">Fechar</button></div>`);
@@ -3309,7 +3326,7 @@ function deleteStock(id){const s=db.semen.find(x=>x.id===id);if(!s)return;if(sir
 function defaultNoticeTexts(){
   return {
     animals:'Clique direto nas células para editar. O 1º acasalamento e a categoria são espelhados com a aba IATF automaticamente. Adicionar uma matriz não a coloca em nenhuma IATF sozinha — use a coluna "IATF atual" pra colocar ela numa IATF quando quiser.',
-    iatf:'Nº Caneca puxa sozinho a caneca do touro cadastrada no Estoque (cinza); se digitar, vale o que você digitou. Retorno: se a matriz foi pro curral depois da IATF (ex: apareceu no cio), preencha a data do Retorno, e o Touro Retorno (desconta 1 dose do Estoque); o resultado do retorno é lançado no botão ↩ Retornos. O resultado do retorno passa a valer como situação dela, e o touro do retorno aparece em Matrizes até ela entrar numa próxima IATF. O botão ↩ Retornos lista todas e deixa colocar numa IATF. Inserção sempre manual, com filtro pra te ajudar a achar rápido. Clica em "+ Matriz(es) nesta IATF", filtra por categoria e situação (Vazia, Sem resultado, PRT...) e marca quem entra. Nada entra sozinho — nem matriz nova, nem por categoria inteira.',
+    iatf:'Nº Caneca puxa sozinho a caneca do touro cadastrada no Estoque (cinza); se digitar, vale o que você digitou. Retorno: se a matriz foi pro curral depois da IATF (ex: apareceu no cio), preencha a data do Retorno, e o Touro Retorno (desconta 1 dose do Estoque); o resultado do retorno é lançado no botão ↩ Retornos. 🧪 Previsão doses: pega as linhas com touro e sem QTD (ainda não baixaram do estoque; cada uma = 1 dose) e mostra só os touros que vão faltar. O resultado do retorno passa a valer como situação dela, e o touro do retorno aparece em Matrizes até ela entrar numa próxima IATF. O botão ↩ Retornos lista todas e deixa colocar numa IATF. Inserção sempre manual, com filtro pra te ajudar a achar rápido. Clica em "+ Matriz(es) nesta IATF", filtra por categoria e situação (Vazia, Sem resultado, PRT...) e marca quem entra. Nada entra sozinho — nem matriz nova, nem por categoria inteira.',
     acasal:'🔎 Buscar acasalamento pelo RGD: digita o número da matriz e aparecem os touros de IATF e FIV dela (todas as datas da estação). Aba de planejamento, totalmente separada de Matrizes e IATF — não sincroniza com elas. Preenche os touros previstos pra cada IATF/FIV (Enter desce a linha, Tab vai pro campo do lado, igual Excel). O botão dourado usa RGD + Categoria + 1º IATF (como 1º acasalamento) — pronto pra subir direto na aba Matrizes. Os dois downloads respeitam os filtros da tabela, então filtrar por "Criada em" antes de baixar só pega quem você quer.',
     embrioes:'Uma doadora pode ter mais de uma linha, uma pra cada touro usado nela. Usados vem sozinho da aba FIV (conta as linhas de FIV com esse RGD + esse touro + esse Tipo). O − / + em cima de cada grupo (Estoque, Saída Fazenda, Usados, Saldo) esconde ou mostra as colunas dele, igual o Agrupar do Excel. Saldo = Estoque + Saída − Usados (cobre tanto embrião que sai direto do estoque central pra vaca quanto o que passa pela fazenda antes).',
     fiv:'RGD Doadora sugere da lista já cadastrada em Embriões (cadastre lá primeiro se ainda não existir). 1º Acasalamento só sugere os touros que essa doadora específica tem lançados em Embriões — troque o RGD que a lista de touros atualiza sozinha. O Tipo (Fresco/VIT/DT) é o que conta pro "Usados" lá em Embriões — sem ele, essa linha não entra na contagem.',
