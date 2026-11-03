@@ -261,7 +261,7 @@ const numBR=v=>{const n=Number(String(v??'').trim().replace(/\./g,'').replace(',
 const MESES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const nomeMes=m=>{const [a,n]=m.split('-').map(Number);return `${MESES[n-1]} de ${a}`};
 const curtoMes=m=>{const [a,n]=m.split('-').map(Number);return `${MESES[n-1].slice(0,3)}/${String(a).slice(2)}`};
-let eu=null, ehAdmin=false, meuNome='', mes=hoje().slice(0,7), todos=[], itens=[], parar=null, miniFotos={}, pelagens=[];
+let eu=null, ehAdmin=false, meuNome='', mes='', todos=[], itens=[], parar=null, miniFotos={}, pelagens=[];
 let aba='nasc';try{const a=localStorage.getItem('app-nelore-mra-caderneta-aba');aba=a==='geral'||a==='prenhez'?a:'nasc'}catch(e){}
 
 function toast(t){document.querySelectorAll('.toast').forEach(x=>x.remove());const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
