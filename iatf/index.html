@@ -735,6 +735,9 @@ function stockLinha(s){const sa=saidaMov(s),u=usedEffective(s);return {...s,used
 // touro cadastrado mas sem dose no estoque (saldo 0 ou negativo) — aparece em vermelho no 1º Acasalamento da IATF
 function semSaldo(nome){const n=norm(nome);if(!n)return false;const s=(db.semen||[]).find(x=>norm(x.name)===n);return !!s&&stockBalance(s)<=0}
 const corSemSaldo=nome=>semSaldo(nome)?'color:#c0392b!important;font-weight:700':'';
+// vermelho só enquanto monta a IATF: linha com QTD já gastou a dose, então o touro não fica vermelho
+const touroVermelho=r=>!(Number(r.qty)>0)&&semSaldo(r.firstSire);
+function pintarTouroIatf(r,el){el=el||document.querySelector(`.iatf-sire[data-id="${r.id}"]`);if(!el)return;const v=touroVermelho(r);el.style.cssText=v?corSemSaldo(r.firstSire):'';el.title=v?'Sem sêmen no estoque':''}
 function normalizedResult(r){return normResult(r)}
 function isDiagnosed(r){return ['P','V','PRT'].includes(normResult(r))}
 function latestStatus(rgd){
@@ -2006,7 +2009,7 @@ function renderIatfRows(){
   ${rowHandleTd('iatf',r.id)}
   <td style="text-align:center;color:#69746c;font-size:10.5px">${r.n||''}</td>
   <td><strong>${esc(r.rgd)}</strong></td>
-  <td><input class="cell-input iatf-sire" list="bullsList" data-id="${r.id}" data-prev="${esc(r.firstSire)}" value="${esc(r.firstSire)}" style="${corSemSaldo(r.firstSire)}" title="${semSaldo(r.firstSire)?'Sem sêmen no estoque':''}" onfocus="this.select()" onchange="updateIatfSire(this)"></td>
+  <td><input class="cell-input iatf-sire" list="bullsList" data-id="${r.id}" data-prev="${esc(r.firstSire)}" value="${esc(r.firstSire)}" style="${touroVermelho(r)?corSemSaldo(r.firstSire):''}" title="${touroVermelho(r)?'Sem sêmen no estoque':''}" onfocus="this.select()" onchange="updateIatfSire(this)"></td>
 <td><input class="cell-input iatf-sire2" data-id="${r.id}" value="${esc(r.secondSire||'')}" placeholder="—" autocomplete="off" onchange="updateIatfCell('${r.id}','secondSire',this.value)"></td>
 <td><input class="cell-input iatf-caneca nav-caneca" type="text" value="${esc(iatfCaneca(r))}" style="${r.caneca?'':'color:#7a857d'}" title="${r.caneca?'Digitado':'Puxado do Estoque (pode digitar por cima)'}" onkeydown="iatfEnter(event,'nav-caneca')" onchange="updateIatfCaneca('${r.id}',this.value,this)"></td>
 <td><input class="cell-input nav-qtd iatf-qty" inputmode="decimal" data-id="${r.id}" value="${r.qty||''}" onkeydown="iatfEnter(event,'nav-qtd')" onchange="updateIatfCell('${r.id}','qty',this.value)"></td>
@@ -2020,14 +2023,14 @@ function renderIatfRows(){
 // Enter desce pra mesma coluna na linha de baixo. A posição é guardada ANTES de confirmar a célula,
 // porque algumas telas (ex: Estoque) redesenham a tabela ao salvar e a célula antiga some.
 function iatfEnter(e,cls){if(e.key!=='Enter')return;e.preventDefault();const i=$$('.'+cls).indexOf(e.target);e.target.blur();const els=$$('.'+cls);const nx=els[i+1];if(i>=0&&nx){nx.focus();if(typeof nx.select==='function')nx.select()}} window.iatfEnter=iatfEnter;
-function updateIatfCell(id,key,val){const r=db.iatf.find(x=>x.id===id);if(!r)return;r[key]=key==='qty'?Number(String(val).replace(',','.'))||0:val;save()} window.updateIatfCell=updateIatfCell;
+function updateIatfCell(id,key,val){const r=db.iatf.find(x=>x.id===id);if(!r)return;r[key]=key==='qty'?Number(String(val).replace(',','.'))||0:val;save();if(key==='qty')$$('.iatf-sire').forEach(el=>{const x=db.iatf.find(y=>y.id===el.dataset.id);if(x)pintarTouroIatf(x,el)})} // QTD muda o saldo: repinta os touros da tela window.updateIatfCell=updateIatfCell;
 function updateIatfSire(el){
   const val=el.value.trim();
   if(val && !sireExists(val)){alert(`O touro "${val}" não existe no Estoque.`);el.value=el.dataset.prev||'';return}
   const r=db.iatf.find(x=>x.id===el.dataset.id);
   if(r){
     r.firstSire=val;
-    el.style.cssText=corSemSaldo(val);el.title=semSaldo(val)?'Sem sêmen no estoque':'';
+    pintarTouroIatf(r,el);
     // cada IATF tem o seu touro; a aba Matrizes mostra o da última inseminação
     syncAnimalSire(r.seasonId,r.rgd);
     // touro novo = caneca nova: volta a puxar a do Estoque
