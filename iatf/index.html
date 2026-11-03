@@ -2230,17 +2230,18 @@ function quickAddAnimalToCycle(){
   setTimeout(()=>{qaApplyFilters();const el=$('#qaSearch');if(el&&innerWidth>600)el.focus()},60)
 } window.quickAddAnimalToCycle=quickAddAnimalToCycle;
 function qaApplyFilters(){
-  const cats=new Set($$('.qa-cat:checked').map(x=>x.value));
+  const cats=new Set($$('.qa-cat:checked').map(x=>x.value)),todasCats=new Set($$('.qa-cat').map(x=>x.value));
   const stats=new Set($$('.qa-status:checked').map(x=>x.value));
   const q=norm(($('#qaSearch')||{value:''}).value).toLowerCase();
   const ciclo=($('#qaCiclo')||{value:''}).value,comRet=!!($('#qaRet')||{checked:true}).checked;
   let visiveis=0;
   $$('.qa-row').forEach(x=>{
     let st=x.dataset.status,ret=x.dataset.ret==='1',dentro=true;
-    if(ciclo){const p=(JSON.parse(x.dataset.por||'{}'))[ciclo];dentro=!!p;st=p?p.s:'';ret=!!(p&&p.ret)}
+    // matriz que nunca entrou em IATF nesta estação (cadastro novo) aparece sempre, como "Sem resultado"
+    const por=JSON.parse(x.dataset.por||'{}');if(ciclo&&Object.keys(por).length){const p=por[ciclo];dentro=!!p;st=p?p.s:'';ret=!!(p&&p.ret)}
     const b=x.querySelector('.qa-st');if(b){b.className='badge qa-st '+resClass(st);b.textContent=statusLabel(st)}
     const rb=x.querySelector('.qa-ret');if(rb)rb.style.display=ret?'':'none';
-    const ok=dentro&&cats.has(x.dataset.cat)&&stats.has(st)&&(comRet||!ret)&&(!q||x.dataset.search.includes(q));
+    const ok=dentro&&(cats.has(x.dataset.cat)||!todasCats.has(x.dataset.cat))&&stats.has(st)&&(comRet||!ret)&&(!q||x.dataset.search.includes(q));
     x.classList.toggle('hidden',!ok);
     if(ok)visiveis++;
   });
