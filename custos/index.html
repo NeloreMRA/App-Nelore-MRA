@@ -375,7 +375,7 @@ const TALHOES_MILHO = [
   {talhao:"TALHÃO 21", area:33.89, variedade:"", variedade2:"", plantado:false},
   {talhao:"ARUANA", area:82.58, variedade:"", variedade2:"", plantado:false},
   {talhao:"PALHADA", area:104.78, variedade:"BREVANT 2702", variedade2:"", plantado:true},
-  {talhao:"BASE III", area:51, variedade:"NK 165", variedade2:"", plantado:true},
+  {talhao:"BASE III", area:51, variedade:"P 4285", variedade2:"", plantado:true},
   {talhao:"CACHOEIRA", area:30.7, variedade:"", variedade2:"", plantado:false},
   {talhao:"PISTA", area:0, variedade:"", variedade2:"", plantado:false},
 ];
@@ -535,9 +535,22 @@ function initFirebase(){
         } else if(!jaImportou){
           docRef.update({sojaImportada: true}).catch(()=>{});
         }
+        // Milho 25/26: variedade NK 165 virou P 4285 (pedido do dono). Roda UMA vez só (marca "trocaNk165"
+        // no banco): se depois alguém lançar NK 165 de novo, fica como lançou.
+        let trocouNk = false;
+        if(!snap.data().trocaNk165 && state.safras.milho2526){
+          const m = state.safras.milho2526, ehNk = v => /^nk\s*-?\s*165$/i.test(String(v||'').trim());
+          m.talhoes.forEach(t=>{ if(ehNk(t.variedade)) t.variedade='P 4285'; if(ehNk(t.variedade2)) t.variedade2='P 4285'; });
+          m.colheita.forEach(c=>{ if(ehNk(c.variedade)) c.variedade='P 4285'; });
+          trocouNk = true;
+        }
         if(!state.safras[state.safraAtual]) state.safraAtual = Object.keys(state.safras)[0];
         render();
         suppressSave = false;
+        if(trocouNk){
+          ultimoSalvoJSON = JSON.stringify(state.safras);
+          docRef.update({'safras.milho2526': JSON.parse(JSON.stringify(state.safras.milho2526)), trocaNk165: true});
+        }
         if(adicionouSojaImportada){
           ultimoSalvoJSON = JSON.stringify(state.safras);
           docRef.update({'safras.soja2526': JSON.parse(JSON.stringify(state.safras.soja2526)), sojaImportada: true});
