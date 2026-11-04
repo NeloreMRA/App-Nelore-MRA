@@ -338,6 +338,7 @@ body.authenticated #loginScreen{display:none}
   .animals-page:has(#acasalTable)>.toolbar:not(.ac-datas) .out-actions{flex:none}.animals-page:has(#acasalTable)>.toolbar:not(.ac-datas) .quick-add{flex:1 1 auto;min-width:0}.animals-page:has(#acasalTable)>.toolbar:not(.ac-datas) button{white-space:nowrap}
 }
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
+.qa-filtros{grid-template-columns:1fr!important;gap:8px!important}.qa-filtros .quick-add{flex-wrap:wrap!important;overflow:visible!important}.qa-ciclo-op{background:#eff2f0;color:#334139;cursor:pointer}.qa-ciclo-op:has(input:checked){background:#1f6a49;color:#fff}.qa-ciclo-op input{accent-color:#fff}.badge.qa-nova{background:#e3effd;color:#235fa8}
 .quick-add button.btn-prev,button.btn-prev{font-size:12px!important;padding:5px 10px!important;min-height:0!important;align-self:center}.prev-tab th,.prev-tab td{padding:8px 6px!important;white-space:nowrap}.prev-tab td:first-child{white-space:normal}</style>
 </head>
 <body class="auth-pending">
@@ -2203,13 +2204,17 @@ function quickAddAnimalToCycle(){
   const cicloPadraoQa=ciclosQa.filter(c=>c<Number(iatfCycle)).pop()??ciclosQa[ciclosQa.length-1];
   const linhas=disponiveis.map(a=>`<label class="excel-value qa-row" data-cat="${esc(a.category)}" data-status="${a.status}" data-ret="${a.ret}" data-por='${esc(JSON.stringify(a.por))}' data-search="${esc(norm(a.rgd)).toLowerCase()}" style="padding:6px 2px;border-bottom:1px solid #edf0ee"><input type="checkbox" class="qa-pick" value="${esc(a.rgd)}"><span><strong>${esc(a.rgd)}</strong> <span class="badge ${catClass(a.category)}" style="margin-left:6px">${esc(a.category)}</span> <span class="badge qa-st ${resClass(a.status)}" style="margin-left:4px">${statusLabel(a.status)}</span>${a.ret?' <span class="badge qa-ret" style="margin-left:4px;background:#e8eefb;color:#2c4a86">Retorno</span>':''}</span></label>`).join('');
   openModal(`<h2>Adicionar na ${iatfCycle}ª IATF</h2>
-  <div class="notice green">Só aparecem aqui as matrizes que ainda <strong>não</strong> estão nesta IATF. Filtra por categoria e situação, depois marca quem entra.</div>
-  <div class="form-grid" style="margin-bottom:10px">
+  <div class="form-grid qa-filtros" style="margin-bottom:10px">
     <div class="field"><label>Categoria</label>
       <div class="quick-add">
         ${categories().map(c=>`<label class="iatf-cat-check ${catClass(c)}"><input type="checkbox" class="qa-cat" value="${esc(c)}" checked onchange="qaApplyFilters()"> ${esc(c)}</label>`).join('')}
       </div>
     </div>
+    ${ciclosQa.length?`<div class="field"><label>Resultado da</label>
+      <div class="quick-add">
+        ${ciclosQa.map(c=>`<label class="iatf-cat-check qa-ciclo-op" title="${cycleDate(c)?fmtDate(cycleDate(c)):''}"><input type="radio" name="qaCiclo" class="qa-ciclo" value="${c}" ${c===cicloPadraoQa?'checked':''} onchange="qaApplyFilters()"> ${c}ª IATF</label>`).join('')}
+      </div>
+    </div>`:''}
     <div class="field"><label>Situação</label>
       <div class="quick-add">
         <label class="iatf-cat-check" style="background:#eff2f0;color:#667068"><input type="checkbox" class="qa-status" value="" checked onchange="qaApplyFilters()"> Sem resultado</label>
@@ -2218,9 +2223,6 @@ function quickAddAnimalToCycle(){
         <label class="iatf-cat-check" style="background:#e5f5eb;color:#216440"><input type="checkbox" class="qa-status" value="P" onchange="qaApplyFilters()"> Prenha</label>
         <label class="iatf-cat-check" style="background:#e8eefb;color:#2c4a86"><input type="checkbox" id="qaRet" checked onchange="qaApplyFilters()"> Com retorno</label>
       </div>
-    </div>
-    <div class="field"><label>Resultado de qual IATF</label>
-      <select id="qaCiclo" onchange="qaApplyFilters()">${ciclosQa.length?'':'<option value="">—</option>'}${ciclosQa.map(c=>`<option value="${c}" ${c===cicloPadraoQa?'selected':''}>${c}ª IATF${cycleDate(c)?' — '+fmtDate(cycleDate(c)):''}</option>`).join('')}</select>
     </div>
   </div>
   <input class="input" style="width:100%;margin-bottom:10px" id="qaSearch" placeholder="Buscar por RGD..." oninput="qaApplyFilters()">
@@ -2233,19 +2235,19 @@ function qaApplyFilters(){
   const cats=new Set($$('.qa-cat:checked').map(x=>x.value)),todasCats=new Set($$('.qa-cat').map(x=>x.value));
   const stats=new Set($$('.qa-status:checked').map(x=>x.value));
   const q=norm(($('#qaSearch')||{value:''}).value).toLowerCase();
-  const ciclo=($('#qaCiclo')||{value:''}).value,comRet=!!($('#qaRet')||{checked:true}).checked;
+  const ciclo=($('.qa-ciclo:checked')||{value:''}).value,comRet=!!($('#qaRet')||{checked:true}).checked;
   let visiveis=0;
   $$('.qa-row').forEach(x=>{
     let st=x.dataset.status,ret=x.dataset.ret==='1',dentro=true;
-    // matriz que nunca entrou em IATF nesta estação (cadastro novo) aparece sempre, como "Sem resultado"
-    const por=JSON.parse(x.dataset.por||'{}');if(ciclo&&Object.keys(por).length){const p=por[ciclo];dentro=!!p;st=p?p.s:'';ret=!!(p&&p.ret)}
-    const b=x.querySelector('.qa-st');if(b){b.className='badge qa-st '+resClass(st);b.textContent=statusLabel(st)}
+    // matriz que nunca entrou em IATF nesta estação (cadastro novo) aparece sempre, com a etiqueta "Nova"
+    const por=JSON.parse(x.dataset.por||'{}'),nova=!Object.keys(por).length;if(ciclo&&!nova){const p=por[ciclo];dentro=!!p;st=p?p.s:'';ret=!!(p&&p.ret)}
+    const b=x.querySelector('.qa-st');if(b){b.className='badge qa-st '+(nova?'qa-nova':resClass(st));b.textContent=nova?'Nova':statusLabel(st)}
     const rb=x.querySelector('.qa-ret');if(rb)rb.style.display=ret?'':'none';
-    const ok=dentro&&(cats.has(x.dataset.cat)||!todasCats.has(x.dataset.cat))&&stats.has(st)&&(comRet||!ret)&&(!q||x.dataset.search.includes(q));
+    const ok=dentro&&(cats.has(x.dataset.cat)||!todasCats.has(x.dataset.cat))&&(nova||stats.has(st))&&(comRet||!ret)&&(!q||x.dataset.search.includes(q));
     x.classList.toggle('hidden',!ok);
     if(ok)visiveis++;
   });
-  const c=$('#qaCount');if(c)c.textContent=`${visiveis} matriz(es) visível(is)`;
+  const c=$('#qaCount');if(c)c.textContent=`${visiveis} na lista`;
 } window.qaApplyFilters=qaApplyFilters;
 function qaSelectAll(on){
   $$('#qaList .qa-row:not(.hidden) .qa-pick').forEach(x=>x.checked=on)
