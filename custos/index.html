@@ -374,8 +374,14 @@ input, select{border-radius:8px; border-color:#d7ded9;}
 .ven-card{background:#fff; border:1px solid var(--line); border-left:4px solid #e0b84f; border-radius:12px; padding:12px 14px; box-shadow:0 1px 2px #00000008;}
 .ven-card.feita{border-left-color:var(--green);}
 .vc-top{display:flex; justify-content:space-between; gap:8px; align-items:flex-start; cursor:pointer;}
-.vc-num{font-size:12px; color:var(--ink-soft); font-weight:700;}
-.vc-talhao{font-size:16px;}
+.vc-num{font-size:12px; color:var(--ink-soft); font-weight:700; white-space:nowrap;}
+.vc-data{font-size:14px; color:var(--ink-soft); margin-top:3px;} .vc-data b{color:var(--ink);}
+.ven-card .vc-acoes{margin-top:10px;}
+.ven-preparo{display:grid; grid-template-columns:1fr 1fr; gap:0 28px;}
+.vpp-col{display:grid; grid-template-columns:150px 1fr; gap:8px 10px; align-items:center; align-content:start;}
+.vpp-l{margin:0; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; color:var(--ink);}
+.vpp-vazio{display:block; min-height:34px;}
+.vc-talhao{font-size:18px;}
 .vc-area{font-size:13px; color:var(--ink-soft); margin-left:4px;}
 .vc-st{font-size:12px; font-weight:700; background:#fdf3d8; color:#8a6410; padding:3px 9px; border-radius:20px; white-space:nowrap;}
 .vc-st.ok{background:var(--focus); color:var(--green-dark);}
@@ -387,10 +393,8 @@ input, select{border-radius:8px; border-color:#d7ded9;}
 .ven-resumo{min-width:0!important; width:100%;}
 .ven-resumo th, .ven-resumo td{padding:8px 12px!important;}
 .ven-resumo td.num, .ven-resumo th.num{text-align:right;}
-.ven-calda{grid-template-columns:repeat(5,1fr);}
-.ven-info{margin-top:12px; background:var(--focus); border-radius:8px; padding:9px 12px; font-size:13.5px; color:var(--green-dark);}
-.ve-cab{display:grid; grid-template-columns:2.2fr .8fr 1fr 1fr 1.1fr 1.8fr 36px; gap:8px; font-size:11.5px; font-weight:700; color:var(--ink-soft); padding:0 0 6px; border-bottom:1px solid var(--line); margin-bottom:6px;}
-.ve-prod{display:grid; grid-template-columns:2.2fr .8fr 1fr 1fr 1.1fr 1.8fr 36px; gap:8px; align-items:center; padding:5px 0; border-bottom:1px dashed var(--line);}
+.ve-cab{display:grid; grid-template-columns:2.4fr .8fr 1fr 1fr 2.2fr 36px; gap:8px; font-size:11.5px; font-weight:700; color:var(--ink-soft); padding:0 0 6px; border-bottom:1px solid var(--line); margin-bottom:6px;}
+.ve-prod{display:grid; grid-template-columns:2.4fr .8fr 1fr 1fr 2.2fr 36px; gap:8px; align-items:center; padding:5px 0; border-bottom:1px dashed var(--line);}
 .ve-prod label{display:none;}
 .vp-calc b{font-variant-numeric:tabular-nums; font-size:13.5px;}
 .vp-x{padding:6px 8px!important;}
@@ -403,7 +407,9 @@ input, select{border-radius:8px; border-color:#d7ded9;}
   .ven-lista{grid-template-columns:1fr;}
   .ven-kpis{grid-template-columns:repeat(3,1fr)!important; gap:8px;}
   .ven-filtros select{flex:1 1 100%;}
-  .ven-calda{grid-template-columns:1fr 1fr;}
+  .ven-preparo{grid-template-columns:1fr; gap:8px;}
+  .vpp-col{grid-template-columns:120px 1fr;}
+  .vpp-vazio{display:none;}
   .ve-cab{display:none;}
   .ve-prod{grid-template-columns:1fr 1fr; background:#fafbfa; border:1px solid var(--line); border-radius:10px; padding:10px; margin-bottom:8px; position:relative;}
   .ve-prod label{display:block;}
@@ -418,17 +424,16 @@ input, select{border-radius:8px; border-color:#d7ded9;}
   body.imprimindo-receita > *:not(#venPrint){display:none!important;}
   body.imprimindo-receita{display:block!important; background:#fff;}
   body.imprimindo-receita #venPrint{display:block!important;}
-  .vp-folha{font-family:Arial,sans-serif; color:#000; page-break-after:always; break-after:page; padding:4mm 2mm;}
+  .vp-folha{font-family:Inter,Arial,sans-serif; color:#17211c; page-break-after:always; break-after:page; padding:2mm;}
   .vp-folha:last-child{page-break-after:auto; break-after:auto;}
-  .vp-tit{font-size:15px; font-weight:700; text-align:center; border:1.5px solid #000; padding:8px; background:#e8ece9!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; position:relative;}
-  .vp-tit span{font-weight:400;} .vp-tit b{position:absolute; right:10px; top:8px;}
-  .vp-folha table{width:100%; border-collapse:collapse; margin-top:8px; table-layout:fixed;}
-  .vp-folha th, .vp-folha td{border:1px solid #000; padding:7px 8px; font-size:13px; text-align:left; min-width:0;}
-  .vp-folha th{background:#e8ece9!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; font-size:11.5px; text-transform:uppercase;}
-  .vp-cab th{width:17%;} .vp-cab td.grande{font-size:16px; font-weight:700;}
-  .vp-prod td{height:30px;} .vp-prod td.n{text-align:right;} .vp-prod th:nth-child(1){width:26%;} .vp-prod th:nth-child(2){width:8%;} .vp-prod th:nth-child(6){width:24%;}
-  .vp-obs{border:1px solid #000; padding:8px; margin-top:8px; font-size:13px;}
-  .vp-fim td{height:34px;} .vp-fim th{width:18%;}
+  .vp-tit{display:flex; justify-content:space-between; align-items:baseline; border-bottom:2px solid #2e4a2a; padding-bottom:6px; margin-bottom:10px; font-size:17px;}
+  .vp-tit span{font-size:13px; color:#5d6a62;}
+  .vp-folha table{width:100%; border-collapse:collapse; margin-top:10px; table-layout:fixed;}
+  .vp-folha th, .vp-folha td{border:1px solid #c9d1cb; padding:8px 10px; font-size:13px; text-align:left;}
+  .vp-folha th{background:#f3f6f4!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; font-size:11.5px; text-transform:uppercase;}
+  .vp-cab th{width:18%;} .vp-cab td.grande{font-size:15px; font-weight:700;}
+  .vp-prod td{height:30px;} .vp-prod td.n{text-align:right;} .vp-prod th:nth-child(1){width:30%;} .vp-prod th:nth-child(2){width:9%;} .vp-prod th:nth-child(3), .vp-prod th:nth-child(4){width:13%;}
+  .vp-obs{border:1px solid #c9d1cb; border-radius:6px; padding:8px 10px; margin-top:10px; font-size:13px;}
 }
 </style>
 </head>
@@ -2739,20 +2744,35 @@ function venListaUnica(campo){ return [...new Set(ven.receitas.map(r=>String(r[c
 function venReceitasSafra(k){ return ven.receitas.filter(r=>r.safra===k); }
 function venProximoNumero(k){ return venReceitasSafra(k).reduce((m,r)=>Math.max(m, Number(r.numero)||0), 0) + 1; }
 function venUltima(){ return [...ven.receitas].sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0))[0]; }
-function venNovaReceita(base){
+function venNovaReceita(){
   const k = venSafraKey(), u = venUltima() || {};
-  const b = base ? JSON.parse(JSON.stringify(base)) : {};
   venEdit = {
     id: novoIdDiesel('r'), novo:true, safra:k, numero: venProximoNumero(k),
     talhao: '', area: '', data: hojeISO(),
-    tanque: b.tanque ?? u.tanque ?? 2000, vazao: b.vazao ?? u.vazao ?? 100, bico: b.bico ?? u.bico ?? '',
-    velocidade: b.velocidade ?? u.velocidade ?? '', pressao: b.pressao ?? u.pressao ?? '',
-    produtos: b.produtos ? b.produtos.map(p=>({produto:p.produto, unid:p.unid, dose:p.dose, obs:p.obs||''})) : [{produto:'', unid:'LT', dose:'', obs:''},{produto:'', unid:'LT', dose:'', obs:''}],
-    obs: b.obs || '', status:'afazer', feita:null,
+    tanque: u.tanque ?? 2000, vazao: u.vazao ?? 100, bico: u.bico ?? '', velocidade: u.velocidade ?? '',
+    produtos: [{produto:'', unid:'LT', dose:'', obs:''},{produto:'', unid:'LT', dose:'', obs:''},{produto:'', unid:'LT', dose:'', obs:''}],
+    obs: '', status:'afazer', feita:null,
   };
   render(); window.scrollTo(0,0);
 }
-function venCopiar(id){ const r = ven.receitas.find(x=>x.id===id); if(r) venNovaReceita(r); }
+// Enviar pelo WhatsApp: abre o WhatsApp com a receita escrita (escolhe o grupo/contato lá)
+function venTextoWhats(r){
+  const n = x => fmt(venNum(x), 3).replace(/,?0+$/,'');
+  const L = [`*Receita nº ${r.numero} – ${r.talhao}*`, `Data a fazer: ${fmtData(r.data)||'—'}`, `Área aplicada: ${n(r.area)} ha`, ''];
+  (r.produtos||[]).filter(p=>String(p.produto||'').trim()).forEach(p=>{
+    const t = venPorTanque(r,p);
+    L.push(`• ${p.produto} – ${n(p.dose)} ${p.unid}/ha${t?` (total ${venQtd(t,p.unid)})`:''}${p.obs?` – ${p.obs}`:''}`);
+  });
+  L.push('', `Volume tanque: ${n(r.tanque)} L`, `Vazão: ${n(r.vazao)} L/ha`);
+  if(r.bico) L.push(`Bico: ${r.bico}`);
+  if(r.velocidade) L.push(`Velocidade: ${r.velocidade}${/km/i.test(r.velocidade)?'':' km/h'}`);
+  if(r.obs) L.push('', `Obs: ${r.obs}`);
+  return L.join('\n');
+}
+function venWhats(id){
+  const r = id ? ven.receitas.find(x=>x.id===id) : venEdit; if(!r) return;
+  window.open('https://wa.me/?text=' + encodeURIComponent(venTextoWhats(r)), '_blank');
+}
 function venAbrir(id){ const r = ven.receitas.find(x=>x.id===id); if(!r) return; venEdit = JSON.parse(JSON.stringify(r)); render(); window.scrollTo(0,0); }
 function venFechar(){
   if(venEdit && venEdit.mexeu && !confirm('Sair sem salvar as mudanças desta receita?')) return;
@@ -2831,10 +2851,6 @@ function venDesfazerFeita(id){
 function venCampo(campo, el){
   const r = venEdit; if(!r) return;
   r[campo] = el.value; r.mexeu = true;
-  if(campo==='talhao'){
-    const t = venTalhoes(r.safra).find(x=>x.talhao===el.value);
-    if(t){ r.area = t.area; const a = document.getElementById('veArea'); if(a) a.value = fmt(t.area,2).replace(/,00$/,''); }
-  }
   venAtualizarContas();
 }
 function venProd(i, campo, el){
@@ -2861,16 +2877,8 @@ function venAddProduto(){ venEdit.produtos.push({produto:'', unid:'LT', dose:'',
 function venRemoverProduto(i){ venEdit.produtos.splice(i,1); venEdit.mexeu = true; render(); }
 function venAtualizarContas(){
   const r = venEdit; if(!r) return;
-  const h = venHaTanque(r), tq = venTanques(r);
-  const info = document.getElementById('veInfo');
-  if(info) info.innerHTML = h ? `<b>${fmt(h,1).replace(/,0$/,'')} ha</b> por tanque · <b>${fmt(tq,1).replace(/,0$/,'')}</b> tanque(s) pra ${fmt(venNum(r.area),2).replace(/,00$/,'')} ha` : 'Informe o tanque e a vazão';
-  r.produtos.forEach((p,i)=>{
-    const a = document.getElementById('vePt'+i), b = document.getElementById('veTt'+i);
-    if(a) a.textContent = venQtd(venPorTanque(r,p), p.unid);
-    if(b) b.textContent = venQtd(venTotal(p, r.area), p.unid);
-  });
+  r.produtos.forEach((p,i)=>{ const a = document.getElementById('veTt'+i); if(a) a.textContent = venQtd(venPorTanque(r,p), p.unid); });
 }
-
 // ---- telas ----
 function pageVenenos(){
   if(!venPronto) return `<h2>Venenos</h2><div class="panel"><div class="empty">Carregando...</div></div>`;
@@ -2880,23 +2888,22 @@ function pageVenenos(){
 }
 function venCard(r){
   const feita = r.status==='feita';
-  const prods = (r.produtos||[]).map(p=>`<span class="vc-prod"><b>${esc(p.produto)}</b> ${esc(venDose(p))} <i>→ ${venQtd(venTotal(p, venAreaFeita(r)), p.unid)}</i></span>`).join('');
-  const tq = venTanques(r, venAreaFeita(r));
   return `<div class="ven-card ${feita?'feita':''}">
     <div class="vc-top" onclick="venAbrir('${r.id}')">
-      <div><span class="vc-num">nº ${r.numero}</span> <b class="vc-talhao">${esc(r.talhao)}</b> <span class="vc-area">${fmt(venAreaFeita(r),2).replace(/,00$/,'')} ha</span></div>
-      <span class="vc-st ${feita?'ok':''}">${feita?'✅ Feita':'🟡 A fazer'}</span>
+      <div>
+        <b class="vc-talhao">${esc(r.talhao)}</b>
+        <div class="vc-data">${feita ? `Feita em <b>${fmtData(r.feita.data)}</b>` : `A fazer: <b>${fmtData(r.data)||'—'}</b>`} · ${fmt(venAreaFeita(r),2).replace(/,00$/,'')} ha</div>
+      </div>
+      <span class="vc-num">nº ${r.numero}</span>
     </div>
-    <div class="vc-sub">${feita ? `Aplicada em <b>${fmtData(r.feita.data)}</b>` : `Prevista ${fmtData(r.data)||'—'}`}${tq?` · ${fmt(tq,1).replace(/,0$/,'')} tanque(s)`:''}${r.bico?` · Bico ${esc(r.bico)}`:''}${feita && r.feita.obs?` · ${esc(r.feita.obs)}`:''}</div>
-    <div class="vc-prods">${prods}</div>
     <div class="vc-acoes no-print">
       <button class="secondary" onclick="venAbrir('${r.id}')">Abrir</button>
-      <button class="secondary" onclick="venImprimir(['${r.id}'])">🖨️ Imprimir</button>
-      <button class="secondary" onclick="venCopiar('${r.id}')" title="Nova receita com os mesmos produtos, pra outro talhão">⧉ Copiar</button>
+      <button class="secondary vc-wpp" onclick="venWhats('${r.id}')" title="Enviar pelo WhatsApp">${IC_WPP} WhatsApp</button>
       ${feita ? `<button class="secondary" onclick="venDesfazerFeita('${r.id}')">↩ A fazer</button>` : `<button class="primary" onclick="venMarcarFeita('${r.id}')">✅ Marcar feita</button>`}
     </div>
   </div>`;
 }
+const IC_WPP = '<svg viewBox="0 0 24 24" width="15" height="15" fill="#25D366" style="vertical-align:-3px"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3a.4.4 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg>';
 function venResumoProdutos(lista){
   const m = {};
   lista.forEach(r=>(r.produtos||[]).forEach(p=>{
@@ -2952,86 +2959,77 @@ function pageVenenoReceita(){
   const v = x => esc(x===undefined || x===null ? '' : (typeof x==='number' ? fmt(x, 3).replace(/,?0+$/,'') : x));
   const feita = r.status==='feita';
   return `
-    <div class="toolbar no-print"><button class="secondary" onclick="venFechar()">← Voltar pra lista</button></div>
+    <div class="toolbar no-print">
+      <button class="secondary" onclick="venFechar()">← Voltar pra lista</button>
+      ${r.novo ? '' : `<button class="secondary vc-wpp" onclick="venWhats()">${IC_WPP} Enviar pelo WhatsApp</button><button class="secondary" onclick="venImprimir(['${r.id}'])">🖨️ Imprimir</button>`}
+    </div>
     <h2>${r.novo ? 'Nova receita' : 'Receita'} nº ${r.numero}</h2>
-    <div class="caption">Safra ${esc(venSafraNome(r.safra))}${feita?` · ✅ Aplicada em ${fmtData(r.feita.data)} (${fmt(venNum(r.feita.area),2).replace(/,00$/,'')} ha)`:''}</div>
+    <div class="caption">Safra ${esc(venSafraNome(r.safra))}${feita?` · ✅ Feita em ${fmtData(r.feita.data)}`:''}</div>
     <datalist id="vnProdutos">${Object.values(cat).map(c=>`<option value="${esc(c.nome)}">`).join('')}</datalist>
     <datalist id="vnBicos">${venListaUnica('bico').map(b=>`<option value="${esc(b)}">`).join('')}</datalist>
     <div class="panel">
-      <p class="section-title">Onde e quando</p>
-      <div class="grid cols-3">
-        <div><label>Talhão</label>
-          <select id="veTalhao" onchange="if(this.value==='__outro'){venEdit.talhao='';venEdit.outro=true;render();}else{venCampo('talhao',this)}">
-            <option value="">— escolha —</option>
-            ${tal.map(t=>`<option value="${esc(t.talhao)}" ${t.talhao===r.talhao?'selected':''}>${esc(t.talhao)} · ${fmt(t.area,2).replace(/,00$/,'')} ha${t.plantado?'':' (não plantado)'}</option>`).join('')}
-            <option value="__outro" ${outro||r.outro?'selected':''}>Outro (escrever)…</option>
-          </select>
-          ${outro||r.outro ? `<input type="text" style="margin-top:6px" placeholder="Nome do talhão / área" value="${v(r.talhao)}" oninput="venCampo('talhao',this)">` : ''}
+      <p class="section-title">Preparo</p>
+      <div class="ven-preparo">
+        <div class="vpp-col">
+          <label class="vpp-l">Volume tanque</label><input type="text" inputmode="decimal" value="${v(r.tanque)}" oninput="venCampo('tanque',this)">
+          <label class="vpp-l">Talhão</label>
+          <div>
+            <select id="veTalhao" onchange="if(this.value==='__outro'){venEdit.talhao='';venEdit.outro=true;render();}else{venCampo('talhao',this)}">
+              <option value="">— escolha —</option>
+              ${tal.map(t=>`<option value="${esc(t.talhao)}" ${t.talhao===r.talhao?'selected':''}>${esc(t.talhao)}</option>`).join('')}
+              <option value="__outro" ${outro||r.outro?'selected':''}>Outro (escrever)…</option>
+            </select>
+            ${outro||r.outro ? `<input type="text" style="margin-top:6px" placeholder="Nome do talhão / área" value="${v(r.talhao)}" oninput="venCampo('talhao',this)">` : ''}
+          </div>
+          <label class="vpp-l">Modelo bico</label><input type="text" list="vnBicos" value="${v(r.bico)}" oninput="venCampo('bico',this)">
+          <label class="vpp-l">Vazão</label><input type="text" inputmode="decimal" value="${v(r.vazao)}" oninput="venCampo('vazao',this)">
         </div>
-        <div><label>Área (ha)</label><input type="text" inputmode="decimal" id="veArea" value="${v(r.area)}" oninput="venCampo('area',this)"></div>
-        <div><label>Data prevista</label><input type="date" value="${esc(r.data||'')}" onchange="venCampo('data',this)"></div>
+        <div class="vpp-col">
+          <label class="vpp-l">Data a fazer</label><input type="date" value="${esc(r.data||'')}" onchange="venCampo('data',this)">
+          <label class="vpp-l">Área aplicada</label><input type="text" inputmode="decimal" id="veArea" value="${v(r.area)}" oninput="venCampo('area',this)" placeholder="ha">
+          <span class="vpp-vazio"></span><span class="vpp-vazio"></span>
+          <label class="vpp-l">Velocidade</label><input type="text" value="${v(r.velocidade)}" oninput="venCampo('velocidade',this)" placeholder="Ex: 12 KM/HR">
+        </div>
       </div>
     </div>
     <div class="panel">
-      <p class="section-title">Calda</p>
-      <div class="grid ven-calda">
-        <div><label>Tanque (L)</label><input type="text" inputmode="decimal" value="${v(r.tanque)}" oninput="venCampo('tanque',this)"></div>
-        <div><label>Vazão (L/ha)</label><input type="text" inputmode="decimal" value="${v(r.vazao)}" oninput="venCampo('vazao',this)"></div>
-        <div><label>Bico</label><input type="text" list="vnBicos" value="${v(r.bico)}" oninput="venCampo('bico',this)" placeholder="Ex: JGC12002"></div>
-        <div><label>Velocidade (km/h)</label><input type="text" value="${v(r.velocidade)}" oninput="venCampo('velocidade',this)" placeholder="Ex: 12-13"></div>
-        <div><label>Pressão (PSI)</label><input type="text" value="${v(r.pressao)}" oninput="venCampo('pressao',this)" placeholder="Ex: 62-70"></div>
-      </div>
-      <div class="ven-info" id="veInfo"></div>
-    </div>
-    <div class="panel">
-      <p class="section-title">Produtos</p>
-      <div class="ve-cab"><span>Produto</span><span>Unid</span><span>Dose/ha</span><span>Por tanque</span><span>Total da área</span><span>Observação</span><span></span></div>
+      <div class="ve-cab"><span>Produto</span><span>Unid</span><span>Dose/há</span><span>Total</span><span>Observação</span><span></span></div>
       ${r.produtos.map((p,i)=>`<div class="ve-prod">
-        <div class="vp-nome"><label>Produto</label><input type="text" list="vnProdutos" value="${v(p.produto)}" oninput="venProd(${i},'produto',this)" onchange="venConferirProduto(${i},this)" placeholder="Comece a digitar…" autocomplete="off"></div>
+        <div class="vp-nome"><label>Produto</label><input type="text" list="vnProdutos" value="${v(p.produto)}" oninput="venProd(${i},'produto',this)" onchange="venConferirProduto(${i},this)" autocomplete="off"></div>
         <div class="vp-un"><label>Unid</label><select id="veUn${i}" onchange="venProd(${i},'unid',this)">${VEN_UNIDS.map(u=>`<option ${u===p.unid?'selected':''}>${u}</option>`).join('')}</select></div>
-        <div class="vp-dose"><label>Dose/ha</label><input type="text" inputmode="decimal" value="${v(p.dose)}" oninput="venProd(${i},'dose',this)"></div>
-        <div class="vp-calc"><label>Por tanque</label><b id="vePt${i}">—</b></div>
-        <div class="vp-calc"><label>Total da área</label><b id="veTt${i}">—</b></div>
+        <div class="vp-dose"><label>Dose/há</label><input type="text" inputmode="decimal" value="${v(p.dose)}" oninput="venProd(${i},'dose',this)"></div>
+        <div class="vp-calc"><label>Total</label><b id="veTt${i}">—</b></div>
         <div class="vp-obs"><label>Observação</label><input type="text" value="${v(p.obs)}" oninput="venProd(${i},'obs',this)"></div>
         <button class="ghost vp-x" type="button" title="Tirar este produto" onclick="venRemoverProduto(${i})">✕</button>
       </div>`).join('')}
       <button class="secondary" type="button" style="margin-top:10px" onclick="venAddProduto()">+ Produto</button>
-    </div>
-    <div class="panel">
-      <label>Observação geral</label>
-      <input type="text" value="${v(r.obs)}" oninput="venCampo('obs',this)" placeholder="Ex: aplicar com vento abaixo de 10 km/h">
+      <div style="margin-top:14px"><label>Observação geral</label><input type="text" value="${v(r.obs)}" oninput="venCampo('obs',this)"></div>
     </div>
     <div class="ven-salvar no-print">
       <button class="primary" type="button" onclick="venSalvar(false)">💾 Salvar receita</button>
-      <button class="secondary" type="button" onclick="venSalvar(true)">💾 Salvar e imprimir</button>
       ${r.novo ? '' : `<button class="ghost" type="button" onclick="venExcluir()">Excluir receita</button>`}
     </div>
   `;
 }
-
 // ---- impressão (folha igual ao receituário de papel) ----
 function venFolha(r){
-  const area = venNum(r.area), h = venHaTanque(r), tq = venTanques(r);
-  const linhas = (r.produtos||[]).map(p=>`<tr><td>${esc(p.produto)}</td><td>${esc(p.unid)}</td><td class="n">${fmt(venNum(p.dose),3).replace(/,?0+$/,'')}</td><td class="n">${venQtd(venPorTanque(r,p),p.unid)}</td><td class="n">${venQtd(venTotal(p,area),p.unid)}</td><td>${esc(p.obs||'')}</td></tr>`).join('');
-  const vazias = Array.from({length:Math.max(0, 6-(r.produtos||[]).length)}, ()=>'<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr>').join('');
+  const n = x => fmt(venNum(x), 3).replace(/,?0+$/,'');
+  const prods = (r.produtos||[]).map(p=>`<tr><td>${esc(p.produto)}</td><td>${esc(p.unid)}</td><td class="n">${n(p.dose)}</td><td class="n">${venQtd(venPorTanque(r,p),p.unid)}</td><td>${esc(p.obs||'')}</td></tr>`).join('');
+  const vazias = Array.from({length:Math.max(0, 8-(r.produtos||[]).length)}, ()=>'<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>').join('');
   return `<section class="vp-folha">
-    <div class="vp-tit">RECEITUÁRIO PARA APLICAÇÕES – FAZENDA PARAÍSO <span>(SAFRA ${esc(venSafraNome(r.safra))})</span><b>Nº ${r.numero}</b></div>
+    <div class="vp-tit"><div><b>Receita nº ${r.numero}</b> · Venenos · Fazenda Paraíso</div><span>Safra ${esc(venSafraNome(r.safra))}</span></div>
     <table class="vp-cab">
-      <tr><th>Talhão</th><td class="grande">${esc(r.talhao)}</td><th>Data prevista</th><td>${fmtData(r.data)}</td></tr>
-      <tr><th>Área (ha)</th><td class="grande">${fmt(area,2).replace(/,00$/,'')}</td><th>Volume tanque</th><td>${fmt(venNum(r.tanque),0)} L</td></tr>
-      <tr><th>Vazão</th><td>${fmt(venNum(r.vazao),0)} L/ha</td><th>Modelo bico</th><td>${esc(r.bico||'')}</td></tr>
-      <tr><th>Velocidade</th><td>${esc(r.velocidade||'')}${r.velocidade?' km/h':''}</td><th>Pressão</th><td>${esc(r.pressao||'')}${r.pressao?' PSI':''}</td></tr>
-      <tr><th>Ha por tanque</th><td>${h?fmt(h,1).replace(/,0$/,''):''}</td><th>Nº de tanques</th><td>${tq?fmt(tq,1).replace(/,0$/,''):''}</td></tr>
+      <tr><th>Volume tanque</th><td>${n(r.tanque)} L</td><th>Data a fazer</th><td>${fmtData(r.data)}</td></tr>
+      <tr><th>Talhão</th><td class="grande">${esc(r.talhao)}</td><th>Área aplicada</th><td class="grande">${n(r.area)} ha</td></tr>
+      <tr><th>Modelo bico</th><td>${esc(r.bico||'')}</td><th></th><td></td></tr>
+      <tr><th>Vazão</th><td>${n(r.vazao)} L/ha</td><th>Velocidade</th><td>${esc(r.velocidade||'')}</td></tr>
     </table>
     <table class="vp-prod">
-      <thead><tr><th>Produto</th><th>Unid</th><th>Dose/ha</th><th>Por tanque</th><th>Total da área</th><th>Observação</th></tr></thead>
-      <tbody>${linhas}${vazias}</tbody>
+      <thead><tr><th>Produto</th><th>Unid</th><th>Dose/há</th><th>Total</th><th>Observação</th></tr></thead>
+      <tbody>${prods}${vazias}</tbody>
     </table>
     ${r.obs ? `<div class="vp-obs"><b>Observação:</b> ${esc(r.obs)}</div>` : ''}
-    <table class="vp-fim">
-      <tr><th>Data aplicada</th><td></td><th>Área aplicada (ha)</th><td></td></tr>
-      <tr><th>Aplicador</th><td></td><th>Assinatura</th><td></td></tr>
-    </table>
+    ${r.status==='feita' ? `<div class="vp-obs">✅ Feita em ${fmtData(r.feita.data)} · ${n(venAreaFeita(r))} ha${r.feita.obs?` · ${esc(r.feita.obs)}`:''}</div>` : ''}
   </section>`;
 }
 function venImprimir(ids){
@@ -3049,10 +3047,10 @@ function venImprimir(ids){
 // ---- Excel (planilha comum: uma linha por produto) ----
 const COLS_VENENO = [
   {key:'safra',label:'Safra'},{key:'numero',label:'Nº',type:'number'},{key:'situacao',label:'Situação'},{key:'talhao',label:'Talhão'},
-  {key:'area',label:'Área (ha)',type:'number'},{key:'data',label:'Data prevista',type:'date'},{key:'dataFeita',label:'Data aplicada',type:'date'},
+  {key:'area',label:'Área (ha)',type:'number'},{key:'data',label:'Data a fazer',type:'date'},{key:'dataFeita',label:'Data aplicada',type:'date'},
   {key:'areaFeita',label:'Área aplicada (ha)',type:'number'},{key:'tanque',label:'Tanque (L)',type:'number'},{key:'vazao',label:'Vazão (L/ha)',type:'number'},
-  {key:'bico',label:'Bico'},{key:'velocidade',label:'Velocidade'},{key:'pressao',label:'Pressão'},{key:'produto',label:'Produto'},{key:'unid',label:'Unid'},
-  {key:'dose',label:'Dose/ha',type:'number'},{key:'porTanque',label:'Por tanque',type:'number'},{key:'total',label:'Total',type:'number'},{key:'unTotal',label:'Unid total'},
+  {key:'bico',label:'Modelo bico'},{key:'velocidade',label:'Velocidade'},{key:'produto',label:'Produto'},{key:'unid',label:'Unid'},
+  {key:'dose',label:'Dose/ha',type:'number'},{key:'porTanque',label:'Total',type:'number'},{key:'total',label:'Total da área aplicada',type:'number'},{key:'unTotal',label:'Unid total'},
   {key:'obsProduto',label:'Obs. produto'},{key:'obs',label:'Observação'},{key:'obsFeita',label:'Obs. aplicação'},
 ];
 function linhasVenenoExcel(receitas){
