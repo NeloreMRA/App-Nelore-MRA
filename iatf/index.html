@@ -339,7 +339,29 @@ body.authenticated #loginScreen{display:none}
 }
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
 .qa-filtros{grid-template-columns:1fr!important;gap:8px!important}.qa-filtros .quick-add{flex-wrap:wrap!important;overflow:visible!important}.qa-ciclo-op{background:#eff2f0;color:#334139;cursor:pointer}.qa-ciclo-op:has(input:checked){background:#1f6a49;color:#fff}.qa-ciclo-op input{accent-color:#fff}.badge.qa-nova{background:#e3effd;color:#235fa8}
-.quick-add button.btn-prev,button.btn-prev{font-size:12px!important;padding:5px 10px!important;min-height:0!important;align-self:center}.prev-tab th,.prev-tab td{padding:8px 6px!important;white-space:nowrap}.prev-tab td:first-child{white-space:normal}</style>
+.quick-add button.btn-prev,button.btn-prev{font-size:12px!important;padding:5px 10px!important;min-height:0!important;align-self:center}.prev-tab th,.prev-tab td{padding:8px 6px!important;white-space:nowrap}.prev-tab td:first-child{white-space:normal}
+/* ===== CELULAR: sem barra embaixo; barra verde no topo com ☰ (página de quadrados) e a estação em dourado ===== */
+.topo-cel,.menu-cel{display:none}
+@media(max-width:600px){
+  .sidebar{display:none!important}
+  .topo-cel{display:flex;position:sticky;top:0;z-index:25;align-items:center;gap:10px;background:#153e2c;color:#fff;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
+  body.auth-pending .topo-cel,body.auth-logged-out .topo-cel{display:none}
+  .tc-menu{flex:none;width:42px;height:42px;border:0;border-radius:11px;background:#ffffff1c;color:#fff;display:grid;place-items:center;cursor:pointer}
+  .tc-menu svg{width:22px;height:22px}
+  .tc-tit{flex:1;min-width:0;line-height:1.15}.tc-tit strong{display:block;font-size:15.5px}.tc-tit span{display:block;font-size:11.5px;opacity:.75}
+  .tc-est{flex:none;border:0;border-radius:20px;background:#e7b549;color:#153e2c;padding:8px 13px;font-weight:800;font-size:13.5px;white-space:nowrap;cursor:pointer}
+  main{padding-bottom:calc(24px + env(safe-area-inset-bottom))!important}
+  main>header{top:var(--topo-h,58px)!important;padding-top:10px!important}
+  .menu-cel.aberto{display:block;position:fixed;left:0;right:0;bottom:0;top:var(--topo-h,58px);z-index:24;background:#f5f7f5;overflow-y:auto;padding:14px 12px calc(20px + env(safe-area-inset-bottom))}
+  body.menu-cel-aberto{overflow:hidden!important}
+  .mc-grade{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .mc-q{background:#fff;border:1px solid #e3e8e4;border-top:3px solid #1f6a49;border-radius:14px;padding:15px 14px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;font-weight:700;font-size:15px;color:#17211c;text-align:left;cursor:pointer;box-shadow:0 1px 2px #00000008;font-family:inherit}
+  .mc-q .ic{width:42px;height:42px;border-radius:12px;background:#eaf3ee;color:#153e2c;display:grid;place-items:center}
+  .mc-q .ic svg{width:24px;height:24px}
+  .mc-q.on{background:#eaf3ee;border-color:#1f6a49}.mc-q.on .ic{background:#1f6a49;color:#fff}
+  .mc-fim{display:flex;flex-direction:column;gap:8px;margin-top:22px}
+}
+</style>
 </head>
 <body class="auth-pending">
 <script src="../barra-app.js" data-alvo=".sidebar"></script>
@@ -354,6 +376,12 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
     <div id="loginError" class="login-error" aria-live="polite"></div>
   </form>
 </div>
+<div class="topo-cel">
+  <button type="button" class="tc-menu" id="tcMenu" onclick="toggleMenuCel()" aria-label="Menu"></button>
+  <div class="tc-tit"><strong>Cobertura MRA</strong><span>Gestão reprodutiva</span></div>
+  <button type="button" class="tc-est" id="tcEst" onclick="abrirEstacaoCel()"></button>
+</div>
+<div class="menu-cel" id="menuCel"></div>
 <div class="app">
 <aside class="sidebar">
   <div class="brand"><div class="logo">MRA</div><div><strong>Cobertura MRA</strong><span>Gestão reprodutiva</span></div></div>
@@ -896,7 +924,33 @@ function abrirMaisCel(){
   <div class="mais-est"><label>Estação</label><select class="input" onchange="closeModal();activateSeason(this.value)">${db.seasons.map(x=>`<option value="${esc(x.id)}" ${x.id===db.meta.activeSeasonId?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
   <div class="mais-lista"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a><button class="mais-it sair" onclick="document.getElementById('logoutBtn').click()">Sair</button></div>`);
 } window.abrirMaisCel=abrirMaisCel;
-function mostrarNavAtiva(){montarBarraCelular();const a=document.querySelector('.nav.active');if(a&&innerWidth<=600)try{a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}}
+const IC_MENU='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+const IC_FECHAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+function estacaoCurta(n){return String(n||'').replace(/(\d{2})(\d{2})\s*\/\s*(\d{2})(\d{2})?/,(m,a,b,c,d)=>b+'/'+(d||c))}
+/* CELULAR: barra verde no topo (☰ + estação); o ☰ abre a página de quadrados com as telas */
+function atualizarTopoCel(){
+  const m=document.getElementById('tcMenu'),e=document.getElementById('tcEst');if(!m)return;
+  m.innerHTML=document.getElementById('menuCel').classList.contains('aberto')?IC_FECHAR:IC_MENU;
+  const s=db&&db.seasons&&db.meta&&db.seasons.find(x=>x.id===db.meta.activeSeasonId);
+  e.style.display=s?'':'none';if(s)e.textContent=estacaoCurta(s.name)+' ▾';
+  const t=document.querySelector('.topo-cel');if(t&&t.offsetHeight)document.documentElement.style.setProperty('--topo-h',t.offsetHeight+'px');
+}
+function fecharMenuCel(){document.getElementById('menuCel').classList.remove('aberto');document.body.classList.remove('menu-cel-aberto');atualizarTopoCel()}
+function toggleMenuCel(){
+  const mc=document.getElementById('menuCel');
+  if(mc.classList.contains('aberto')){fecharMenuCel();return}
+  const vis=[...document.querySelectorAll('.nav[data-page]')].filter(b=>pageAllowed(b.dataset.page));
+  mc.innerHTML=`<div class="mc-grade">${vis.map(b=>`<button type="button" class="mc-q ${b.dataset.page===page?'on':''}" onclick="fecharMenuCel();go('${b.dataset.page}')"><span class="ic">${b.querySelector('svg').outerHTML}</span>${esc(b.querySelector('span').textContent.trim())}</button>`).join('')}</div>
+  <div class="mc-fim"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a><button type="button" class="mais-it sair" onclick="document.getElementById('logoutBtn').click()">Sair</button></div>`;
+  mc.classList.add('aberto');document.body.classList.add('menu-cel-aberto');mc.scrollTop=0;atualizarTopoCel();
+}
+function abrirEstacaoCel(){
+  fecharMenuCel();
+  openModal(`<h2>Estação</h2><div class="mais-lista">${db.seasons.map(x=>`<button class="mais-it ${x.id===db.meta.activeSeasonId?'on':''}" onclick="closeModal();activateSeason('${esc(x.id)}')">${esc(x.name)}</button>`).join('')}</div>`);
+}
+window.toggleMenuCel=toggleMenuCel;window.fecharMenuCel=fecharMenuCel;window.abrirEstacaoCel=abrirEstacaoCel;
+addEventListener('resize',()=>atualizarTopoCel());
+function mostrarNavAtiva(){montarBarraCelular();atualizarTopoCel();const a=document.querySelector('.nav.active');if(a&&innerWidth<=600)try{a.scrollIntoView({inline:'center',block:'nearest'})}catch(e){}}
 window.go=go;
 function renderSeasonSelector(){
   $('#seasonHeader').innerHTML=db.seasons.map(s=>`<option value="${esc(s.id)}" ${s.id===db.meta.activeSeasonId?'selected':''}>${esc(s.name)}</option>`).join('')
