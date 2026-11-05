@@ -319,29 +319,35 @@ input, select{border-radius:8px; border-color:#d7ded9;}
 .mais-it.sair{color:var(--alert);}
 .mais-card label{font-size:12px; font-weight:700; margin-bottom:6px;}
 .mais-card select{font-size:16px; padding:10px;}
+/* CELULAR: barra verde no topo (☰ + safra) e página de quadrados */
+.topo-cel, .menu-cel{display:none;}
+@media (max-width:760px){
+  .topo-cel{display:flex; position:sticky; top:0; z-index:1200; align-items:center; gap:10px; background:var(--menu); color:#fff; padding:calc(8px + env(safe-area-inset-top)) 12px 8px;}
+  body.auth-pending .topo-cel, body.auth-logged-out .topo-cel{display:none;}
+  .tc-menu{flex:none; width:42px; height:42px; border:0; border-radius:11px; background:#ffffff1c; color:#fff; display:grid; place-items:center; cursor:pointer;}
+  .tc-menu svg{width:22px; height:22px;}
+  .tc-tit{flex:1; min-width:0; line-height:1.15;}
+  .tc-tit strong{display:block; font-size:15.5px;}
+  .tc-tit span{display:block; font-size:11.5px; opacity:.75;}
+  .tc-safra{flex:none; border:0; border-radius:20px; background:#e7b549; color:#2e4a2a; padding:8px 13px; font-weight:800; font-size:13.5px; white-space:nowrap; cursor:pointer;}
+  .menu-cel.aberto{display:block; position:fixed; left:0; right:0; bottom:0; top:var(--topo-h,58px); z-index:1100; background:var(--bg); overflow-y:auto; padding:4px 12px calc(20px + env(safe-area-inset-bottom));}
+  body.menu-cel-aberto{overflow:hidden;}
+  .mc-grupo{font-size:12px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-soft); font-weight:700; margin:16px 2px 8px;}
+  .mc-grade{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .mc-q{background:#fff; border:1px solid var(--line); border-top:3px solid var(--green); border-radius:14px; padding:15px 14px; display:flex; flex-direction:column; align-items:flex-start; gap:10px; font-weight:700; font-size:15px; color:var(--ink); text-align:left; cursor:pointer; box-shadow:0 1px 2px #00000008;}
+  .mc-q .ic{width:42px; height:42px; border-radius:12px; background:var(--focus); color:var(--green-dark); display:grid; place-items:center;}
+  .mc-q .ic svg{width:24px; height:24px;}
+  .mc-q.on{background:var(--focus); border-color:var(--green);}
+  .mc-q.on .ic{background:var(--green); color:#fff;}
+  .mc-fim{display:flex; flex-direction:column; gap:8px; margin-top:22px;}
+}
 @media (max-width:760px){
   body{display:block;}
-  aside{position:fixed; left:0; right:0; bottom:0; top:auto; width:auto; height:auto; z-index:1000; flex-direction:row; padding:5px 4px max(6px,calc(env(safe-area-inset-bottom) - 14px)); background:var(--menu-cel); border-top:1px solid #ffffff14; box-shadow:0 -6px 18px #0002; overflow:visible;}
-  aside>.voltar-app, aside .brand, aside .nav-grupo, aside .side-safra, aside .logout-btn, aside .sync-status{display:none!important;}
-  aside nav{flex-direction:row; width:100%; gap:0;}
-  aside nav .navbtn{order:var(--ordem,50);}
-  .nav-mais{order:99;}
-  aside nav .navbtn.nav-extra{display:none!important;}
-  aside nav .navbtn, .nav-mais{flex:1 1 0; min-width:0; display:grid; grid-template-rows:28px 15px; justify-items:center; align-content:center; row-gap:3px; padding:4px 0 2px; color:var(--menu-sub); background:transparent!important; border:0; border-radius:0; font-weight:600; cursor:pointer;}
-  aside nav .ni{width:46px; height:28px; border-radius:14px; transition:background .15s;}
-  aside nav .ni svg{width:22px; height:22px;}
-  aside nav .navbtn.active, .nav-mais.active{color:#fff;}
-  aside nav .navbtn.active .ni, .nav-mais.active .ni{background:var(--menu-ativo-cel);}
-  aside nav span{font-size:10.5px; line-height:15px; white-space:nowrap; letter-spacing:.01em;}
-  aside nav span{display:block; height:15px;}
-  aside nav span[data-curto]{font-size:0; line-height:0;}
-  aside nav span[data-curto]::after{content:attr(data-curto); display:block; font-size:10.5px; line-height:15px;}
-  main{padding:0 12px calc(84px + env(safe-area-inset-bottom));}
-  .page-head{position:sticky; top:0; z-index:20; background:var(--bg); margin:0 -12px 12px; padding:calc(10px + env(safe-area-inset-top)) 12px 10px; min-height:0; gap:8px;}
+  aside{display:none!important;}
+  main{padding:0 12px calc(24px + env(safe-area-inset-bottom));}
+  .page-head{margin:0 0 12px; padding:12px 0 10px; min-height:0; gap:8px;}
   .page-head h2{font-size:21px;}
   .ph-tit{flex:1 1 auto; min-width:0;}
-  .ph-safra{display:inline-flex; align-items:center; gap:4px; margin-top:4px; background:#fff; border:1px solid var(--line); border-radius:20px; padding:4px 11px; font-size:12.5px; font-weight:600; color:var(--green-dark); cursor:pointer;}
-  .ph-safra + .caption{display:none;}
   .ph-acoes{width:100%; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;}
   .ph-acoes:has(> :only-child){width:auto; align-self:flex-start;}
   .page-head:has(.ph-acoes > :only-child){flex-wrap:nowrap;}
@@ -368,6 +374,12 @@ input, select{border-radius:8px; border-color:#d7ded9;}
     <div id="loginError" class="login-error" aria-live="polite"></div>
   </form>
 </div>
+<div class="topo-cel no-print">
+  <button type="button" class="tc-menu" id="tcMenu" onclick="toggleMenuCel()" aria-label="Menu"></button>
+  <div class="tc-tit"><strong>Custos Safra</strong><span>Fazenda Paraíso</span></div>
+  <button type="button" class="tc-safra" id="tcSafra" onclick="abrirSafraCel()"></button>
+</div>
+<div class="menu-cel no-print" id="menuCel"></div>
 <aside class="no-print">
   <div class="brand"><div class="logo"><i class="logo-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="M12 21v-9"/><path d="M12 12c0-4.5 3-7.5 8.5-7.5 0 5.3-3.3 7.5-8.5 7.5Z"/><path d="M12 14.5c0-3.3-2.6-6-7.5-6 0 4.3 2.7 6 7.5 6Z"/></svg></i></div><div><strong>Custos Safra</strong><span>Fazenda Paraíso</span></div></div>
   <div id="user-badge" class="user-badge"></div>
@@ -730,6 +742,7 @@ function render(){
   renderConteudo();
   montarCabecalho();
   montarBarraCelular();
+  atualizarTopoCel();
 }
 // Cabeçalho da tela (igual à Cobertura): título à esquerda; Desfazer, Imprimir e Exportar à direita
 function montarCabecalho(){
@@ -783,6 +796,46 @@ function abrirMaisCel(){
     ${perfilDiesel ? '' : `<div style="margin-bottom:14px"><label>Safra</label><select onchange="fecharMaisCel();escolherSafra(this.value)">${Object.keys(state.safras).map(k=>`<option value="${k}" ${k===state.safraAtual?'selected':''}>${esc(state.safras[k].nome)}</option>`).join('')}</select></div>`}
     <div class="mais-lista"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a><button type="button" class="mais-it sair" onclick="document.getElementById('logoutBtn').click()">Sair</button></div>
   </div>`;
+  document.body.appendChild(f);
+}
+const IC_MENU = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+const IC_FECHAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+function nomeSafraCurto(s){
+  const n = String(s.nome||'').replace(/(\d{2})(\d{2})\s*\/\s*(\d{2})(\d{2})/,'$2/$4');
+  const c = String(s.cultura||'').toLowerCase(), e = c.startsWith('milho') ? '🌽' : c.startsWith('soja') ? '🌱' : '🌾';
+  return e + ' ' + n;
+}
+// barra verde do topo no celular: ☰ e a safra aberta (some nas telas do diesel, que não têm safra)
+function atualizarTopoCel(){
+  const m = document.getElementById('tcMenu'), sb = document.getElementById('tcSafra');
+  if(!m) return;
+  const aberto = document.getElementById('menuCel').classList.contains('aberto');
+  m.innerHTML = aberto ? IC_FECHAR : IC_MENU;
+  const mostra = !perfilDiesel && !paginaDiesel(currentPage) && S();
+  sb.style.display = mostra ? '' : 'none';
+  if(mostra) sb.textContent = nomeSafraCurto(S()) + ' ▾';
+}
+function fecharMenuCel(){ document.getElementById('menuCel').classList.remove('aberto'); document.body.classList.remove('menu-cel-aberto'); atualizarTopoCel(); }
+function toggleMenuCel(){
+  const mc = document.getElementById('menuCel');
+  if(mc.classList.contains('aberto')){ fecharMenuCel(); return; }
+  fecharMaisCel();
+  const q = p=>{ const b = document.querySelector(`.navbtn[data-page="${p}"]`); return `<button type="button" class="mc-q ${p===currentPage?'on':''}" onclick="fecharMenuCel();setPage('${p}')"><span class="ic">${b.querySelector('svg').outerHTML}</span>${esc(b.title)}</button>`; };
+  const lav = ['dashboard','colheita','adiantamentos','vendas','cadastros','safras'].filter(navVisivel);
+  const die = ['diesel-controle','diesel-estoque','diesel-resumo'].filter(navVisivel);
+  mc.innerHTML = (lav.length ? `<div class="mc-grupo">Lavoura</div><div class="mc-grade">${lav.map(q).join('')}</div>` : '')
+    + (die.length ? `<div class="mc-grupo">Diesel</div><div class="mc-grade">${die.map(q).join('')}</div>` : '')
+    + `<div class="mc-fim"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a><button type="button" class="mais-it sair" onclick="document.getElementById('logoutBtn').click()">Sair</button></div>`;
+  const topo = document.querySelector('.topo-cel');
+  mc.style.setProperty('--topo-h', topo.getBoundingClientRect().height + 'px');
+  mc.classList.add('aberto'); document.body.classList.add('menu-cel-aberto'); mc.scrollTop = 0;
+  atualizarTopoCel();
+}
+function abrirSafraCel(){
+  fecharMenuCel(); fecharMaisCel();
+  const f = document.createElement('div'); f.className = 'mais-fundo no-print';
+  f.onclick = e=>{ if(e.target===f) fecharMaisCel(); };
+  f.innerHTML = `<div class="mais-card"><h3>Safra</h3><div class="mais-lista">${Object.keys(state.safras).map(k=>`<button type="button" class="mais-it ${k===state.safraAtual?'on':''}" onclick="fecharMaisCel();escolherSafra('${k}')">${esc(nomeSafraCurto(state.safras[k]))}</button>`).join('')}</div></div>`;
   document.body.appendChild(f);
 }
 function escolherSafra(k){ if(!state.safras[k]) return; state.safraAtual = k; localStorage.setItem('app-nelore-mra-custos-safraAtual', k); render(); }
