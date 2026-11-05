@@ -2641,9 +2641,11 @@ function pageDieselResumo(){
 
 // =================== VENENOS (receituário de aplicações) ===================
 // Cada aplicação é uma RECEITA salva (nada é apagado): o consultor cria, imprime pro aplicador,
-// e depois marca como feita. Fica tudo em apps/custos/dados/venenos (separado dos custos, como o diesel),
-// assim quem só tem a tela Venenos não vê frete/vendas. "safras" ali é só uma cópia do nome e dos talhões
-// de cada safra (o admin atualiza sozinho) pro consultor poder escolher o talhão.
+// e depois marca como feita. Fica no MESMO documento do diesel (apps/custos/dados/diesel, campo "venenos"),
+// que as regras já liberam pra quem tem o Custos: basta marcar a tela "Venenos" no usuário, igual às outras
+// (sem mexer nas regras do Firebase). Quem só tem Diesel/Venenos não carrega os custos da safra.
+// "venenos.safras" é só uma cópia do nome e dos talhões de cada safra (o admin atualiza sozinho)
+// pro consultor poder escolher o talhão.
 let ven = {receitas:[], safras:{}};
 let venRef = null, venUnsub = null, venPronto = false;
 let venEdit = null;            // receita aberta (rascunho) ou null = lista
@@ -2656,20 +2658,28 @@ function venDocParaLocal(d){
 function venAssinatura(v){ return JSON.stringify([v.safras, v.receitas.map(r=>JSON.stringify(Object.keys(r).sort().map(k=>[k,r[k]]))).sort()]); }
 function iniciarVenenos(){
   pararVenenos();
-  venRef = firebase.firestore().collection('apps').doc('custos').collection('dados').doc('venenos');
+  venRef = firebase.firestore().collection('apps').doc('custos').collection('dados').doc('diesel');
   venUnsub = venRef.onSnapshot(snap=>{
-    if(!snap.exists){
-      if(snap.metadata.fromCache) return; // SEGURANÇA: só cria quando o servidor confirma que não existe
-      venRef.set({criadoEm: Date.now()}, {merge:true}).catch(err=>console.error(err));
-      return;
-    }
-    const remoto = venDocParaLocal(snap.data());
+    if(!snap.exists) return; // o documento é criado pelo diesel
+    const remoto = venDocParaLocal(snap.data().venenos || {});
     const primeira = !venPronto, mudou = venAssinatura(remoto) !== venAssinatura(ven);
     if(mudou) ven = remoto;
     venPronto = true;
     sincronizarSafrasVeneno();
+    if(primeira) migrarVenenosAntigos();
     if((mudou || primeira) && currentPage==='venenos' && !venEdit) render();
   }, err=>{ console.error(err); if(currentPage==='venenos') setSyncStatus(navigator.onLine ? '🔴 Sem acesso aos venenos' : '📵 Sem internet', 'err'); });
+}
+// Primeira versão gravava em apps/custos/dados/venenos: o admin traz pra cá o que tiver lá (uma vez, sem apagar nada).
+function migrarVenenosAntigos(){
+  if(perfilDiesel || !venRef || lsGet('app-nelore-mra-custos-venMigrado')==='1') return;
+  firebase.firestore().collection('apps').doc('custos').collection('dados').doc('venenos').get().then(sn=>{
+    if(sn.metadata && sn.metadata.fromCache) return;
+    const antigas = (sn.exists && sn.data().receitas) || {}, up = {};
+    Object.entries(antigas).forEach(([id,r])=>{ if(!ven.receitas.some(x=>x.id===id)) up[`venenos.receitas.${id}`] = r; });
+    const fim = ()=>lsSet('app-nelore-mra-custos-venMigrado','1');
+    if(Object.keys(up).length) venRef.update(up).then(fim).catch(err=>console.error(err)); else fim();
+  }).catch(err=>console.error(err));
 }
 function pararVenenos(){ if(venUnsub){ venUnsub(); venUnsub = null; } venRef = null; venPronto = false; ven = {receitas:[], safras:{}}; venEdit = null; }
 // Admin: mantém no documento dos venenos o nome e os talhões de cada safra (pro consultor escolher)
@@ -2679,7 +2689,7 @@ function sincronizarSafrasVeneno(){
   Object.entries(state.safras).forEach(([k,s])=>{ espelho[k] = {nome:s.nome||k, cultura:s.cultura||'', talhoes:(s.talhoes||[]).map(t=>({talhao:t.talhao||'', area:Number(t.area||0), plantado:!!t.plantado}))}; });
   if(!Object.keys(espelho).length || JSON.stringify(espelho)===JSON.stringify(ven.safras)) return;
   ven.safras = espelho;
-  venRef.update({safras: espelho}).catch(err=>console.error(err));
+  venRef.update({'venenos.safras': espelho}).catch(err=>console.error(err));
 }
 function venSafraKey(){
   if(!perfilDiesel) return state.safraAtual;
@@ -2757,7 +2767,7 @@ function venGravar(r){
   const local = {...dados, id};
   if(i>-1) ven.receitas[i] = local; else ven.receitas.push(local);
   setSyncStatus('🟡 Salvando...', 'local');
-  return venRef.update({[`receitas.${id}`]: JSON.parse(JSON.stringify(dados))})
+  return venRef.update({[`venenos.receitas.${id}`]: JSON.parse(JSON.stringify(dados))})
     .then(()=>setSyncStatus('🟢 Sincronizado', 'ok'))
     .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao salvar', 'err'); alert('Não foi possível salvar. Confira a internet e tente de novo.'); throw err; });
 }
@@ -2779,7 +2789,7 @@ function venExcluir(){
   if(r.novo){ venEdit = null; render(); return; }
   if(!confirm(`Excluir a receita nº ${r.numero} (${r.talhao})? Não dá pra desfazer.`)) return;
   ven.receitas = ven.receitas.filter(x=>x.id!==r.id);
-  venRef.update({[`receitas.${r.id}`]: firebase.firestore.FieldValue.delete()}).catch(err=>{ console.error(err); alert('Não foi possível excluir.'); });
+  venRef.update({[`venenos.receitas.${r.id}`]: firebase.firestore.FieldValue.delete()}).catch(err=>{ console.error(err); alert('Não foi possível excluir.'); });
   venEdit = null; render();
 }
 
