@@ -401,7 +401,23 @@ input, select{border-radius:8px; border-color:#d7ded9;}
 .ven-salvar{display:flex; gap:10px; flex-wrap:wrap; margin:6px 0 30px;}
 .ven-salvar .primary{padding:12px 22px; font-size:15px; font-weight:700;}
 .ven-salvar .ghost{margin-left:auto; padding:10px 14px; font-size:13px;}
-.ven-feita h3{font-size:17px;}
+.ven-card{position:relative;}
+.vc-x{position:absolute; top:6px; right:6px; width:22px; height:22px; padding:0; border:0; border-radius:6px; background:transparent; color:#9aa59d; font-size:12px; line-height:22px; cursor:pointer;}
+.vc-x:hover{background:#fbe5e5; color:var(--alert);}
+.vc-top{padding-right:18px;}
+.ven-feita{position:relative;}
+.ven-feita h3{font-size:18px; margin:0 0 2px;}
+.vf-sub{color:var(--ink-soft); font-size:13.5px; margin-bottom:14px;}
+.vf-fechar{position:absolute; top:12px; right:12px; border:0; background:transparent; color:#9aa59d; font-size:15px; cursor:pointer; padding:4px 8px; border-radius:6px;}
+.vf-campos{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.vf-obs{grid-column:1 / -1;}
+.vf-botoes{display:flex; gap:10px; justify-content:flex-end; margin-top:16px;}
+.vf-botoes button{padding:10px 18px;}
+@media (min-width:761px){
+  .ven-fundo{align-items:center; justify-content:center;}
+  .ven-fundo .mais-card{width:440px; max-width:calc(100vw - 32px); border-radius:16px; padding:22px 22px 20px; box-shadow:0 20px 50px #0004; background:#fff;}
+}
+@media (max-width:760px){ .vf-botoes button{flex:1;} }
 #venPrint{display:none;}
 @media (max-width:760px){
   .ven-lista{grid-template-columns:1fr;}
@@ -2804,10 +2820,18 @@ function venSalvar(imprimir){
   venGravar(r).then(()=>{ if(imprimir) venImprimir([salvo.id]); }).catch(()=>{});
   venEdit = null; render(); window.scrollTo(0,0);
 }
+function venExcluirId(id){
+  const r = ven.receitas.find(x=>x.id===id); if(!r) return;
+  const quando = r.status==='feita' ? `feita em ${fmtData(r.feita.data)}` : `a fazer ${fmtData(r.data)||''}`;
+  if(!confirm(`Excluir a receita do talhão ${r.talhao} (${quando})?\n\nNão dá pra desfazer.`)) return;
+  ven.receitas = ven.receitas.filter(x=>x.id!==id);
+  venRef.update({[`venenos.receitas.${id}`]: firebase.firestore.FieldValue.delete()}).catch(err=>{ console.error(err); alert('Não foi possível excluir.'); });
+  render();
+}
 function venExcluir(){
   const r = venEdit; if(!r) return;
   if(r.novo){ venEdit = null; render(); return; }
-  if(!confirm(`Excluir a receita nº ${r.numero} (${r.talhao})? Não dá pra desfazer.`)) return;
+  if(!confirm(`Excluir a receita do talhão ${r.talhao}?\n\nNão dá pra desfazer.`)) return;
   ven.receitas = ven.receitas.filter(x=>x.id!==r.id);
   venRef.update({[`venenos.receitas.${r.id}`]: firebase.firestore.FieldValue.delete()}).catch(err=>{ console.error(err); alert('Não foi possível excluir.'); });
   venEdit = null; render();
@@ -2820,13 +2844,18 @@ function venMarcarFeita(id){
   const f = document.createElement('div'); f.className = 'mais-fundo ven-fundo no-print';
   f.onclick = e=>{ if(e.target===f) fecharMaisCel(); };
   f.innerHTML = `<div class="mais-card ven-feita">
-    <h3>✅ Receita nº ${r.numero} · ${esc(r.talhao)}</h3>
-    <div class="grid cols-2">
+    <button type="button" class="vf-fechar" onclick="fecharMaisCel()" title="Fechar">✕</button>
+    <h3>Marcar como feita</h3>
+    <div class="vf-sub">${esc(r.talhao)} · a fazer ${fmtData(r.data)||'—'}</div>
+    <div class="vf-campos">
       <div><label>Data em que aplicou</label><input type="date" id="vfData" value="${hojeISO()}"></div>
       <div><label>Área aplicada (ha)</label><input type="text" inputmode="decimal" id="vfArea" value="${esc(fmt(venNum(r.area),2).replace(/,00$/,''))}"></div>
+      <div class="vf-obs"><label>Observação (opcional)</label><input type="text" id="vfObs"></div>
     </div>
-    <div style="margin-top:10px"><label>Observação (opcional)</label><input type="text" id="vfObs" placeholder="Ex: choveu à tarde, faltou 2 ha"></div>
-    <button class="primary" type="button" style="margin-top:14px;width:100%;padding:12px" onclick="venConfirmarFeita('${r.id}')">Marcar como feita</button>
+    <div class="vf-botoes">
+      <button class="secondary" type="button" onclick="fecharMaisCel()">Cancelar</button>
+      <button class="primary" type="button" onclick="venConfirmarFeita('${r.id}')">✅ Marcar como feita</button>
+    </div>
   </div>`;
   document.body.appendChild(f);
 }
@@ -2842,7 +2871,7 @@ function venConfirmarFeita(id){
 }
 function venDesfazerFeita(id){
   const r = ven.receitas.find(x=>x.id===id); if(!r) return;
-  if(!confirm(`Voltar a receita nº ${r.numero} (${r.talhao}) para "A fazer"?`)) return;
+  if(!confirm(`Voltar a receita do talhão ${r.talhao} para "A fazer"?`)) return;
   const novo = JSON.parse(JSON.stringify(r)); novo.status = 'afazer'; novo.feita = null;
   venGravar(novo).catch(()=>{}); render();
 }
@@ -2889,12 +2918,12 @@ function pageVenenos(){
 function venCard(r){
   const feita = r.status==='feita';
   return `<div class="ven-card ${feita?'feita':''}">
+    <button type="button" class="vc-x no-print" title="Excluir receita" onclick="venExcluirId('${r.id}')">✕</button>
     <div class="vc-top" onclick="venAbrir('${r.id}')">
       <div>
         <b class="vc-talhao">${esc(r.talhao)}</b>
         <div class="vc-data">${feita ? `Feita em <b>${fmtData(r.feita.data)}</b>` : `A fazer: <b>${fmtData(r.data)||'—'}</b>`} · ${fmt(venAreaFeita(r),2).replace(/,00$/,'')} ha</div>
       </div>
-      <span class="vc-num">nº ${r.numero}</span>
     </div>
     <div class="vc-acoes no-print">
       <button class="secondary" onclick="venAbrir('${r.id}')">Abrir</button>
@@ -2954,7 +2983,8 @@ function pageVenenosLista(k){
 function pageVenenoReceita(){
   const r = venEdit, tal = venTalhoes(r.safra);
   const nomes = tal.map(t=>t.talhao);
-  const outro = r.talhao && !nomes.includes(r.talhao);
+  // campo de escrever só aparece quando escolhe "Outro" (ou o talhão salvo não está na lista)
+  const outro = r.outro || (r.talhao && !nomes.includes(r.talhao));
   const cat = venCatalogo();
   const v = x => esc(x===undefined || x===null ? '' : (typeof x==='number' ? fmt(x, 3).replace(/,?0+$/,'') : x));
   const feita = r.status==='feita';
@@ -2974,12 +3004,12 @@ function pageVenenoReceita(){
           <label class="vpp-l">Volume tanque</label><input type="text" inputmode="decimal" value="${v(r.tanque)}" oninput="venCampo('tanque',this)">
           <label class="vpp-l">Talhão</label>
           <div>
-            <select id="veTalhao" onchange="if(this.value==='__outro'){venEdit.talhao='';venEdit.outro=true;render();}else{venCampo('talhao',this)}">
+            <select id="veTalhao" onchange="if(this.value==='__outro'){venEdit.talhao='';venEdit.outro=true;}else{venEdit.outro=false;venCampo('talhao',this);}render();">
               <option value="">— escolha —</option>
-              ${tal.map(t=>`<option value="${esc(t.talhao)}" ${t.talhao===r.talhao?'selected':''}>${esc(t.talhao)}</option>`).join('')}
-              <option value="__outro" ${outro||r.outro?'selected':''}>Outro (escrever)…</option>
+              ${tal.map(t=>`<option value="${esc(t.talhao)}" ${!outro && t.talhao===r.talhao?'selected':''}>${esc(t.talhao)}</option>`).join('')}
+              <option value="__outro" ${outro?'selected':''}>Outro (escrever)…</option>
             </select>
-            ${outro||r.outro ? `<input type="text" style="margin-top:6px" placeholder="Nome do talhão / área" value="${v(r.talhao)}" oninput="venCampo('talhao',this)">` : ''}
+            ${outro ? `<input type="text" style="margin-top:6px" placeholder="Nome do talhão / área" value="${v(r.talhao)}" oninput="venCampo('talhao',this)">` : ''}
           </div>
           <label class="vpp-l">Modelo bico</label><input type="text" list="vnBicos" value="${v(r.bico)}" oninput="venCampo('bico',this)">
           <label class="vpp-l">Vazão</label><input type="text" inputmode="decimal" value="${v(r.vazao)}" oninput="venCampo('vazao',this)">
