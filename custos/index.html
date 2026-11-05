@@ -2070,12 +2070,23 @@ function dieselLancamentosFiltrados(){
 }
 function agruparDiesel(lancs, chave){
   const m = {};
+  const grafias = {};
   lancs.forEach(l=>{
-    const nome = String(l[chave]||'').trim() || '—';
-    if(!m[nome]) m[nome] = {nome, qtd:0, litros:0};
-    m[nome].qtd += 1;
-    m[nome].litros += Number(l.litros||0);
+    let nome = String(l[chave]||'').trim().replace(/\s+/g,' ') || '—';
+    let k = nome;
+    // Serviço é digitado à mão: maiúscula/minúscula e acento não separam; "Início plantio" conta como Plantio
+    if(chave==='servico'){
+      k = nome.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      if(k==='inicio plantio'){ k = 'plantio'; nome = 'Plantio'; }
+      const g = grafias[k] = grafias[k] || {};
+      g[nome] = (g[nome]||0) + 1;
+    }
+    if(!m[k]) m[k] = {nome, qtd:0, litros:0};
+    m[k].qtd += 1;
+    m[k].litros += Number(l.litros||0);
   });
+  // mostra a grafia mais usada
+  Object.entries(grafias).forEach(([k,g])=>{ m[k].nome = Object.entries(g).sort((a,b)=>b[1]-a[1])[0][0]; });
   const total = lancs.reduce((s,l)=>s+Number(l.litros||0),0);
   return Object.values(m).map(r=>({...r, pct: total ? r.litros/total : 0})).sort((a,b)=>b.litros-a.litros);
 }
@@ -2345,6 +2356,7 @@ function pageDieselResumo(){
       ${tabelaResumoDiesel('area', '🌾 Por Área', 'Área', agruparDiesel(lancs,'area'))}
       ${tabelaResumoDiesel('maquina', '🚜 Por Máquina', 'Máquina', agruparDiesel(lancs,'maquina'))}
       ${tabelaResumoDiesel('estacao', '📅 Por Estação', 'Estação', agruparDiesel(lancs,'estacao'))}
+      ${tabelaResumoDiesel('servico', '🛠️ Por Serviço Realizado', 'Serviço Realizado', agruparDiesel(lancs,'servico'))}
     </div>
   `;
 }
@@ -2362,7 +2374,7 @@ function addLinhaTotal(ws, valores){
   });
 }
 async function addResumoDieselSheets(wb, lancs, nomeAba){
-  for(const [chave, rotulo, titulo] of [['area','Área','Por Área'],['maquina','Máquina','Por Máquina'],['estacao','Estação','Por Estação']]){
+  for(const [chave, rotulo, titulo] of [['area','Área','Por Área'],['maquina','Máquina','Por Máquina'],['estacao','Estação','Por Estação'],['servico','Serviço Realizado','Por Serviço']]){
     const linhas = agruparDiesel(lancs, chave);
     const ws = await addSheetForTable(wb, nomeAba(titulo), COLS_RESUMO(rotulo), linhas, ()=>({}));
     ws.getColumn(1).width = 28;
