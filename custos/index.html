@@ -360,6 +360,76 @@ input, select{border-radius:8px; border-color:#d7ded9;}
   .safra-card > div:last-child > button{flex:1;}
 }
 @media print{ .page-head{border:0; min-height:0; padding:0; margin-bottom:8px;} main{padding:0;} }
+
+/* ===== VENENOS ===== */
+.ven-nova{width:100%; padding:13px; font-size:15px; font-weight:700; margin:0 0 14px;}
+@media (min-width:761px){ .ven-nova{width:auto; padding:11px 22px;} }
+.ven-kpis{grid-template-columns:repeat(3,1fr);}
+.ven-filtros{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:0 0 14px;}
+.ven-filtros select{width:auto; min-width:170px;}
+.ven-chip{border:1px solid var(--line); background:#fff; border-radius:20px; padding:7px 14px; font-size:13px; font-weight:600; color:#334139; cursor:pointer;}
+.ven-chip.on{background:var(--green); border-color:var(--green); color:#fff;}
+.ven-safra-sel{display:flex; gap:10px; align-items:center; padding:10px 14px;} .ven-safra-sel label{margin:0;} .ven-safra-sel select{width:auto;}
+.ven-lista{display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:12px;}
+.ven-card{background:#fff; border:1px solid var(--line); border-left:4px solid #e0b84f; border-radius:12px; padding:12px 14px; box-shadow:0 1px 2px #00000008;}
+.ven-card.feita{border-left-color:var(--green);}
+.vc-top{display:flex; justify-content:space-between; gap:8px; align-items:flex-start; cursor:pointer;}
+.vc-num{font-size:12px; color:var(--ink-soft); font-weight:700;}
+.vc-talhao{font-size:16px;}
+.vc-area{font-size:13px; color:var(--ink-soft); margin-left:4px;}
+.vc-st{font-size:12px; font-weight:700; background:#fdf3d8; color:#8a6410; padding:3px 9px; border-radius:20px; white-space:nowrap;}
+.vc-st.ok{background:var(--focus); color:var(--green-dark);}
+.vc-sub{font-size:12.5px; color:var(--ink-soft); margin:4px 0 8px;}
+.vc-prods{display:flex; flex-direction:column; gap:3px; font-size:13px; margin-bottom:10px;}
+.vc-prod i{font-style:normal; color:var(--ink-soft);}
+.vc-acoes{display:flex; gap:6px; flex-wrap:wrap;}
+.vc-acoes button{padding:6px 10px; font-size:12.5px;}
+.ven-resumo{min-width:0!important; width:100%;}
+.ven-resumo th, .ven-resumo td{padding:8px 12px!important;}
+.ven-resumo td.num, .ven-resumo th.num{text-align:right;}
+.ven-calda{grid-template-columns:repeat(5,1fr);}
+.ven-info{margin-top:12px; background:var(--focus); border-radius:8px; padding:9px 12px; font-size:13.5px; color:var(--green-dark);}
+.ve-cab{display:grid; grid-template-columns:2.2fr .8fr 1fr 1fr 1.1fr 1.8fr 36px; gap:8px; font-size:11.5px; font-weight:700; color:var(--ink-soft); padding:0 0 6px; border-bottom:1px solid var(--line); margin-bottom:6px;}
+.ve-prod{display:grid; grid-template-columns:2.2fr .8fr 1fr 1fr 1.1fr 1.8fr 36px; gap:8px; align-items:center; padding:5px 0; border-bottom:1px dashed var(--line);}
+.ve-prod label{display:none;}
+.vp-calc b{font-variant-numeric:tabular-nums; font-size:13.5px;}
+.vp-x{padding:6px 8px!important;}
+.ven-salvar{display:flex; gap:10px; flex-wrap:wrap; margin:6px 0 30px;}
+.ven-salvar .primary{padding:12px 22px; font-size:15px; font-weight:700;}
+.ven-salvar .ghost{margin-left:auto; padding:10px 14px; font-size:13px;}
+.ven-feita h3{font-size:17px;}
+#venPrint{display:none;}
+@media (max-width:760px){
+  .ven-lista{grid-template-columns:1fr;}
+  .ven-kpis{grid-template-columns:repeat(3,1fr)!important; gap:8px;}
+  .ven-filtros select{flex:1 1 100%;}
+  .ven-calda{grid-template-columns:1fr 1fr;}
+  .ve-cab{display:none;}
+  .ve-prod{grid-template-columns:1fr 1fr; background:#fafbfa; border:1px solid var(--line); border-radius:10px; padding:10px; margin-bottom:8px; position:relative;}
+  .ve-prod label{display:block;}
+  .ve-prod .vp-nome{grid-column:1 / -1; padding-right:34px;}
+  .ve-prod .vp-obs{grid-column:1 / -1;}
+  .ve-prod .vp-calc{background:#fff; border-radius:8px; padding:4px 8px;}
+  .vp-x{position:absolute; top:8px; right:8px;}
+  .ven-salvar .primary, .ven-salvar .secondary{flex:1 1 100%;}
+  .ven-salvar .ghost{margin:4px auto 0;}
+}
+@media print{
+  body.imprimindo-receita > *:not(#venPrint){display:none!important;}
+  body.imprimindo-receita{display:block!important; background:#fff;}
+  body.imprimindo-receita #venPrint{display:block!important;}
+  .vp-folha{font-family:Arial,sans-serif; color:#000; page-break-after:always; break-after:page; padding:4mm 2mm;}
+  .vp-folha:last-child{page-break-after:auto; break-after:auto;}
+  .vp-tit{font-size:15px; font-weight:700; text-align:center; border:1.5px solid #000; padding:8px; background:#e8ece9!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; position:relative;}
+  .vp-tit span{font-weight:400;} .vp-tit b{position:absolute; right:10px; top:8px;}
+  .vp-folha table{width:100%; border-collapse:collapse; margin-top:8px; table-layout:fixed;}
+  .vp-folha th, .vp-folha td{border:1px solid #000; padding:7px 8px; font-size:13px; text-align:left; min-width:0;}
+  .vp-folha th{background:#e8ece9!important; -webkit-print-color-adjust:exact; print-color-adjust:exact; font-size:11.5px; text-transform:uppercase;}
+  .vp-cab th{width:17%;} .vp-cab td.grande{font-size:16px; font-weight:700;}
+  .vp-prod td{height:30px;} .vp-prod td.n{text-align:right;} .vp-prod th:nth-child(1){width:26%;} .vp-prod th:nth-child(2){width:8%;} .vp-prod th:nth-child(6){width:24%;}
+  .vp-obs{border:1px solid #000; padding:8px; margin-top:8px; font-size:13px;}
+  .vp-fim td{height:34px;} .vp-fim th{width:18%;}
+}
 </style>
 </head>
 <body class="auth-pending">
@@ -390,6 +460,7 @@ input, select{border-radius:8px; border-color:#d7ded9;}
     <button class="navbtn admin-only" data-page="colheita" title="Colheita"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v10H2z"/><path d="M13 9h4.5L21 12.5V16h-8"/><circle cx="6" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/></svg></i><span>Colheita</span></button>
     <button class="navbtn admin-only" data-page="adiantamentos" title="Adiantamentos"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></svg></i><span data-curto="Adiant.">Adiantamentos</span></button>
     <button class="navbtn admin-only" data-page="vendas" title="Silos e Vendas"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9.5L12 4l9 5.5V21"/><path d="M7.5 21v-7h9v7"/><path d="M7.5 17.5h9"/></svg></i><span data-curto="Vendas">Silos e Vendas</span></button>
+    <button class="navbtn" data-page="venenos" title="Venenos"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v3.5L6.5 11v8.5A1.5 1.5 0 0 0 8 21h8a1.5 1.5 0 0 0 1.5-1.5V11L14 6.5V3"/><path d="M6.5 14h11"/><path d="M10 17.5h4"/></svg></i><span>Venenos</span></button>
     <button class="navbtn admin-only" data-page="cadastros" title="Cadastros"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 9 3.5l6 3 6-3v14l-6 3-6-3-6 3z"/><path d="M9 3.5v14M15 6.5v14"/></svg></i><span>Cadastros</span></button>
     <button class="navbtn admin-only" data-page="safras" title="Safra"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="M12 21v-9"/><path d="M12 12c0-4.5 3-7.5 8.5-7.5 0 5.3-3.3 7.5-8.5 7.5Z"/><path d="M12 14.5c0-3.3-2.6-6-7.5-6 0 4.3 2.7 6 7.5 6Z"/></svg></i><span>Safra</span></button>
     <div class="nav-grupo">Diesel</div>
@@ -596,7 +667,7 @@ function undoLastChange(){
 }
 
 document.addEventListener('keydown', e=>{
-  if((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase()==='z' && document.body.classList.contains('authenticated') && !paginaDiesel(currentPage)){
+  if((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase()==='z' && document.body.classList.contains('authenticated') && !paginaSemSafra(currentPage)){
     e.preventDefault();
     undoLastChange();
   }
@@ -740,7 +811,9 @@ let custosSemConexao = false;
 addEventListener('online', ()=>{ if(custosSemConexao) location.reload(); });
 function render(){
   renderConteudo();
+  sincronizarSafrasVeneno();
   montarCabecalho();
+  if(currentPage==='venenos' && venEdit) venAtualizarContas();
   montarBarraCelular();
   atualizarTopoCel();
 }
@@ -757,7 +830,7 @@ function montarCabecalho(){
   const depois = h2.nextElementSibling;
   main.insertBefore(head, h2);
   tit.appendChild(h2);
-  const diesel = paginaDiesel(currentPage);
+  const diesel = paginaSemSafra(currentPage);
   if(!diesel && !perfilDiesel && S()){
     const chip = document.createElement('button');
     chip.type = 'button'; chip.className = 'ph-safra no-print'; chip.textContent = S().nome + ' ▾';
@@ -776,8 +849,8 @@ function montarCabecalho(){
   head.appendChild(acoes);
 }
 // CELULAR: barra de baixo com 4 telas + "Mais" (o resto, a safra, voltar pro App e Sair)
-const NAV_CEL = ['dashboard','colheita','vendas','diesel-controle','adiantamentos','cadastros','safras','diesel-estoque','diesel-resumo'];
-function navVisivel(p){ const b = document.querySelector(`.navbtn[data-page="${p}"]`); return b && paginaPermitida(p) && !(perfilDiesel && !paginaDiesel(p)); }
+const NAV_CEL = ['dashboard','colheita','vendas','diesel-controle','venenos','adiantamentos','cadastros','safras','diesel-estoque','diesel-resumo'];
+function navVisivel(p){ const b = document.querySelector(`.navbtn[data-page="${p}"]`); return b && paginaPermitida(p) && !(perfilDiesel && !paginaSemSafra(p)); }
 function montarBarraCelular(){
   const vis = NAV_CEL.filter(navVisivel), fixos = vis.slice(0,4);
   document.querySelectorAll('.navbtn[data-page]').forEach(b=>{ const i = NAV_CEL.indexOf(b.dataset.page); b.style.setProperty('--ordem', i<0?50:i); b.classList.toggle('nav-extra', !fixos.includes(b.dataset.page)); });
@@ -821,7 +894,7 @@ function toggleMenuCel(){
   if(mc.classList.contains('aberto')){ fecharMenuCel(); return; }
   fecharMaisCel();
   const q = p=>{ const b = document.querySelector(`.navbtn[data-page="${p}"]`); return `<button type="button" class="mc-q ${p===currentPage?'on':''}" onclick="fecharMenuCel();setPage('${p}')"><span class="ic">${b.querySelector('svg').outerHTML}</span>${esc(b.title)}</button>`; };
-  const lav = ['dashboard','colheita','adiantamentos','vendas','cadastros','safras'].filter(navVisivel);
+  const lav = ['dashboard','colheita','adiantamentos','vendas','venenos','cadastros','safras'].filter(navVisivel);
   const die = ['diesel-controle','diesel-estoque','diesel-resumo'].filter(navVisivel);
   mc.innerHTML = (lav.length ? `<div class="mc-grupo">Lavoura</div><div class="mc-grade">${lav.map(q).join('')}</div>` : '')
     + (die.length ? `<div class="mc-grupo">Diesel</div><div class="mc-grade">${die.map(q).join('')}</div>` : '')
@@ -838,19 +911,25 @@ function abrirSafraCel(){
   f.innerHTML = `<div class="mais-card"><h3>Safra</h3><div class="mais-lista">${Object.keys(state.safras).map(k=>`<button type="button" class="mais-it ${k===state.safraAtual?'on':''}" onclick="fecharMaisCel();escolherSafra('${k}')">${esc(nomeSafraCurto(state.safras[k]))}</button>`).join('')}</div></div>`;
   document.body.appendChild(f);
 }
-function escolherSafra(k){ if(!state.safras[k]) return; state.safraAtual = k; localStorage.setItem('app-nelore-mra-custos-safraAtual', k); render(); }
+function escolherSafra(k){ if(!state.safras[k]) return; venEdit = null; state.safraAtual = k; localStorage.setItem('app-nelore-mra-custos-safraAtual', k); render(); }
 function renderConteudo(){
-  if(custosSemConexao && !(paginaDiesel(currentPage) && dieselPronto)){
+  if(custosSemConexao && !((paginaDiesel(currentPage) && dieselPronto) || (currentPage==='venenos' && venPronto))){
     document.getElementById('main').innerHTML = `<div class="panel" style="max-width:560px;margin:40px auto;text-align:center;padding:28px"><div style="font-size:34px">📵</div><h2 style="margin:8px 0">Sem internet</h2><p class="caption" style="font-size:14px">O Custos Safra precisa de internet pra mostrar e salvar os dados. Assim que o sinal voltar, a tela carrega sozinha.</p></div>`;
     return;
   }
   closeFilterMenu();
   limparSelecaoExcel();
   const main = document.getElementById('main');
-  if(perfilDiesel && !paginaDiesel(currentPage)) currentPage = 'diesel-controle';
+  if(perfilDiesel && !paginaSemSafra(currentPage)) currentPage = primeiraPaginaPermitida();
   if(!paginaPermitida(currentPage)) currentPage = primeiraPaginaPermitida();
   document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.page===currentPage));
   document.body.classList.toggle('pagina-diesel', paginaDiesel(currentPage));
+  if(currentPage!=='venenos') venEdit = null;
+  if(currentPage==='venenos'){
+    main.innerHTML = pageVenenos();
+    if(!perfilDiesel){ refreshSafraSelector(); scheduleSave(); }
+    return;
+  }
   if(paginaDiesel(currentPage)){
     main.innerHTML = pageDiesel();
     bindStaticEvents();
@@ -2559,6 +2638,431 @@ function pageDieselResumo(){
   `;
 }
 
+
+// =================== VENENOS (receituário de aplicações) ===================
+// Cada aplicação é uma RECEITA salva (nada é apagado): o consultor cria, imprime pro aplicador,
+// e depois marca como feita. Fica tudo em apps/custos/dados/venenos (separado dos custos, como o diesel),
+// assim quem só tem a tela Venenos não vê frete/vendas. "safras" ali é só uma cópia do nome e dos talhões
+// de cada safra (o admin atualiza sozinho) pro consultor poder escolher o talhão.
+let ven = {receitas:[], safras:{}};
+let venRef = null, venUnsub = null, venPronto = false;
+let venEdit = null;            // receita aberta (rascunho) ou null = lista
+let venFiltro = {status:'', talhao:''};
+const VEN_UNIDS = ['LT','ML','KG','GR'];
+function paginaSemSafra(p){ return paginaDiesel(p) || p==='venenos'; }
+function venDocParaLocal(d){
+  return { receitas: Object.entries(d.receitas||{}).map(([id,r])=>({...r, id})), safras: d.safras||{} };
+}
+function venAssinatura(v){ return JSON.stringify([v.safras, v.receitas.map(r=>JSON.stringify(Object.keys(r).sort().map(k=>[k,r[k]]))).sort()]); }
+function iniciarVenenos(){
+  pararVenenos();
+  venRef = firebase.firestore().collection('apps').doc('custos').collection('dados').doc('venenos');
+  venUnsub = venRef.onSnapshot(snap=>{
+    if(!snap.exists){
+      if(snap.metadata.fromCache) return; // SEGURANÇA: só cria quando o servidor confirma que não existe
+      venRef.set({criadoEm: Date.now()}, {merge:true}).catch(err=>console.error(err));
+      return;
+    }
+    const remoto = venDocParaLocal(snap.data());
+    const primeira = !venPronto, mudou = venAssinatura(remoto) !== venAssinatura(ven);
+    if(mudou) ven = remoto;
+    venPronto = true;
+    sincronizarSafrasVeneno();
+    if((mudou || primeira) && currentPage==='venenos' && !venEdit) render();
+  }, err=>{ console.error(err); if(currentPage==='venenos') setSyncStatus(navigator.onLine ? '🔴 Sem acesso aos venenos' : '📵 Sem internet', 'err'); });
+}
+function pararVenenos(){ if(venUnsub){ venUnsub(); venUnsub = null; } venRef = null; venPronto = false; ven = {receitas:[], safras:{}}; venEdit = null; }
+// Admin: mantém no documento dos venenos o nome e os talhões de cada safra (pro consultor escolher)
+function sincronizarSafrasVeneno(){
+  if(!venRef || !venPronto || perfilDiesel || !firebaseReady) return;
+  const espelho = {};
+  Object.entries(state.safras).forEach(([k,s])=>{ espelho[k] = {nome:s.nome||k, cultura:s.cultura||'', talhoes:(s.talhoes||[]).map(t=>({talhao:t.talhao||'', area:Number(t.area||0), plantado:!!t.plantado}))}; });
+  if(!Object.keys(espelho).length || JSON.stringify(espelho)===JSON.stringify(ven.safras)) return;
+  ven.safras = espelho;
+  venRef.update({safras: espelho}).catch(err=>console.error(err));
+}
+function venSafraKey(){
+  if(!perfilDiesel) return state.safraAtual;
+  const ks = Object.keys(ven.safras), salvo = lsGet('app-nelore-mra-custos-venSafra');
+  if(ks.includes(salvo)) return salvo;
+  const comReceita = [...ven.receitas].sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0)).find(r=>ks.includes(r.safra));
+  return comReceita ? comReceita.safra : ks[ks.length-1];
+}
+function venSafraNome(k){ return (ven.safras[k] && ven.safras[k].nome) || (state.safras[k] && state.safras[k].nome) || ''; }
+function venTalhoes(k){
+  if(!perfilDiesel && state.safras[k]) return (state.safras[k].talhoes||[]).map(t=>({talhao:t.talhao, area:Number(t.area||0), plantado:!!t.plantado}));
+  return (ven.safras[k] && ven.safras[k].talhoes) || [];
+}
+function venEscolherSafra(k){ lsSet('app-nelore-mra-custos-venSafra', k); venEdit = null; render(); }
+
+// ---- contas (iguais ao Excel: ML e GR são divididos por 1000 → resultado em L ou kg) ----
+function venNum(v){ if(typeof v==='number') return v; const s = String(v||'').trim().replace(/\s/g,''); if(!s) return 0; const n = Number(s.includes(',') ? s.replace(/\./g,'').replace(',','.') : s); return isFinite(n) ? n : 0; }
+function venFator(u){ return (u==='ML' || u==='GR') ? 1/1000 : 1; }
+function venUnSaida(u){ return (u==='KG' || u==='GR') ? 'kg' : 'L'; }
+function venHaTanque(r){ const t = venNum(r.tanque), v = venNum(r.vazao); return t>0 && v>0 ? t/v : 0; }
+function venTanques(r, area){ const h = venHaTanque(r); return h ? venNum(area===undefined ? r.area : area)/h : 0; }
+function venPorTanque(r, p){ return venNum(p.dose) * venHaTanque(r) * venFator(p.unid); }
+function venTotal(p, area){ return venNum(p.dose) * venNum(area) * venFator(p.unid); }
+function venQtd(v, u){ return v ? fmt(v, v<10 ? 2 : 1).replace(/,00?$/,'') + ' ' + venUnSaida(u) : '—'; }
+function venDose(p){ return p.dose!=='' && p.dose!==undefined ? `${fmt(venNum(p.dose), 3).replace(/,?0+$/,'')} ${p.unid==='LT'?'L':p.unid==='KG'?'kg':p.unid==='ML'?'mL':'g'}/ha` : ''; }
+function venAreaFeita(r){ return r.status==='feita' && r.feita && r.feita.area!==undefined && r.feita.area!=='' ? venNum(r.feita.area) : venNum(r.area); }
+
+// ---- lista de produtos (tudo que já foi lançado, em todas as safras) ----
+function venChave(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,''); }
+function venCatalogo(){
+  const m = {};
+  [...ven.receitas].sort((a,b)=>(a.criadoEm||0)-(b.criadoEm||0)).forEach(r=>(r.produtos||[]).forEach(p=>{
+    const k = venChave(p.produto); if(!k) return;
+    m[k] = {nome:String(p.produto).trim(), unid:p.unid||'LT'};
+  }));
+  return m;
+}
+function venDistancia(a, b){
+  const d = Array.from({length:a.length+1}, (_,i)=>[i, ...Array(b.length).fill(0)]);
+  for(let j=1;j<=b.length;j++) d[0][j]=j;
+  for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++) d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return d[a.length][b.length];
+}
+function venListaUnica(campo){ return [...new Set(ven.receitas.map(r=>String(r[campo]||'').trim()).filter(Boolean))]; }
+
+// ---- receitas da safra ----
+function venReceitasSafra(k){ return ven.receitas.filter(r=>r.safra===k); }
+function venProximoNumero(k){ return venReceitasSafra(k).reduce((m,r)=>Math.max(m, Number(r.numero)||0), 0) + 1; }
+function venUltima(){ return [...ven.receitas].sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0))[0]; }
+function venNovaReceita(base){
+  const k = venSafraKey(), u = venUltima() || {};
+  const b = base ? JSON.parse(JSON.stringify(base)) : {};
+  venEdit = {
+    id: novoIdDiesel('r'), novo:true, safra:k, numero: venProximoNumero(k),
+    talhao: '', area: '', data: hojeISO(),
+    tanque: b.tanque ?? u.tanque ?? 2000, vazao: b.vazao ?? u.vazao ?? 100, bico: b.bico ?? u.bico ?? '',
+    velocidade: b.velocidade ?? u.velocidade ?? '', pressao: b.pressao ?? u.pressao ?? '',
+    produtos: b.produtos ? b.produtos.map(p=>({produto:p.produto, unid:p.unid, dose:p.dose, obs:p.obs||''})) : [{produto:'', unid:'LT', dose:'', obs:''},{produto:'', unid:'LT', dose:'', obs:''}],
+    obs: b.obs || '', status:'afazer', feita:null,
+  };
+  render(); window.scrollTo(0,0);
+}
+function venCopiar(id){ const r = ven.receitas.find(x=>x.id===id); if(r) venNovaReceita(r); }
+function venAbrir(id){ const r = ven.receitas.find(x=>x.id===id); if(!r) return; venEdit = JSON.parse(JSON.stringify(r)); render(); window.scrollTo(0,0); }
+function venFechar(){
+  if(venEdit && venEdit.mexeu && !confirm('Sair sem salvar as mudanças desta receita?')) return;
+  venEdit = null; render(); window.scrollTo(0,0);
+}
+function venGravar(r){
+  if(!venRef){ alert('Sem conexão com o banco. Confira a internet.'); return Promise.reject(); }
+  const {id, novo, mexeu, outro, ...dados} = r;
+  dados.alteradoEm = Date.now(); dados.alteradoPor = usuarioAtual();
+  if(!dados.criadoEm){ dados.criadoEm = Date.now(); dados.criadoPor = usuarioAtual(); }
+  const i = ven.receitas.findIndex(x=>x.id===id);
+  const local = {...dados, id};
+  if(i>-1) ven.receitas[i] = local; else ven.receitas.push(local);
+  setSyncStatus('🟡 Salvando...', 'local');
+  return venRef.update({[`receitas.${id}`]: JSON.parse(JSON.stringify(dados))})
+    .then(()=>setSyncStatus('🟢 Sincronizado', 'ok'))
+    .catch(err=>{ console.error(err); setSyncStatus('🔴 Erro ao salvar', 'err'); alert('Não foi possível salvar. Confira a internet e tente de novo.'); throw err; });
+}
+function venSalvar(imprimir){
+  const r = venEdit; if(!r) return;
+  if(!String(r.talhao||'').trim()){ alert('Escolha o talhão.'); return; }
+  if(!(venNum(r.area)>0)){ alert('Informe a área (ha).'); return; }
+  r.produtos = r.produtos.filter(p=>String(p.produto||'').trim() || String(p.dose||'').trim());
+  if(!r.produtos.length){ alert('Coloque pelo menos um produto.'); return; }
+  if(r.produtos.some(p=>!String(p.produto||'').trim())){ alert('Tem dose sem o nome do produto.'); return; }
+  r.produtos.forEach(p=>{ p.produto = String(p.produto).trim(); p.dose = venNum(p.dose); });
+  ['area','tanque','vazao'].forEach(k=>{ r[k] = venNum(r[k]); });
+  const salvo = JSON.parse(JSON.stringify(r));
+  venGravar(r).then(()=>{ if(imprimir) venImprimir([salvo.id]); }).catch(()=>{});
+  venEdit = null; render(); window.scrollTo(0,0);
+}
+function venExcluir(){
+  const r = venEdit; if(!r) return;
+  if(r.novo){ venEdit = null; render(); return; }
+  if(!confirm(`Excluir a receita nº ${r.numero} (${r.talhao})? Não dá pra desfazer.`)) return;
+  ven.receitas = ven.receitas.filter(x=>x.id!==r.id);
+  venRef.update({[`receitas.${r.id}`]: firebase.firestore.FieldValue.delete()}).catch(err=>{ console.error(err); alert('Não foi possível excluir.'); });
+  venEdit = null; render();
+}
+
+// ---- marcar como feita ----
+function venMarcarFeita(id){
+  const r = ven.receitas.find(x=>x.id===id); if(!r) return;
+  fecharMaisCel();
+  const f = document.createElement('div'); f.className = 'mais-fundo ven-fundo no-print';
+  f.onclick = e=>{ if(e.target===f) fecharMaisCel(); };
+  f.innerHTML = `<div class="mais-card ven-feita">
+    <h3>✅ Receita nº ${r.numero} · ${esc(r.talhao)}</h3>
+    <div class="grid cols-2">
+      <div><label>Data em que aplicou</label><input type="date" id="vfData" value="${hojeISO()}"></div>
+      <div><label>Área aplicada (ha)</label><input type="text" inputmode="decimal" id="vfArea" value="${esc(fmt(venNum(r.area),2).replace(/,00$/,''))}"></div>
+    </div>
+    <div style="margin-top:10px"><label>Observação (opcional)</label><input type="text" id="vfObs" placeholder="Ex: choveu à tarde, faltou 2 ha"></div>
+    <button class="primary" type="button" style="margin-top:14px;width:100%;padding:12px" onclick="venConfirmarFeita('${r.id}')">Marcar como feita</button>
+  </div>`;
+  document.body.appendChild(f);
+}
+function venConfirmarFeita(id){
+  const r = ven.receitas.find(x=>x.id===id); if(!r) return;
+  const data = document.getElementById('vfData').value, area = venNum(document.getElementById('vfArea').value);
+  if(!data){ alert('Informe a data.'); return; }
+  if(!(area>0)){ alert('Informe a área aplicada.'); return; }
+  const novo = JSON.parse(JSON.stringify(r));
+  novo.status = 'feita'; novo.feita = {data, area, obs: document.getElementById('vfObs').value.trim(), por: usuarioAtual(), em: Date.now()};
+  fecharMaisCel();
+  venGravar(novo).catch(()=>{}); render();
+}
+function venDesfazerFeita(id){
+  const r = ven.receitas.find(x=>x.id===id); if(!r) return;
+  if(!confirm(`Voltar a receita nº ${r.numero} (${r.talhao}) para "A fazer"?`)) return;
+  const novo = JSON.parse(JSON.stringify(r)); novo.status = 'afazer'; novo.feita = null;
+  venGravar(novo).catch(()=>{}); render();
+}
+
+// ---- edição (rascunho; só grava no "Salvar") ----
+function venCampo(campo, el){
+  const r = venEdit; if(!r) return;
+  r[campo] = el.value; r.mexeu = true;
+  if(campo==='talhao'){
+    const t = venTalhoes(r.safra).find(x=>x.talhao===el.value);
+    if(t){ r.area = t.area; const a = document.getElementById('veArea'); if(a) a.value = fmt(t.area,2).replace(/,00$/,''); }
+  }
+  venAtualizarContas();
+}
+function venProd(i, campo, el){
+  const p = venEdit && venEdit.produtos[i]; if(!p) return;
+  p[campo] = el.value; venEdit.mexeu = true;
+  if(campo==='produto'){
+    const c = venCatalogo()[venChave(el.value)];
+    if(c){ if(el.value!==c.nome){ el.value = c.nome; p.produto = c.nome; } p.unid = c.unid; const u = document.getElementById('veUn'+i); if(u) u.value = c.unid; }
+  }
+  venAtualizarContas();
+}
+// Saiu do campo do produto: se parece com um que já existe (ex: "glifosat"), pergunta se é ele.
+function venConferirProduto(i, el){
+  const v = String(el.value||'').trim(); if(!v) return;
+  const cat = venCatalogo(), k = venChave(v);
+  if(cat[k]) return;
+  let melhor = null, dist = 99;
+  Object.entries(cat).forEach(([ck,c])=>{ const d = venDistancia(k, ck); if(d<dist){ dist = d; melhor = c; } });
+  if(melhor && dist <= Math.max(1, Math.floor(k.length/5)) && confirm(`Você quis dizer "${melhor.nome}"?\n\nOK = usar "${melhor.nome}"\nCancelar = cadastrar "${v}" como produto novo`)){
+    el.value = melhor.nome; venProd(i, 'produto', el);
+  }
+}
+function venAddProduto(){ venEdit.produtos.push({produto:'', unid:'LT', dose:'', obs:''}); venEdit.mexeu = true; render(); const ins = document.querySelectorAll('.ve-prod input[list]'); if(ins.length) ins[ins.length-1].focus(); }
+function venRemoverProduto(i){ venEdit.produtos.splice(i,1); venEdit.mexeu = true; render(); }
+function venAtualizarContas(){
+  const r = venEdit; if(!r) return;
+  const h = venHaTanque(r), tq = venTanques(r);
+  const info = document.getElementById('veInfo');
+  if(info) info.innerHTML = h ? `<b>${fmt(h,1).replace(/,0$/,'')} ha</b> por tanque · <b>${fmt(tq,1).replace(/,0$/,'')}</b> tanque(s) pra ${fmt(venNum(r.area),2).replace(/,00$/,'')} ha` : 'Informe o tanque e a vazão';
+  r.produtos.forEach((p,i)=>{
+    const a = document.getElementById('vePt'+i), b = document.getElementById('veTt'+i);
+    if(a) a.textContent = venQtd(venPorTanque(r,p), p.unid);
+    if(b) b.textContent = venQtd(venTotal(p, r.area), p.unid);
+  });
+}
+
+// ---- telas ----
+function pageVenenos(){
+  if(!venPronto) return `<h2>Venenos</h2><div class="panel"><div class="empty">Carregando...</div></div>`;
+  const k = venSafraKey();
+  if(!k) return `<h2>Venenos</h2><div class="panel"><div class="empty">Nenhuma safra cadastrada ainda.</div></div>`;
+  return venEdit ? pageVenenoReceita() : pageVenenosLista(k);
+}
+function venCard(r){
+  const feita = r.status==='feita';
+  const prods = (r.produtos||[]).map(p=>`<span class="vc-prod"><b>${esc(p.produto)}</b> ${esc(venDose(p))} <i>→ ${venQtd(venTotal(p, venAreaFeita(r)), p.unid)}</i></span>`).join('');
+  const tq = venTanques(r, venAreaFeita(r));
+  return `<div class="ven-card ${feita?'feita':''}">
+    <div class="vc-top" onclick="venAbrir('${r.id}')">
+      <div><span class="vc-num">nº ${r.numero}</span> <b class="vc-talhao">${esc(r.talhao)}</b> <span class="vc-area">${fmt(venAreaFeita(r),2).replace(/,00$/,'')} ha</span></div>
+      <span class="vc-st ${feita?'ok':''}">${feita?'✅ Feita':'🟡 A fazer'}</span>
+    </div>
+    <div class="vc-sub">${feita ? `Aplicada em <b>${fmtData(r.feita.data)}</b>` : `Prevista ${fmtData(r.data)||'—'}`}${tq?` · ${fmt(tq,1).replace(/,0$/,'')} tanque(s)`:''}${r.bico?` · Bico ${esc(r.bico)}`:''}${feita && r.feita.obs?` · ${esc(r.feita.obs)}`:''}</div>
+    <div class="vc-prods">${prods}</div>
+    <div class="vc-acoes no-print">
+      <button class="secondary" onclick="venAbrir('${r.id}')">Abrir</button>
+      <button class="secondary" onclick="venImprimir(['${r.id}'])">🖨️ Imprimir</button>
+      <button class="secondary" onclick="venCopiar('${r.id}')" title="Nova receita com os mesmos produtos, pra outro talhão">⧉ Copiar</button>
+      ${feita ? `<button class="secondary" onclick="venDesfazerFeita('${r.id}')">↩ A fazer</button>` : `<button class="primary" onclick="venMarcarFeita('${r.id}')">✅ Marcar feita</button>`}
+    </div>
+  </div>`;
+}
+function venResumoProdutos(lista){
+  const m = {};
+  lista.forEach(r=>(r.produtos||[]).forEach(p=>{
+    const k = venChave(p.produto) + '|' + venUnSaida(p.unid);
+    m[k] = m[k] || {nome:p.produto, un:venUnSaida(p.unid), feito:0, afazer:0};
+    if(r.status==='feita') m[k].feito += venTotal(p, venAreaFeita(r)); else m[k].afazer += venTotal(p, r.area);
+  }));
+  return Object.values(m).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+}
+function pageVenenosLista(k){
+  const todas = venReceitasSafra(k);
+  const talhoes = [...new Set(todas.map(r=>r.talhao))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  if(venFiltro.talhao && !talhoes.includes(venFiltro.talhao)) venFiltro.talhao = '';
+  const f = todas.filter(r=>(!venFiltro.status || r.status===venFiltro.status) && (!venFiltro.talhao || r.talhao===venFiltro.talhao));
+  const afazer = f.filter(r=>r.status!=='feita').sort((a,b)=>(a.data||'').localeCompare(b.data||'') || a.numero-b.numero);
+  const feitas = f.filter(r=>r.status==='feita').sort((a,b)=>(b.feita.data||'').localeCompare(a.feita.data||'') || b.numero-a.numero);
+  const nAfazer = todas.filter(r=>r.status!=='feita').length, nFeitas = todas.length - nAfazer;
+  const haFeita = todas.filter(r=>r.status==='feita').reduce((s,r)=>s+venAreaFeita(r),0);
+  const resumo = venResumoProdutos(f);
+  const ks = Object.keys(ven.safras);
+  const chip = (v,t)=>`<button class="ven-chip ${venFiltro.status===v?'on':''}" onclick="venFiltro.status='${v}';render()">${t}</button>`;
+  return `
+    <div class="toolbar no-print">
+      ${nAfazer ? `<button class="secondary" onclick="venImprimir(venReceitasSafra(venSafraKey()).filter(r=>r.status!=='feita').map(r=>r.id))">🖨️ Imprimir a fazer (${nAfazer})</button>` : ''}
+      <button class="secondary" onclick="exportVenenos()">⬇️ Exportar Excel</button>
+    </div>
+    <h2>Venenos</h2>
+    <div class="caption">Safra ${esc(venSafraNome(k))}</div>
+    ${perfilDiesel && ks.length>1 ? `<div class="panel no-print ven-safra-sel"><label>Safra</label><select onchange="venEscolherSafra(this.value)">${ks.map(x=>`<option value="${esc(x)}" ${x===k?'selected':''}>${esc(venSafraNome(x))}</option>`).join('')}</select></div>` : ''}
+    <button class="primary ven-nova no-print" type="button" onclick="venNovaReceita()">+ Nova receita</button>
+    <div class="metrics cols-3 ven-kpis">
+      <div class="metric"><div class="val">${nAfazer}</div><div class="lbl">A fazer</div></div>
+      <div class="metric"><div class="val">${nFeitas}</div><div class="lbl">Feitas</div></div>
+      <div class="metric"><div class="val">${fmt(haFeita,1).replace(/,0$/,'')} ha</div><div class="lbl">Área já aplicada</div></div>
+    </div>
+    ${todas.length ? `<div class="ven-filtros no-print">
+      ${chip('','Todas')}${chip('afazer','🟡 A fazer')}${chip('feita','✅ Feitas')}
+      <select onchange="venFiltro.talhao=this.value;render()"><option value="">Todos os talhões</option>${talhoes.map(t=>`<option ${t===venFiltro.talhao?'selected':''}>${esc(t)}</option>`).join('')}</select>
+    </div>` : ''}
+    ${!todas.length ? `<div class="panel"><div class="empty" style="text-align:center">Nenhuma receita nesta safra ainda. Toque em <b>+ Nova receita</b>.</div></div>` : ''}
+    ${afazer.length ? `<p class="section-title">🟡 A fazer (${afazer.length})</p><div class="ven-lista">${afazer.map(venCard).join('')}</div>` : ''}
+    ${feitas.length ? `<p class="section-title" style="margin-top:18px">✅ Feitas (${feitas.length})</p><div class="ven-lista">${feitas.map(venCard).join('')}</div>` : ''}
+    ${resumo.length ? `<div class="panel" style="margin-top:18px"><p class="section-title">Produtos${venFiltro.talhao?` · ${esc(venFiltro.talhao)}`:''}</p>
+      <div class="table-wrap"><table class="simples ven-resumo"><thead><tr><th>Produto</th><th class="num">Já aplicado</th><th class="num">A fazer</th><th class="num">Total</th></tr></thead>
+      <tbody>${resumo.map(p=>`<tr><td>${esc(p.nome)}</td><td class="num">${p.feito?fmt(p.feito,1).replace(/,0$/,'')+' '+p.un:'—'}</td><td class="num">${p.afazer?fmt(p.afazer,1).replace(/,0$/,'')+' '+p.un:'—'}</td><td class="num"><b>${fmt(p.feito+p.afazer,1).replace(/,0$/,'')} ${p.un}</b></td></tr>`).join('')}</tbody></table></div></div>` : ''}
+  `;
+}
+function pageVenenoReceita(){
+  const r = venEdit, tal = venTalhoes(r.safra);
+  const nomes = tal.map(t=>t.talhao);
+  const outro = r.talhao && !nomes.includes(r.talhao);
+  const cat = venCatalogo();
+  const v = x => esc(x===undefined || x===null ? '' : (typeof x==='number' ? fmt(x, 3).replace(/,?0+$/,'') : x));
+  const feita = r.status==='feita';
+  return `
+    <div class="toolbar no-print"><button class="secondary" onclick="venFechar()">← Voltar pra lista</button></div>
+    <h2>${r.novo ? 'Nova receita' : 'Receita'} nº ${r.numero}</h2>
+    <div class="caption">Safra ${esc(venSafraNome(r.safra))}${feita?` · ✅ Aplicada em ${fmtData(r.feita.data)} (${fmt(venNum(r.feita.area),2).replace(/,00$/,'')} ha)`:''}</div>
+    <datalist id="vnProdutos">${Object.values(cat).map(c=>`<option value="${esc(c.nome)}">`).join('')}</datalist>
+    <datalist id="vnBicos">${venListaUnica('bico').map(b=>`<option value="${esc(b)}">`).join('')}</datalist>
+    <div class="panel">
+      <p class="section-title">Onde e quando</p>
+      <div class="grid cols-3">
+        <div><label>Talhão</label>
+          <select id="veTalhao" onchange="if(this.value==='__outro'){venEdit.talhao='';venEdit.outro=true;render();}else{venCampo('talhao',this)}">
+            <option value="">— escolha —</option>
+            ${tal.map(t=>`<option value="${esc(t.talhao)}" ${t.talhao===r.talhao?'selected':''}>${esc(t.talhao)} · ${fmt(t.area,2).replace(/,00$/,'')} ha${t.plantado?'':' (não plantado)'}</option>`).join('')}
+            <option value="__outro" ${outro||r.outro?'selected':''}>Outro (escrever)…</option>
+          </select>
+          ${outro||r.outro ? `<input type="text" style="margin-top:6px" placeholder="Nome do talhão / área" value="${v(r.talhao)}" oninput="venCampo('talhao',this)">` : ''}
+        </div>
+        <div><label>Área (ha)</label><input type="text" inputmode="decimal" id="veArea" value="${v(r.area)}" oninput="venCampo('area',this)"></div>
+        <div><label>Data prevista</label><input type="date" value="${esc(r.data||'')}" onchange="venCampo('data',this)"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <p class="section-title">Calda</p>
+      <div class="grid ven-calda">
+        <div><label>Tanque (L)</label><input type="text" inputmode="decimal" value="${v(r.tanque)}" oninput="venCampo('tanque',this)"></div>
+        <div><label>Vazão (L/ha)</label><input type="text" inputmode="decimal" value="${v(r.vazao)}" oninput="venCampo('vazao',this)"></div>
+        <div><label>Bico</label><input type="text" list="vnBicos" value="${v(r.bico)}" oninput="venCampo('bico',this)" placeholder="Ex: JGC12002"></div>
+        <div><label>Velocidade (km/h)</label><input type="text" value="${v(r.velocidade)}" oninput="venCampo('velocidade',this)" placeholder="Ex: 12-13"></div>
+        <div><label>Pressão (PSI)</label><input type="text" value="${v(r.pressao)}" oninput="venCampo('pressao',this)" placeholder="Ex: 62-70"></div>
+      </div>
+      <div class="ven-info" id="veInfo"></div>
+    </div>
+    <div class="panel">
+      <p class="section-title">Produtos</p>
+      <div class="ve-cab"><span>Produto</span><span>Unid</span><span>Dose/ha</span><span>Por tanque</span><span>Total da área</span><span>Observação</span><span></span></div>
+      ${r.produtos.map((p,i)=>`<div class="ve-prod">
+        <div class="vp-nome"><label>Produto</label><input type="text" list="vnProdutos" value="${v(p.produto)}" oninput="venProd(${i},'produto',this)" onchange="venConferirProduto(${i},this)" placeholder="Comece a digitar…" autocomplete="off"></div>
+        <div class="vp-un"><label>Unid</label><select id="veUn${i}" onchange="venProd(${i},'unid',this)">${VEN_UNIDS.map(u=>`<option ${u===p.unid?'selected':''}>${u}</option>`).join('')}</select></div>
+        <div class="vp-dose"><label>Dose/ha</label><input type="text" inputmode="decimal" value="${v(p.dose)}" oninput="venProd(${i},'dose',this)"></div>
+        <div class="vp-calc"><label>Por tanque</label><b id="vePt${i}">—</b></div>
+        <div class="vp-calc"><label>Total da área</label><b id="veTt${i}">—</b></div>
+        <div class="vp-obs"><label>Observação</label><input type="text" value="${v(p.obs)}" oninput="venProd(${i},'obs',this)"></div>
+        <button class="ghost vp-x" type="button" title="Tirar este produto" onclick="venRemoverProduto(${i})">✕</button>
+      </div>`).join('')}
+      <button class="secondary" type="button" style="margin-top:10px" onclick="venAddProduto()">+ Produto</button>
+    </div>
+    <div class="panel">
+      <label>Observação geral</label>
+      <input type="text" value="${v(r.obs)}" oninput="venCampo('obs',this)" placeholder="Ex: aplicar com vento abaixo de 10 km/h">
+    </div>
+    <div class="ven-salvar no-print">
+      <button class="primary" type="button" onclick="venSalvar(false)">💾 Salvar receita</button>
+      <button class="secondary" type="button" onclick="venSalvar(true)">💾 Salvar e imprimir</button>
+      ${r.novo ? '' : `<button class="ghost" type="button" onclick="venExcluir()">Excluir receita</button>`}
+    </div>
+  `;
+}
+
+// ---- impressão (folha igual ao receituário de papel) ----
+function venFolha(r){
+  const area = venNum(r.area), h = venHaTanque(r), tq = venTanques(r);
+  const linhas = (r.produtos||[]).map(p=>`<tr><td>${esc(p.produto)}</td><td>${esc(p.unid)}</td><td class="n">${fmt(venNum(p.dose),3).replace(/,?0+$/,'')}</td><td class="n">${venQtd(venPorTanque(r,p),p.unid)}</td><td class="n">${venQtd(venTotal(p,area),p.unid)}</td><td>${esc(p.obs||'')}</td></tr>`).join('');
+  const vazias = Array.from({length:Math.max(0, 6-(r.produtos||[]).length)}, ()=>'<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr>').join('');
+  return `<section class="vp-folha">
+    <div class="vp-tit">RECEITUÁRIO PARA APLICAÇÕES – FAZENDA PARAÍSO <span>(SAFRA ${esc(venSafraNome(r.safra))})</span><b>Nº ${r.numero}</b></div>
+    <table class="vp-cab">
+      <tr><th>Talhão</th><td class="grande">${esc(r.talhao)}</td><th>Data prevista</th><td>${fmtData(r.data)}</td></tr>
+      <tr><th>Área (ha)</th><td class="grande">${fmt(area,2).replace(/,00$/,'')}</td><th>Volume tanque</th><td>${fmt(venNum(r.tanque),0)} L</td></tr>
+      <tr><th>Vazão</th><td>${fmt(venNum(r.vazao),0)} L/ha</td><th>Modelo bico</th><td>${esc(r.bico||'')}</td></tr>
+      <tr><th>Velocidade</th><td>${esc(r.velocidade||'')}${r.velocidade?' km/h':''}</td><th>Pressão</th><td>${esc(r.pressao||'')}${r.pressao?' PSI':''}</td></tr>
+      <tr><th>Ha por tanque</th><td>${h?fmt(h,1).replace(/,0$/,''):''}</td><th>Nº de tanques</th><td>${tq?fmt(tq,1).replace(/,0$/,''):''}</td></tr>
+    </table>
+    <table class="vp-prod">
+      <thead><tr><th>Produto</th><th>Unid</th><th>Dose/ha</th><th>Por tanque</th><th>Total da área</th><th>Observação</th></tr></thead>
+      <tbody>${linhas}${vazias}</tbody>
+    </table>
+    ${r.obs ? `<div class="vp-obs"><b>Observação:</b> ${esc(r.obs)}</div>` : ''}
+    <table class="vp-fim">
+      <tr><th>Data aplicada</th><td></td><th>Área aplicada (ha)</th><td></td></tr>
+      <tr><th>Aplicador</th><td></td><th>Assinatura</th><td></td></tr>
+    </table>
+  </section>`;
+}
+function venImprimir(ids){
+  const lista = ids.map(id=>ven.receitas.find(r=>r.id===id)).filter(Boolean);
+  if(!lista.length) return;
+  let box = document.getElementById('venPrint');
+  if(!box){ box = document.createElement('div'); box.id = 'venPrint'; document.body.appendChild(box); }
+  box.innerHTML = lista.map(venFolha).join('');
+  document.body.classList.add('imprimindo-receita');
+  const fim = ()=>{ document.body.classList.remove('imprimindo-receita'); removeEventListener('afterprint', fim); };
+  addEventListener('afterprint', fim);
+  setTimeout(()=>{ window.print(); setTimeout(fim, 1500); }, 60);
+}
+
+// ---- Excel (planilha comum: uma linha por produto) ----
+const COLS_VENENO = [
+  {key:'safra',label:'Safra'},{key:'numero',label:'Nº',type:'number'},{key:'situacao',label:'Situação'},{key:'talhao',label:'Talhão'},
+  {key:'area',label:'Área (ha)',type:'number'},{key:'data',label:'Data prevista',type:'date'},{key:'dataFeita',label:'Data aplicada',type:'date'},
+  {key:'areaFeita',label:'Área aplicada (ha)',type:'number'},{key:'tanque',label:'Tanque (L)',type:'number'},{key:'vazao',label:'Vazão (L/ha)',type:'number'},
+  {key:'bico',label:'Bico'},{key:'velocidade',label:'Velocidade'},{key:'pressao',label:'Pressão'},{key:'produto',label:'Produto'},{key:'unid',label:'Unid'},
+  {key:'dose',label:'Dose/ha',type:'number'},{key:'porTanque',label:'Por tanque',type:'number'},{key:'total',label:'Total',type:'number'},{key:'unTotal',label:'Unid total'},
+  {key:'obsProduto',label:'Obs. produto'},{key:'obs',label:'Observação'},{key:'obsFeita',label:'Obs. aplicação'},
+];
+function linhasVenenoExcel(receitas){
+  const out = [];
+  [...receitas].sort((a,b)=>String(a.safra).localeCompare(String(b.safra)) || a.numero-b.numero).forEach(r=>(r.produtos||[]).forEach(p=>out.push({
+    safra: venSafraNome(r.safra) || r.safra, numero: r.numero, situacao: r.status==='feita'?'Feita':'A fazer', talhao: r.talhao,
+    area: venNum(r.area), data: r.data||'', dataFeita: r.feita&&r.feita.data||'', areaFeita: r.status==='feita'?venAreaFeita(r):'',
+    tanque: venNum(r.tanque), vazao: venNum(r.vazao), bico: r.bico||'', velocidade: r.velocidade||'', pressao: r.pressao||'',
+    produto: p.produto, unid: p.unid, dose: venNum(p.dose), porTanque: Math.round(venPorTanque(r,p)*1000)/1000,
+    total: Math.round(venTotal(p, venAreaFeita(r))*1000)/1000, unTotal: venUnSaida(p.unid), obsProduto: p.obs||'', obs: r.obs||'', obsFeita: r.feita&&r.feita.obs||'',
+  })));
+  return out;
+}
+async function exportVenenos(){
+  const k = venSafraKey(), wb = new ExcelJS.Workbook();
+  await addSheetForTable(wb, 'Venenos', COLS_VENENO, linhasVenenoExcel(venReceitasSafra(k)), ()=>({}));
+  const buf = await wb.xlsx.writeBuffer();
+  downloadBuffer(buf, `Venenos_${String(venSafraNome(k)).replace(/[\/\\]/g,'-')}_${hojeISO()}.xlsx`);
+}
+
 // ---------- Excel do diesel ----------
 const COLS_RESUMO = rotulo => [{key:'nome',label:rotulo},{key:'qtd',label:'Lançamentos',type:'number'},{key:'litros',label:'Litros',type:'number'},{key:'pct',label:'% do total',type:'pct'}];
 function addLinhaTotal(ws, valores){
@@ -2634,6 +3138,10 @@ async function exportBackupCompleto(){
       Array.from({length:n}, (_,i)=>({m:diesel.maquinas[i]||'', a:diesel.areas[i]||'', e:diesel.estacoes[i]||''})));
   }
 
+  if(venPronto && ven.receitas.length){
+    await add('Venenos', 'Venenos', COLS_VENENO, linhasVenenoExcel(ven.receitas));
+  }
+
   // Capa / índice
   indice.columns = [{width:30},{width:36},{width:14}];
   indice.mergeCells('A1:C1');
@@ -2689,22 +3197,24 @@ function initAuth(){
       }
       document.querySelectorAll('.navbtn').forEach(b=>{ b.style.display = paginaPermitida(b.dataset.page) ? '' : 'none'; });
       // Quem só tem telas de diesel nunca carrega nem grava os custos da safra (as regras também bloqueiam)
-      perfilDiesel = !!ALLOWED_PAGES && ALLOWED_PAGES.every(p=>paginaDiesel(p));
+      perfilDiesel = !!ALLOWED_PAGES && ALLOWED_PAGES.every(p=>paginaSemSafra(p));
       if(!paginaPermitida(currentPage)) currentPage = primeiraPaginaPermitida();
       document.body.classList.toggle('perfil-diesel', perfilDiesel);
       document.getElementById('user-badge').textContent = loginExibicao(user.email);
       showAuthState(true);
       iniciarDiesel();
+      if(paginaPermitida('venenos')) iniciarVenenos();
       if(perfilDiesel){
         // Funcionário do diesel nunca carrega nem grava os custos da safra.
         setSyncStatus('🟡 Conectando...', 'local');
-        currentPage = 'diesel-controle';
+        currentPage = primeiraPaginaPermitida();
         render();
       }
       else if(!firebaseReady) initFirebase();
       else render();
     }else{
       pararDiesel();
+      pararVenenos();
       perfilDiesel = false;
       document.body.classList.remove('perfil-diesel');
       document.getElementById('user-badge').textContent = '';
