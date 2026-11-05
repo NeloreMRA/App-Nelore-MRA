@@ -10,8 +10,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <style>
   :root{
-    --bg:#faf8f3; --panel:#ffffff; --ink:#2b2b23; --ink-soft:#6b6b5c; --line:#e4e0d4;
-    --green:#4c6b3f; --green-dark:#38502e; --wheat:#c99a3d; --alert:#b3543f; --focus:#eef3e8;
+    --bg:#f5f7f5; --panel:#ffffff; --ink:#17211c; --ink-soft:#5d6a62; --line:#e1e6e2;
+    --green:#1f6a49; --green-dark:#153e2c; --wheat:#c99a3d; --alert:#b3543f; --focus:#eaf3ee;
   }
   *{box-sizing:border-box;}
   body{margin:0; font-family:'Segoe UI',Arial,sans-serif; background:var(--bg); color:var(--ink); display:flex; min-height:100vh;}
@@ -19,7 +19,7 @@
   aside h1{font-size:16px; margin:0 0 2px; font-weight:600;}
   aside p.sub{font-size:11px; color:#cdd8c4; margin:0 0 14px;}
   .safra-select{width:100%; margin-bottom:16px; padding:7px; border-radius:6px; border:1px solid #56714a; background:#3f5934; color:#fff; font-size:12px;}
-  .navbtn{background:none; border:none; color:#e9e5d6; text-align:left; padding:9px 12px; border-radius:8px; cursor:pointer; font-size:13.5px; display:flex; gap:8px; align-items:center;}
+  .navbtn{background:none; border:none; color:#e6ebe8; text-align:left; padding:9px 12px; border-radius:8px; cursor:pointer; font-size:13.5px; display:flex; gap:8px; align-items:center;}
   .navbtn:hover{background:rgba(255,255,255,.08);}
   .navbtn.active{background:var(--green); color:#fff; font-weight:600;}
   main{flex:1; padding:28px 36px; overflow-y:auto; max-width:100%;}
@@ -30,7 +30,7 @@
   .grid.cols-2{grid-template-columns:1fr 1fr;}
   .grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
   label{font-size:11.5px; color:var(--ink-soft); display:block; margin-bottom:3px;}
-  input, select{width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font-size:13.5px; background:#fdfcf9;}
+  input, select{width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font-size:13.5px; background:#fff;}
   button.primary{background:var(--green); color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:13px; cursor:pointer;}
   button.primary:hover{background:var(--green-dark);}
   button.secondary{background:#fff; color:var(--green-dark); border:1px solid var(--green); padding:7px 14px; border-radius:6px; font-size:12.5px; cursor:pointer;}
@@ -39,20 +39,20 @@
   .toolbar{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
   .table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:8px;}
   table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:1300px;}
-  th, td{text-align:left; padding:0; border-bottom:1px solid var(--line); border-right:1px solid #f0eee4;}
-  thead th{background:#f5f3ea; color:var(--ink); font-weight:600; font-size:11.5px; padding:0; white-space:nowrap; position:relative;}
+  th, td{text-align:left; padding:0; border-bottom:1px solid var(--line); border-right:1px solid #eef1ef;}
+  thead th{background:#f3f6f4; color:var(--ink); font-weight:600; font-size:11.5px; padding:0; white-space:nowrap; position:relative;}
   .th-flex{display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 6px 8px 10px;}
   .th-filter-btn{background:none; border:none; cursor:pointer; font-size:11px; color:var(--ink-soft); padding:2px 5px; border-radius:4px;}
-  .th-filter-btn:hover{background:#e9e5d6;}
+  .th-filter-btn:hover{background:#e6ebe8;}
   .th-filter-btn.active{color:var(--green-dark); font-weight:700;}
   tbody td input, tbody td select{border:none; background:transparent; padding:7px 9px; font-size:12.5px; border-radius:0; width:100%; min-width:95px;}
   tbody td select{min-width:120px;}
   tbody td input:focus, tbody td select:focus{background:var(--focus); outline:1px solid var(--green);}
-  tbody td.readonly{padding:7px 9px; color:var(--ink-soft); background:#fbfaf6; white-space:nowrap;}
+  tbody td.readonly{padding:7px 9px; color:var(--ink-soft); background:#fafbfa; white-space:nowrap;}
   .cell-unit{display:flex; align-items:center;}
   .cell-unit input{flex:1;}
   .cell-unit span{padding-right:8px; color:var(--ink-soft); font-size:11.5px;}
-  tbody tr:hover{background:#fbfaf6;}
+  tbody tr:hover{background:#fafbfa;}
   .metrics{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:18px;}
   .metrics.cols-4{grid-template-columns:repeat(4,1fr);}
   @media (max-width:900px){ .metrics.cols-4{grid-template-columns:repeat(2,1fr);} }
@@ -74,8 +74,8 @@
   /* Filtro estilo Excel */
   .filter-panel{position:fixed; z-index:2000; background:#fff; border:1px solid var(--line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.14); width:230px; max-width:calc(100vw - 16px); padding:10px; font-weight:normal;}
   .fp-sort-row{display:flex; gap:6px; margin-bottom:8px;}
-  .fp-btn{flex:1; background:#f5f3ea; border:1px solid var(--line); border-radius:6px; padding:5px; font-size:11px; cursor:pointer;}
-  .fp-btn:hover{background:#ebe8dc;}
+  .fp-btn{flex:1; background:#f3f6f4; border:1px solid var(--line); border-radius:6px; padding:5px; font-size:11px; cursor:pointer;}
+  .fp-btn:hover{background:#e6ebe8;}
   .fp-search{width:100%; margin-bottom:6px; font-size:12px; padding:5px 7px;}
   .fp-list{max-height:160px; overflow-y:auto; border:1px solid var(--line); border-radius:6px; padding:4px 6px; margin-bottom:8px;}
   .fp-item{display:block; font-size:12px; padding:3px 0; cursor:pointer;}
@@ -117,7 +117,6 @@
   .side-tool:disabled{opacity:.45; cursor:not-allowed;}
   .logout-btn{margin-top:auto;}
   body.perfil-diesel .admin-only{display:none !important;}
-  body.pagina-diesel #undoBtn{visibility:hidden !important;} /* some sem mexer no menu (não pula de lugar) */
   .user-badge{font-size:11px; color:#cfc9b5; margin:-4px 0 12px; word-break:break-all;}
   .nav-sep{height:1px; background:rgba(255,255,255,.15); margin:8px 4px;}
   .lista-cad{border:1px solid var(--line); border-radius:8px; max-height:220px; overflow-y:auto;}
@@ -139,7 +138,7 @@
   .col-resizer:hover, body.redimensionando .col-resizer:active{background:rgba(76,107,63,.35);}
   body.redimensionando, body.redimensionando *{cursor:col-resize !important; user-select:none;}
   td.td-acoes{white-space:nowrap; text-align:center; padding:0 4px;}
-  table.tbl-excel th, table.tbl-excel td{border:1px solid #e1ddd0;}
+  table.tbl-excel th, table.tbl-excel td{border:1px solid #e1e6e2;}
   table.tbl-excel td.td-num, table.tbl-excel td.readonly.td-num{text-align:right;}
   .cell-unit-junto{justify-content:flex-end; padding-right:8px;}
   .cell-unit-junto input{text-align:right; padding:7px 3px 7px 6px !important; flex:0 1 auto !important; max-width:100%;}
@@ -149,7 +148,7 @@
   .barra-excel{display:none; position:fixed; right:16px; bottom:14px; z-index:1500; gap:18px; align-items:center; background:var(--green-dark); color:#fff; padding:9px 16px; border-radius:8px; font-size:13px; box-shadow:0 6px 18px rgba(0,0,0,.2);}
   .barra-excel.ativa{display:flex;}
   .barra-excel strong{font-variant-numeric:tabular-nums;}
-  tfoot tr.linha-total td{background:#f5f3ea; font-weight:700; padding:8px 10px; border-top:2px solid var(--green-dark); white-space:nowrap;}
+  tfoot tr.linha-total td{background:#f3f6f4; font-weight:700; padding:8px 10px; border-top:2px solid var(--green-dark); white-space:nowrap;}
   tfoot td.num{text-align:right;}
   tfoot td.total-rotulo small{font-weight:400; color:var(--ink-soft); margin-left:4px;}
   .panel-excel{width:fit-content; max-width:100%;}
@@ -175,7 +174,7 @@
   .form-acerto{border-top:4px solid #e08a1e;}
   .btn-acerto{margin-top:12px; background:#e08a1e; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:13px; cursor:pointer;}
   .btn-acerto:hover{background:#c26a12;}
-  .previa-acerto{margin-top:10px; font-size:12.5px; color:var(--ink-soft); background:#fbfaf6; border:1px dashed var(--line); border-radius:6px; padding:8px 10px;}
+  .previa-acerto{margin-top:10px; font-size:12.5px; color:var(--ink-soft); background:#fafbfa; border:1px dashed var(--line); border-radius:6px; padding:8px 10px;}
   .previa-acerto.ativa{color:#7a4a10; background:#fff3e2; border-color:#f0c48a;}
   table.extrato td{padding:7px 10px; white-space:nowrap; text-overflow:ellipsis;}
   table.extrato td.td-acoes{padding:0 4px; text-overflow:clip;}
@@ -203,31 +202,20 @@
   .resumo-card h3{margin:0; padding:11px 12px; text-align:center; font-size:14.5px; background:var(--green-dark); color:#fff; letter-spacing:.2px;}
   table.resumo{width:100%; min-width:0; table-layout:fixed; font-size:13px;}
   table.resumo th{text-align:left; font-size:11.5px;}
-  table.resumo th, table.resumo td{border:1px solid #e1ddd0;}
+  table.resumo th, table.resumo td{border:1px solid #e1e6e2;}
   table.resumo td{padding:8px 12px; vertical-align:middle;}
   table.resumo th{padding:0;}
   table.resumo th .th-flex{padding:8px 6px 8px 12px;}
   table.resumo td.num{text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;}
   table.resumo .sub{display:block; font-size:11px; color:var(--ink-soft);}
-  table.resumo .barra{height:6px; background:#ece8dc; border-radius:3px; margin-top:4px; overflow:hidden;}
+  table.resumo .barra{height:6px; background:#e8ece9; border-radius:3px; margin-top:4px; overflow:hidden;}
   table.resumo .barra i{display:block; height:100%; background:var(--wheat); border-radius:3px;}
-  table.resumo tfoot td{font-weight:700; background:#f5f3ea; border-top:2px solid var(--green-dark);}
+  table.resumo tfoot td{font-weight:700; background:#f3f6f4; border-top:2px solid var(--green-dark);}
   .filtros-resumo{display:flex; flex-wrap:wrap; gap:12px; align-items:end;}
   .filtros-resumo > div{flex:1 1 170px; max-width:240px;}
 
   /* CELULAR */
   @media (max-width:760px){
-    body{flex-direction:column;}
-    aside{width:100%; padding:10px 12px; flex-direction:row; flex-wrap:wrap; align-items:center; gap:6px;}
-    aside h1{margin:0; flex:1 1 auto;}
-    aside p.sub, .nav-sep{display:none;}
-    .user-badge{margin:0; flex:0 0 auto;}
-    .sync-status{margin:0; flex:1 1 100%;}
-    .safra-select{margin:0; flex:1 1 100%;}
-    .navbtn{padding:7px 10px; font-size:13px; white-space:nowrap; background:rgba(255,255,255,.06);}
-    .side-tool{width:auto; margin:0;}
-    .logout-btn{margin:0 0 0 auto;}
-    main{padding:14px 12px;}
     .grid.cols-2, .grid.cols-3, .filtros{grid-template-columns:1fr;}
     input, select{font-size:16px;}
     .panel{padding:14px;}
@@ -270,8 +258,102 @@
 
 /* Dentro do App Nelore MRA o login é feito na porta de entrada: a tela de login antiga nunca aparece */
 #loginScreen{display:none!important}
-@media(max-width:760px){aside>.voltar-app{margin:0;order:-1}}
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
+
+/* ===== VISUAL NOVO (mesmo estilo da Cobertura MRA, cor própria) ===== */
+:root{--menu:#2e4a2a; --menu-ativo:#44683d; --menu-cel:#283f24; --menu-ativo-cel:#5a8a50; --menu-borda:#527a4a; --menu-sub:#b8d4ac; --menu-txt:#e8f2e3; --green:#4c7a3f; --green-dark:#2e4a2a; --focus:#ebf3e7;}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;}
+aside{width:250px; background:var(--menu); color:#fff; padding:22px 14px 14px; gap:0; position:sticky; top:0; height:100vh; overflow-y:auto; align-self:flex-start;}
+aside .brand{display:flex; gap:12px; align-items:center; padding:2px 8px 22px;}
+aside .logo{width:38px; height:38px; border-radius:10px; background:#e7b549; color:var(--menu); display:grid; place-items:center; flex:none;}
+aside .logo svg{width:22px; height:22px;}
+aside .brand strong{display:block; font-size:15.5px;}
+aside .brand span{display:block; font-size:12px; opacity:.7; margin-top:3px;}
+.user-badge{display:none;}
+aside nav{display:flex; flex-direction:column; gap:2px;}
+.nav-grupo{font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--menu-sub); font-weight:700; padding:12px 14px 6px;}
+.nav-grupo:first-child{padding-top:0;}
+.navbtn{border:0; background:transparent; color:var(--menu-txt); padding:10px 14px; border-radius:9px; font-size:14px; gap:11px; width:100%;}
+.navbtn:hover{background:#ffffff12; color:#fff;}
+.navbtn.active{background:var(--menu-ativo); color:#fff; font-weight:600;}
+.ni{display:inline-grid; place-items:center; flex:none;}
+.ni svg{width:18px; height:18px;}
+.nav-mais{display:none;}
+.side-safra{margin:0 0 6px;}
+.side-safra label{font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--menu-sub); font-weight:700; margin-bottom:6px; padding-left:2px;}
+.safra-select{width:100%; margin:0; background:#ffffff14; color:#fff; border:1px solid var(--menu-borda); border-radius:8px; padding:8px 9px; font-size:13px; font-weight:600;}
+.safra-select option{color:#17211c; background:#fff;}
+.logout-btn{margin-top:auto; width:100%; background:transparent; border:1px solid #ffffff2e; color:var(--menu-txt); border-radius:8px; padding:8px; font-size:13px; cursor:pointer;}
+.logout-btn:hover{background:#ffffff12;}
+aside .sync-status{background:none!important; color:var(--menu-txt)!important; padding:10px 4px 0; margin:0; font-size:11.5px;}
+.sync-status .dot{width:8px; height:8px; border-radius:50%; background:#e0b84f; box-shadow:0 0 0 2px #ffffff18; flex:none;}
+.sync-status.ok .dot{background:#4fd18b;} .sync-status.err .dot{background:#e0685a;}
+main{padding:0 32px 28px;}
+.page-head{display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; min-height:64px; padding:12px 0; border-bottom:1px solid var(--line); margin-bottom:18px;}
+.page-head h2{font-size:22px; margin:0;}
+.page-head .caption{margin:3px 0 0; font-size:12.5px;}
+.ph-acoes{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+.ph-acoes .toolbar{margin:0;}
+.ph-safra{display:none;}
+.panel{border-radius:12px; box-shadow:0 1px 2px #00000008;}
+.metric{border-radius:12px; border-top:3px solid var(--green); display:flex; flex-direction:column-reverse; justify-content:flex-end; padding:12px 15px; box-shadow:0 1px 2px #00000008;}
+.metric .lbl{font-size:12px; font-weight:600; color:var(--ink-soft); margin:0 0 5px;}
+.metric .val{font-size:22px; font-weight:800; color:var(--ink);}
+.metric:has(.text-red){border-top-color:var(--alert);}
+.metric .val.text-red{color:var(--alert)!important;}
+button.primary{background:var(--green); border-radius:8px; padding:9px 16px;}
+button.primary:hover{background:var(--green-dark);}
+button.secondary{background:#fff; color:#334139; border:1px solid #d9dfda; border-radius:8px; padding:8px 13px; font-size:13px;}
+button.secondary:hover{background:#f3f6f4;}
+button.secondary:disabled{opacity:.45; cursor:not-allowed;}
+input, select{border-radius:8px; border-color:#d7ded9;}
+.section-title{font-size:15px; font-weight:700;}
+.safra-card{background:#fff; border-radius:12px;}
+.mais-fundo{position:fixed; inset:0; z-index:3000; background:#0006; display:flex; align-items:flex-end;}
+.mais-card{background:var(--bg); width:100%; border-radius:16px 16px 0 0; padding:16px 14px calc(16px + env(safe-area-inset-bottom)); max-height:85vh; overflow-y:auto;}
+.mais-card h3{margin:0 0 10px; font-size:18px;}
+.mais-lista{display:flex; flex-direction:column; gap:8px; margin:0 0 14px;}
+.mais-it{display:flex; align-items:center; gap:12px; text-align:left; border:1px solid var(--line); background:#fff; border-radius:12px; padding:13px 16px; font-size:16px; font-weight:700; color:var(--ink); text-decoration:none; cursor:pointer;}
+.mais-it.on{border-color:var(--green); background:var(--focus);}
+.mais-it .ni svg{width:20px; height:20px;}
+.mais-it.sair{color:var(--alert);}
+.mais-card label{font-size:12px; font-weight:700; margin-bottom:6px;}
+.mais-card select{font-size:16px; padding:10px;}
+@media (max-width:760px){
+  body{display:block;}
+  aside{position:fixed; left:0; right:0; bottom:0; top:auto; width:auto; height:auto; z-index:1000; flex-direction:row; padding:5px 4px max(6px,calc(env(safe-area-inset-bottom) - 14px)); background:var(--menu-cel); border-top:1px solid #ffffff14; box-shadow:0 -6px 18px #0002; overflow:visible;}
+  aside>.voltar-app, aside .brand, aside .nav-grupo, aside .side-safra, aside .logout-btn, aside .sync-status{display:none!important;}
+  aside nav{flex-direction:row; width:100%; gap:0;}
+  aside nav .navbtn{order:var(--ordem,50);}
+  .nav-mais{order:99;}
+  aside nav .navbtn.nav-extra{display:none!important;}
+  aside nav .navbtn, .nav-mais{flex:1 1 0; min-width:0; display:grid; grid-template-rows:28px 15px; justify-items:center; align-content:center; row-gap:3px; padding:4px 0 2px; color:var(--menu-sub); background:transparent!important; border:0; border-radius:0; font-weight:600; cursor:pointer;}
+  aside nav .ni{width:46px; height:28px; border-radius:14px; transition:background .15s;}
+  aside nav .ni svg{width:22px; height:22px;}
+  aside nav .navbtn.active, .nav-mais.active{color:#fff;}
+  aside nav .navbtn.active .ni, .nav-mais.active .ni{background:var(--menu-ativo-cel);}
+  aside nav span{font-size:10.5px; line-height:15px; white-space:nowrap; letter-spacing:.01em;}
+  aside nav span{display:block; height:15px;}
+  aside nav span[data-curto]{font-size:0; line-height:0;}
+  aside nav span[data-curto]::after{content:attr(data-curto); display:block; font-size:10.5px; line-height:15px;}
+  main{padding:0 12px calc(84px + env(safe-area-inset-bottom));}
+  .page-head{position:sticky; top:0; z-index:20; background:var(--bg); margin:0 -12px 12px; padding:calc(10px + env(safe-area-inset-top)) 12px 10px; min-height:0; gap:8px;}
+  .page-head h2{font-size:21px;}
+  .ph-tit{flex:1 1 auto; min-width:0;}
+  .ph-safra{display:inline-flex; align-items:center; gap:4px; margin-top:4px; background:#fff; border:1px solid var(--line); border-radius:20px; padding:4px 11px; font-size:12.5px; font-weight:600; color:var(--green-dark); cursor:pointer;}
+  .ph-safra + .caption{display:none;}
+  .ph-acoes{width:100%; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;}
+  .ph-acoes:has(> :only-child){width:auto; align-self:flex-start;}
+  .page-head:has(.ph-acoes > :only-child){flex-wrap:nowrap;}
+  .ph-acoes::-webkit-scrollbar{display:none;}
+  .ph-acoes > *, .ph-acoes .toolbar button{flex:0 0 auto;}
+  .ph-acoes .toolbar{flex-wrap:nowrap;}
+  .metric .val{font-size:19px;}
+  .metric{padding:10px 12px;}
+  .safra-card{flex-direction:column; align-items:stretch; gap:10px;}
+  .safra-card > div:last-child > button{flex:1;}
+}
+@media print{ .page-head{border:0; min-height:0; padding:0; margin-bottom:8px;} main{padding:0;} }
 </style>
 </head>
 <body class="auth-pending">
@@ -287,25 +369,25 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
   </form>
 </div>
 <aside class="no-print">
-  <h1>🌱 Custos Safra</h1>
-  <p class="sub">Fazenda Paraíso</p>
+  <div class="brand"><div class="logo"><i class="logo-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="M12 21v-9"/><path d="M12 12c0-4.5 3-7.5 8.5-7.5 0 5.3-3.3 7.5-8.5 7.5Z"/><path d="M12 14.5c0-3.3-2.6-6-7.5-6 0 4.3 2.7 6 7.5 6Z"/></svg></i></div><div><strong>Custos Safra</strong><span>Fazenda Paraíso</span></div></div>
   <div id="user-badge" class="user-badge"></div>
-  <div id="sync-status" class="sync-status local">⚪ Modo local</div>
-  <select class="safra-select admin-only" id="safra-selector"></select>
-  <button id="undoBtn" class="side-tool admin-only" type="button" onclick="undoLastChange()" disabled>↶ Desfazer (Ctrl+Z)</button>
-  <button class="navbtn active admin-only" data-page="dashboard">📊 Dashboard</button>
-  <button class="navbtn admin-only" data-page="colheita">🚜 Colheita</button>
-  <button class="navbtn admin-only" data-page="adiantamentos">💰 Adiantamentos</button>
-  <button class="navbtn admin-only" data-page="vendas">📦 Silos e Vendas</button>
-  <button class="navbtn admin-only" data-page="cadastros">⚙️ Cadastros</button>
-  <button class="navbtn admin-only" data-page="safras">🌾 Cadastro de Safra</button>
-  <div class="nav-sep admin-only"></div>
-  <button class="navbtn" data-page="diesel-controle">⛽ Controle Diesel</button>
-  <button class="navbtn" data-page="diesel-estoque">🛢️ Estoque Diesel</button>
-  <button class="navbtn" data-page="diesel-resumo">📈 Resumo Diesel</button>
-  <div class="nav-sep admin-only"></div>
-  <button class="side-tool admin-only" type="button" onclick="exportBackupCompleto()">💾 Backup completo (Excel)</button>
-  <button id="logoutBtn" class="side-tool logout-btn" type="button">Sair</button>
+  <nav>
+    <div class="nav-grupo admin-only">Lavoura</div>
+    <div class="side-safra admin-only"><select class="safra-select" id="safra-selector" title="Safra"></select></div>
+    <button class="navbtn active admin-only" data-page="dashboard" title="Dashboard"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg></i><span data-curto="Painel">Dashboard</span></button>
+    <button class="navbtn admin-only" data-page="colheita" title="Colheita"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v10H2z"/><path d="M13 9h4.5L21 12.5V16h-8"/><circle cx="6" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/></svg></i><span>Colheita</span></button>
+    <button class="navbtn admin-only" data-page="adiantamentos" title="Adiantamentos"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></svg></i><span data-curto="Adiant.">Adiantamentos</span></button>
+    <button class="navbtn admin-only" data-page="vendas" title="Silos e Vendas"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9.5L12 4l9 5.5V21"/><path d="M7.5 21v-7h9v7"/><path d="M7.5 17.5h9"/></svg></i><span data-curto="Vendas">Silos e Vendas</span></button>
+    <button class="navbtn admin-only" data-page="cadastros" title="Cadastros"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 9 3.5l6 3 6-3v14l-6 3-6-3-6 3z"/><path d="M9 3.5v14M15 6.5v14"/></svg></i><span>Cadastros</span></button>
+    <button class="navbtn admin-only" data-page="safras" title="Safra"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="M12 21v-9"/><path d="M12 12c0-4.5 3-7.5 8.5-7.5 0 5.3-3.3 7.5-8.5 7.5Z"/><path d="M12 14.5c0-3.3-2.6-6-7.5-6 0 4.3 2.7 6 7.5 6Z"/></svg></i><span>Safra</span></button>
+    <div class="nav-grupo">Diesel</div>
+    <button class="navbtn" data-page="diesel-controle" title="Controle Diesel"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16"/><path d="M2.5 21h13"/><path d="M4 10h10"/><path d="M14 8h1.5a2 2 0 0 1 2 2v5.5a1.5 1.5 0 0 0 3 0V8.5L18 6"/></svg></i><span data-curto="Diesel">Controle Diesel</span></button>
+    <button class="navbtn" data-page="diesel-estoque" title="Estoque Diesel"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v14c0 1.7 3.1 3 7 3s7-1.3 7-3V5"/><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg></i><span data-curto="Estoque">Estoque Diesel</span></button>
+    <button class="navbtn" data-page="diesel-resumo" title="Resumo Diesel"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 17v-4M12.5 17V8M17 17v-6"/></svg></i><span data-curto="Resumo">Resumo Diesel</span></button>
+    <button type="button" class="nav-mais" onclick="abrirMaisCel()"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></i><span>Mais</span></button>
+  </nav>
+  <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
+  <div id="sync-status" class="sync-status local">Modo local</div>
 </aside>
 <main id="main"></main>
 
@@ -510,7 +592,7 @@ document.addEventListener('keydown', e=>{
 
 function setSyncStatus(text, cls){
   const el = document.getElementById('sync-status');
-  if(el){ el.textContent = text; el.className = 'sync-status no-print ' + cls; }
+  if(el){ el.innerHTML = '<span class="dot"></span><span>' + esc(String(text).replace(/^\S+\s/,'')) + '</span>'; el.className = 'sync-status no-print ' + cls; }
 }
 
 function initFirebase(){
@@ -639,12 +721,72 @@ function refreshSafraSelector(){
   const sel = document.getElementById('safra-selector');
   sel.innerHTML = Object.keys(state.safras).map(k=>`<option value="${k}" ${k===state.safraAtual?'selected':''}>${esc(state.safras[k].nome)}</option>`).join('');
 }
-document.getElementById('safra-selector').addEventListener('change', e=>{ state.safraAtual = e.target.value; localStorage.setItem('app-nelore-mra-custos-safraAtual',state.safraAtual); render(); });
+document.getElementById('safra-selector').addEventListener('change', e=>escolherSafra(e.target.value));
 
 // Sem internet o Custos não tem os dados (eles ficam só no Firebase): mostra um aviso em vez de números de exemplo.
 let custosSemConexao = false;
 addEventListener('online', ()=>{ if(custosSemConexao) location.reload(); });
 function render(){
+  renderConteudo();
+  montarCabecalho();
+  montarBarraCelular();
+}
+// Cabeçalho da tela (igual à Cobertura): título à esquerda; Desfazer, Imprimir e Exportar à direita
+function montarCabecalho(){
+  const main = document.getElementById('main');
+  const h2 = [...main.children].find(e=>e.tagName==='H2');
+  if(!h2) return;
+  h2.textContent = h2.textContent.replace(/^[^\p{L}\p{N}]+/u,'');
+  const head = document.createElement('div'); head.className = 'page-head';
+  const tit = document.createElement('div'); tit.className = 'ph-tit';
+  const acoes = document.createElement('div'); acoes.className = 'ph-acoes no-print';
+  const antes = h2.previousElementSibling;
+  const depois = h2.nextElementSibling;
+  main.insertBefore(head, h2);
+  tit.appendChild(h2);
+  const diesel = paginaDiesel(currentPage);
+  if(!diesel && !perfilDiesel && S()){
+    const chip = document.createElement('button');
+    chip.type = 'button'; chip.className = 'ph-safra no-print'; chip.textContent = S().nome + ' ▾';
+    chip.onclick = abrirMaisCel;
+    tit.appendChild(chip);
+  }
+  if(depois && depois.classList.contains('caption')) tit.appendChild(depois);
+  head.appendChild(tit);
+  if(!diesel && !perfilDiesel){
+    const u = document.createElement('button');
+    u.id = 'undoBtn'; u.type = 'button'; u.className = 'secondary'; u.title = 'Desfazer a última alteração (Ctrl+Z)';
+    u.textContent = '↶ Desfazer'; u.disabled = undoStack.length===0; u.onclick = undoLastChange;
+    acoes.appendChild(u);
+  }
+  if(antes && antes.classList.contains('toolbar')){ antes.style.justifyContent=''; acoes.appendChild(antes); }
+  head.appendChild(acoes);
+}
+// CELULAR: barra de baixo com 4 telas + "Mais" (o resto, a safra, voltar pro App e Sair)
+const NAV_CEL = ['dashboard','colheita','vendas','diesel-controle','adiantamentos','cadastros','safras','diesel-estoque','diesel-resumo'];
+function navVisivel(p){ const b = document.querySelector(`.navbtn[data-page="${p}"]`); return b && paginaPermitida(p) && !(perfilDiesel && !paginaDiesel(p)); }
+function montarBarraCelular(){
+  const vis = NAV_CEL.filter(navVisivel), fixos = vis.slice(0,4);
+  document.querySelectorAll('.navbtn[data-page]').forEach(b=>{ const i = NAV_CEL.indexOf(b.dataset.page); b.style.setProperty('--ordem', i<0?50:i); b.classList.toggle('nav-extra', !fixos.includes(b.dataset.page)); });
+  const mais = document.querySelector('.nav-mais'); if(mais){ mais.classList.toggle('active', !fixos.includes(currentPage)); }
+}
+function fecharMaisCel(){ const f = document.querySelector('.mais-fundo'); if(f) f.remove(); }
+function abrirMaisCel(){
+  fecharMaisCel();
+  const vis = NAV_CEL.filter(navVisivel), extras = vis.slice(4);
+  const item = p=>{ const b = document.querySelector(`.navbtn[data-page="${p}"]`); return `<button type="button" class="mais-it ${p===currentPage?'on':''}" onclick="fecharMaisCel();setPage('${p}')">${b.querySelector('.ni').outerHTML}<span>${esc(b.title)}</span></button>`; };
+  const f = document.createElement('div'); f.className = 'mais-fundo no-print';
+  f.onclick = e=>{ if(e.target===f) fecharMaisCel(); };
+  f.innerHTML = `<div class="mais-card">
+    <h3>Mais</h3>
+    ${extras.length ? `<div class="mais-lista">${extras.map(item).join('')}</div>` : ''}
+    ${perfilDiesel ? '' : `<div style="margin-bottom:14px"><label>Safra</label><select onchange="fecharMaisCel();escolherSafra(this.value)">${Object.keys(state.safras).map(k=>`<option value="${k}" ${k===state.safraAtual?'selected':''}>${esc(state.safras[k].nome)}</option>`).join('')}</select></div>`}
+    <div class="mais-lista"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a><button type="button" class="mais-it sair" onclick="document.getElementById('logoutBtn').click()">Sair</button></div>
+  </div>`;
+  document.body.appendChild(f);
+}
+function escolherSafra(k){ if(!state.safras[k]) return; state.safraAtual = k; localStorage.setItem('app-nelore-mra-custos-safraAtual', k); render(); }
+function renderConteudo(){
   if(custosSemConexao && !(paginaDiesel(currentPage) && dieselPronto)){
     document.getElementById('main').innerHTML = `<div class="panel" style="max-width:560px;margin:40px auto;text-align:center;padding:28px"><div style="font-size:34px">📵</div><h2 style="margin:8px 0">Sem internet</h2><p class="caption" style="font-size:14px">O Custos Safra precisa de internet pra mostrar e salvar os dados. Assim que o sinal voltar, a tela carrega sozinha.</p></div>`;
     return;
@@ -1035,7 +1177,6 @@ function renderTablePage(cfg){
 
   return `
     <h2>${cfg.title}</h2>
-    <div class="caption">${cfg.caption}</div>
     ${cfg.formHtml || ''}
     <div class="toolbar no-print">
       ${cfg.semLinhaEmBranco ? '' : `<button class="secondary" onclick="addTableRow('${cfg.tableKey}')">+ Nova linha em branco</button>`}
@@ -1707,8 +1848,7 @@ function pageSafras(){
   }).join('');
 
   return `
-    <h2>🌾 Cadastro de Safra</h2>
-    <div class="caption">Ao criar uma nova safra, os talhões, locais de entrega e motoristas são copiados da safra atual (variedade e "Será Plantado?" ficam em branco/desmarcado pra você escolher de novo). Colheita, adiantamentos e vendas começam zerados.</div>
+    <h2>Safra</h2>
     ${cards}
     <div class="panel" style="margin-top:20px;">
       <p class="section-title">Nova safra</p>
@@ -1725,9 +1865,13 @@ function pageSafras(){
       </div>
       <button class="primary" style="margin-top:14px;" onclick="criarNovaSafra()" type="button">Criar safra</button>
     </div>
+    <div class="panel no-print">
+      <p class="section-title">Backup</p>
+      <button class="secondary" type="button" onclick="exportBackupCompleto()">💾 Baixar backup completo (Excel)</button>
+    </div>
   `;
 }
-function usarSafra(key){ state.safraAtual = key; setPage('dashboard'); }
+function usarSafra(key){ state.safraAtual = key; localStorage.setItem('app-nelore-mra-custos-safraAtual', key); setPage('dashboard'); }
 function removerSafra(key){
   const s = state.safras[key]; if(!s) return;
   const n = (s.colheita||[]).length + (s.adiantamentos||[]).length + (s.vendas||[]).length;
@@ -1754,6 +1898,7 @@ function criarNovaSafra(){
     colheita: [], adiantamentos: [], vendas: [],
   };
   state.safraAtual = key;
+  localStorage.setItem('app-nelore-mra-custos-safraAtual', key);
   setPage('cadastros');
 }
 
@@ -2216,7 +2361,6 @@ function pageDieselEstoque(){
   const nomeFiltroEst = filtroEst ? [...filtroEst].join(', ') : '';
   return `
     <h2>🛢️ Estoque Diesel</h2>
-    <div class="caption">Saldo do tanque = entradas − usado (Controle Diesel) ± acertos. O acerto corrige a diferença da medição.</div>
 
 
     <div class="grid cols-2 no-print estoque-forms">
