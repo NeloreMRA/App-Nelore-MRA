@@ -92,7 +92,7 @@
     tr{page-break-inside:avoid;}
     body{background:#fff;}
     table.tbl-excel{table-layout:auto; width:100% !important;}
-    .resumo-grid{grid-template-columns:repeat(3,1fr); gap:10px;}
+    .resumo-grid{grid-template-columns:repeat(2,1fr); gap:10px;}
     .resumo-card h3, table.resumo .barra i, tfoot tr.linha-total td, .saldo-grande, tr.mov-entrada td, tr.mov-acerto td, tr.mov-uso td, .tag-mov, .card-entrada, .card-saida, .card-acerto{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
     table.resumo{font-size:10px;}
   }
@@ -197,7 +197,8 @@
   .resumo-kpis{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px;}
   .resumo-kpis .metric{text-align:center;}
   .resumo-kpis .val{font-size:24px;}
-  .resumo-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; align-items:start;}
+  .resumo-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px; align-items:start;}
+  @media (max-width:760px){ .resumo-grid{grid-template-columns:1fr;} }
   .resumo-card{background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
   .resumo-card h3{margin:0; padding:11px 12px; text-align:center; font-size:14.5px; background:var(--green-dark); color:#fff; letter-spacing:.2px;}
   table.resumo{width:100%; min-width:0; table-layout:fixed; font-size:13px;}
@@ -2354,8 +2355,8 @@ function pageDieselResumo(){
     </div>
     <div class="resumo-grid">
       ${tabelaResumoDiesel('area', '🌾 Por Área', 'Área', agruparDiesel(lancs,'area'))}
-      ${tabelaResumoDiesel('maquina', '🚜 Por Máquina', 'Máquina', agruparDiesel(lancs,'maquina'))}
       ${tabelaResumoDiesel('estacao', '📅 Por Estação', 'Estação', agruparDiesel(lancs,'estacao'))}
+      ${tabelaResumoDiesel('maquina', '🚜 Por Máquina', 'Máquina', agruparDiesel(lancs,'maquina'))}
       ${tabelaResumoDiesel('servico', '🛠️ Por Serviço Realizado', 'Serviço Realizado', agruparDiesel(lancs,'servico'))}
     </div>
   `;
