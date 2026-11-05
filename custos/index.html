@@ -369,7 +369,13 @@ input, select{border-radius:8px; border-color:#d7ded9;}
 .ven-filtros select{width:auto; min-width:170px;}
 .ven-chip{border:1px solid var(--line); background:#fff; border-radius:20px; padding:7px 14px; font-size:13px; font-weight:600; color:#334139; cursor:pointer;}
 .ven-chip.on{background:var(--green); border-color:var(--green); color:#fff;}
-.ven-safra-sel{display:flex; gap:10px; align-items:center; padding:10px 14px;} .ven-safra-sel label{margin:0;} .ven-safra-sel select{width:auto;}
+.ven-safra-sel{display:inline-flex; gap:10px; align-items:center; background:#e7b549; color:#2e4a2a; border-radius:12px; padding:8px 8px 8px 16px; margin:0 0 14px; font-weight:800;}
+.ven-safra-sel span{font-size:12px; text-transform:uppercase; letter-spacing:.07em;}
+.ven-safra-sel select{width:auto; background:#fff8e6; border:0; border-radius:9px; font-size:17px; font-weight:800; color:#2e4a2a; padding:7px 10px; cursor:pointer;}
+.ven-safra-sel b{font-size:17px; padding-right:8px;}
+.so-print{display:none;}
+@media print{ .so-print{display:inline;} }
+@media (max-width:760px){ .ven-safra-sel{display:none;} }
 .ven-lista{display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:12px;}
 .ven-card{background:#fff; border:1px solid var(--line); border-left:4px solid #e0b84f; border-radius:12px; padding:12px 14px; box-shadow:0 1px 2px #00000008;}
 .ven-card.feita{border-left-color:var(--green);}
@@ -402,7 +408,7 @@ input, select{border-radius:8px; border-color:#d7ded9;}
 .ven-salvar .primary{padding:12px 22px; font-size:15px; font-weight:700;}
 .ven-salvar .ghost{margin-left:auto; padding:10px 14px; font-size:13px;}
 .ven-card{position:relative;}
-.vc-x{position:absolute; top:6px; right:6px; width:22px; height:22px; padding:0; border:0; border-radius:6px; background:transparent; color:#9aa59d; font-size:12px; line-height:22px; cursor:pointer;}
+.vc-x{position:absolute; top:8px; right:8px; width:28px; height:28px; padding:0; border:0; border-radius:7px; background:transparent; color:#9aa59d; display:grid; place-items:center; cursor:pointer;}
 .vc-x:hover{background:#fbe5e5; color:var(--alert);}
 .vc-top{padding-right:18px;}
 .ven-feita{position:relative;}
@@ -475,7 +481,7 @@ input, select{border-radius:8px; border-color:#d7ded9;}
   <div class="brand"><div class="logo"><i class="logo-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="M12 21v-9"/><path d="M12 12c0-4.5 3-7.5 8.5-7.5 0 5.3-3.3 7.5-8.5 7.5Z"/><path d="M12 14.5c0-3.3-2.6-6-7.5-6 0 4.3 2.7 6 7.5 6Z"/></svg></i></div><div><strong>Custos Safra</strong><span>Fazenda Paraíso</span></div></div>
   <div id="user-badge" class="user-badge"></div>
   <nav>
-    <div class="nav-grupo admin-only">Lavoura</div>
+    <div class="nav-grupo">Lavoura</div>
     <div class="side-safra admin-only"><select class="safra-select" id="safra-selector" title="Safra"></select></div>
     <button class="navbtn active admin-only" data-page="dashboard" title="Dashboard"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg></i><span data-curto="Painel">Dashboard</span></button>
     <button class="navbtn admin-only" data-page="colheita" title="Colheita"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v10H2z"/><path d="M13 9h4.5L21 12.5V16h-8"/><circle cx="6" cy="17.5" r="2"/><circle cx="17" cy="17.5" r="2"/></svg></i><span>Colheita</span></button>
@@ -905,9 +911,10 @@ function atualizarTopoCel(){
   if(!m) return;
   const aberto = document.getElementById('menuCel').classList.contains('aberto');
   m.innerHTML = aberto ? IC_FECHAR : IC_MENU;
-  const mostra = !perfilDiesel && !paginaDiesel(currentPage) && S();
-  sb.style.display = mostra ? '' : 'none';
-  if(mostra) sb.textContent = nomeSafraCurto(S()) + ' ▾';
+  const vk = perfilDiesel && currentPage==='venenos' && venPronto ? venSafraKey() : null;
+  const sf = vk ? ven.safras[vk] : (!perfilDiesel && !paginaDiesel(currentPage) && S());
+  sb.style.display = sf ? '' : 'none';
+  if(sf) sb.textContent = nomeSafraCurto(sf) + ' ▾';
 }
 function fecharMenuCel(){ document.getElementById('menuCel').classList.remove('aberto'); document.body.classList.remove('menu-cel-aberto'); atualizarTopoCel(); }
 function toggleMenuCel(){
@@ -929,8 +936,20 @@ function abrirSafraCel(){
   fecharMenuCel(); fecharMaisCel();
   const f = document.createElement('div'); f.className = 'mais-fundo no-print';
   f.onclick = e=>{ if(e.target===f) fecharMaisCel(); };
-  f.innerHTML = `<div class="mais-card"><h3>Safra</h3><div class="mais-lista">${Object.keys(state.safras).map(k=>`<button type="button" class="mais-it ${k===state.safraAtual?'on':''}" onclick="fecharMaisCel();escolherSafra('${k}')">${esc(nomeSafraCurto(state.safras[k]))}</button>`).join('')}</div></div>`;
+  const lista = perfilDiesel ? ven.safras : state.safras, atual = perfilDiesel ? venSafraKey() : state.safraAtual, fn = perfilDiesel ? 'venEscolherSafra' : 'escolherSafra';
+  f.innerHTML = `<div class="mais-card"><h3>Safra</h3><div class="mais-lista">${Object.keys(lista).map(k=>`<button type="button" class="mais-it ${k===atual?'on':''}" onclick="fecharMaisCel();${fn}('${k}')">${esc(nomeSafraCurto(lista[k]))}</button>`).join('')}</div></div>`;
   document.body.appendChild(f);
+}
+// Título do bloco (Lavoura / Diesel) só aparece se tiver alguma tela liberada embaixo dele
+function ajustarGruposMenu(){
+  document.querySelectorAll('aside .nav-grupo').forEach(g=>{
+    let el = g.nextElementSibling, tem = false;
+    while(el && !el.classList.contains('nav-grupo')){
+      if(el.classList.contains('navbtn') && el.dataset.page && navVisivel(el.dataset.page)) tem = true;
+      el = el.nextElementSibling;
+    }
+    g.style.display = tem ? '' : 'none';
+  });
 }
 function escolherSafra(k){ if(!state.safras[k]) return; venEdit = null; state.safraAtual = k; localStorage.setItem('app-nelore-mra-custos-safraAtual', k); render(); }
 function renderConteudo(){
@@ -2918,7 +2937,7 @@ function pageVenenos(){
 function venCard(r){
   const feita = r.status==='feita';
   return `<div class="ven-card ${feita?'feita':''}">
-    <button type="button" class="vc-x no-print" title="Excluir receita" onclick="venExcluirId('${r.id}')">✕</button>
+    <button type="button" class="vc-x no-print" title="Excluir receita" onclick="venExcluirId('${r.id}')"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
     <div class="vc-top" onclick="venAbrir('${r.id}')">
       <div>
         <b class="vc-talhao">${esc(r.talhao)}</b>
@@ -2960,8 +2979,7 @@ function pageVenenosLista(k){
       <button class="secondary" onclick="exportVenenos()">⬇️ Exportar Excel</button>
     </div>
     <h2>Venenos</h2>
-    <div class="caption">Safra ${esc(venSafraNome(k))}</div>
-    ${perfilDiesel && ks.length>1 ? `<div class="panel no-print ven-safra-sel"><label>Safra</label><select onchange="venEscolherSafra(this.value)">${ks.map(x=>`<option value="${esc(x)}" ${x===k?'selected':''}>${esc(venSafraNome(x))}</option>`).join('')}</select></div>` : ''}
+    <div class="ven-safra-sel"><span>Safra</span>${ks.length>1 ? `<select class="no-print" onchange="${perfilDiesel?'venEscolherSafra':'escolherSafra'}(this.value)">${ks.map(x=>`<option value="${esc(x)}" ${x===k?'selected':''}>${esc(venSafraNome(x))}</option>`).join('')}</select><b class="so-print">${esc(venSafraNome(k))}</b>` : `<b>${esc(venSafraNome(k))}</b>`}</div>
     <button class="primary ven-nova no-print" type="button" onclick="venNovaReceita()">+ Nova receita</button>
     <div class="metrics cols-3 ven-kpis">
       <div class="metric"><div class="val">${nAfazer}</div><div class="lbl">A fazer</div></div>
@@ -3238,6 +3256,7 @@ function initAuth(){
       perfilDiesel = !!ALLOWED_PAGES && ALLOWED_PAGES.every(p=>paginaSemSafra(p));
       if(!paginaPermitida(currentPage)) currentPage = primeiraPaginaPermitida();
       document.body.classList.toggle('perfil-diesel', perfilDiesel);
+      ajustarGruposMenu();
       document.getElementById('user-badge').textContent = loginExibicao(user.email);
       showAuthState(true);
       iniciarDiesel();
