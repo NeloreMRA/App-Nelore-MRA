@@ -362,17 +362,17 @@ input, select{border-radius:8px; border-color:#d7ded9;}
 @media print{ .page-head{border:0; min-height:0; padding:0; margin-bottom:8px;} main{padding:0;} }
 
 /* ===== VENENOS ===== */
-.ven-nova{width:100%; padding:13px; font-size:15px; font-weight:700; margin:0 0 14px;}
-@media (min-width:761px){ .ven-nova{width:auto; padding:11px 22px;} }
+button.ven-nova{width:100%; padding:13px; font-size:16px; font-weight:700; margin:0 0 14px; border-radius:10px;}
+@media (min-width:761px){ button.ven-nova{width:auto; height:44px; padding:0 26px; vertical-align:middle;} }
 .ven-kpis{grid-template-columns:repeat(3,1fr);}
 .ven-filtros{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:0 0 14px;}
 .ven-filtros select{width:auto; min-width:170px;}
 .ven-chip{border:1px solid var(--line); background:#fff; border-radius:20px; padding:7px 14px; font-size:13px; font-weight:600; color:#334139; cursor:pointer;}
 .ven-chip.on{background:var(--green); border-color:var(--green); color:#fff;}
-.ven-safra-sel{display:inline-flex; gap:10px; align-items:center; background:#e7b549; color:#2e4a2a; border-radius:12px; padding:8px 8px 8px 16px; margin:0 0 14px; font-weight:800;}
-.ven-safra-sel span{font-size:12px; text-transform:uppercase; letter-spacing:.07em;}
-.ven-safra-sel select{width:auto; background:#fff8e6; border:0; border-radius:9px; font-size:17px; font-weight:800; color:#2e4a2a; padding:7px 10px; cursor:pointer;}
-.ven-safra-sel b{font-size:17px; padding-right:8px;}
+.ven-safra-sel{display:inline-flex; gap:8px; align-items:center; height:44px; background:#e7b549; color:#2e4a2a; border-radius:10px; padding:0 6px 0 12px; margin:0 10px 14px 0; font-weight:800; vertical-align:middle;}
+.ven-safra-sel span{font-size:10.5px; text-transform:uppercase; letter-spacing:.07em;}
+.ven-safra-sel select{width:auto; background:#fff8e6; border:0; border-radius:7px; font-size:14px; font-weight:700; color:#2e4a2a; padding:5px 8px; cursor:pointer;}
+.ven-safra-sel b{font-size:14px; padding-right:8px;}
 .so-print{display:none;}
 @media print{ .so-print{display:inline;} }
 @media (max-width:760px){ .ven-safra-sel{display:none;} }
