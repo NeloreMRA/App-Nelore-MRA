@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Custos Safra · App Nelore MRA</title>
+<title>Agricultura · App Nelore MRA</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -463,7 +463,7 @@ input, select{border-radius:8px; border-color:#d7ded9;}
 <script src="../barra-app.js" data-alvo="aside"></script>
 <div id="loginScreen">
   <form id="loginForm" class="login-card" autocomplete="on">
-    <h2>🌱 Custos Safra</h2>
+    <h2>🌱 Agricultura</h2>
     <p>Fazenda Paraíso · Entre com seu e-mail ou login.</p>
     <div class="login-field"><label for="loginEmail">E-mail ou login</label><input id="loginEmail" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></div>
     <div class="login-field"><label for="loginPassword">Senha</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
@@ -473,12 +473,12 @@ input, select{border-radius:8px; border-color:#d7ded9;}
 </div>
 <div class="topo-cel no-print">
   <button type="button" class="tc-menu" id="tcMenu" onclick="toggleMenuCel()" aria-label="Menu"></button>
-  <div class="tc-tit"><strong>Custos Safra</strong><span>Fazenda Paraíso</span></div>
+  <div class="tc-tit"><strong>Agricultura</strong><span>Fazenda Paraíso</span></div>
   <button type="button" class="tc-safra" id="tcSafra" onclick="abrirSafraCel()"></button>
 </div>
 <div class="menu-cel no-print" id="menuCel"></div>
 <aside class="no-print">
-  <div class="brand"><div class="logo"><i class="logo-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="M12 21v-9"/><path d="M12 12c0-4.5 3-7.5 8.5-7.5 0 5.3-3.3 7.5-8.5 7.5Z"/><path d="M12 14.5c0-3.3-2.6-6-7.5-6 0 4.3 2.7 6 7.5 6Z"/></svg></i></div><div><strong>Custos Safra</strong><span>Fazenda Paraíso</span></div></div>
+  <div class="brand"><div class="logo"><i class="logo-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21h10"/><path d="M12 21v-9"/><path d="M12 12c0-4.5 3-7.5 8.5-7.5 0 5.3-3.3 7.5-8.5 7.5Z"/><path d="M12 14.5c0-3.3-2.6-6-7.5-6 0 4.3 2.7 6 7.5 6Z"/></svg></i></div><div><strong>Agricultura</strong><span>Fazenda Paraíso</span></div></div>
   <div id="user-badge" class="user-badge"></div>
   <nav>
     <div class="nav-grupo">Lavoura</div>
@@ -954,7 +954,7 @@ function ajustarGruposMenu(){
 function escolherSafra(k){ if(!state.safras[k]) return; venEdit = null; state.safraAtual = k; localStorage.setItem('app-nelore-mra-custos-safraAtual', k); render(); }
 function renderConteudo(){
   if(custosSemConexao && !((paginaDiesel(currentPage) && dieselPronto) || (currentPage==='venenos' && venPronto))){
-    document.getElementById('main').innerHTML = `<div class="panel" style="max-width:560px;margin:40px auto;text-align:center;padding:28px"><div style="font-size:34px">📵</div><h2 style="margin:8px 0">Sem internet</h2><p class="caption" style="font-size:14px">O Custos Safra precisa de internet pra mostrar e salvar os dados. Assim que o sinal voltar, a tela carrega sozinha.</p></div>`;
+    document.getElementById('main').innerHTML = `<div class="panel" style="max-width:560px;margin:40px auto;text-align:center;padding:28px"><div style="font-size:34px">📵</div><h2 style="margin:8px 0">Sem internet</h2><p class="caption" style="font-size:14px">O app Agricultura precisa de internet pra mostrar e salvar os dados. Assim que o sinal voltar, a tela carrega sozinha.</p></div>`;
     return;
   }
   closeFilterMenu();
@@ -1790,7 +1790,7 @@ async function exportSafraCompleta(){
   await addSheetForTable(wb, 'Adiantamento', adtoCfg.columns, adtoCfg.rows, adtoCfg.computeDerived);
   await addSheetForTable(wb, 'Silos e Vendas', vendaCfg.columns, vendaCfg.rows, vendaCfg.computeDerived);
   const buf = await wb.xlsx.writeBuffer();
-  downloadBuffer(buf, `Custos_${s.cultura}_${s.nome.replace(/\//g,'-')}.xlsx`);
+  downloadBuffer(buf, `Agricultura_${s.nome.replace(/\//g,'-')}.xlsx`);
 }
 function downloadBuffer(buf, filename){
   const blob = new Blob([buf], {type:'application/octet-stream'});
@@ -3151,7 +3151,7 @@ async function exportResumoDiesel(){
 async function exportBackupCompleto(){
   if(perfilDiesel) return;
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Custos Safra · Fazenda Paraíso';
+  wb.creator = 'Agricultura · Fazenda Paraíso';
   const indice = wb.addWorksheet('Índice');
   const usados = new Set(['índice']);
   const nomeAba = nome=>{
@@ -3201,7 +3201,7 @@ async function exportBackupCompleto(){
   // Capa / índice
   indice.columns = [{width:30},{width:36},{width:14}];
   indice.mergeCells('A1:C1');
-  indice.getCell('A1').value = 'Backup · Custos Safra · Fazenda Paraíso';
+  indice.getCell('A1').value = 'Backup · Agricultura · Fazenda Paraíso';
   indice.getCell('A1').font = {bold:true, size:16, color:{argb:'FFFFFFFF'}};
   indice.getCell('A1').fill = {type:'pattern', pattern:'solid', fgColor:{argb:'FF38502E'}};
   indice.getCell('A1').alignment = {vertical:'middle', horizontal:'left', indent:1};
@@ -3219,7 +3219,7 @@ async function exportBackupCompleto(){
   });
 
   const buf = await wb.xlsx.writeBuffer();
-  downloadBuffer(buf, `Backup_Custos_Safra_${hojeISO()}.xlsx`);
+  downloadBuffer(buf, `Backup_Agricultura_${hojeISO()}.xlsx`);
 }
 
 // =================== LOGIN FIREBASE ===================
