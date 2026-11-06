@@ -648,6 +648,13 @@ let state = {
 let currentPage = "dashboard";
 normalizarEstruturaSafras(state.safras);
 function S(){ return state.safras[state.safraAtual]; }
+// Ordem das safras nas listas: da mais antiga pra mais nova (ano do nome, ex. "2025/2026");
+// no mesmo ano, a criada por último fica embaixo. Só pra mostrar — não muda o que está salvo.
+function ordemSafras(obj){
+  const ano = s => { const m = String((s&&s.nome)||'').match(/(\d{4})/); return m ? Number(m[1]) : 0; };
+  const criada = k => { const m = String(k).match(/^safra_(\d+)$/); return m ? Number(m[1]) : 0; };
+  return Object.keys(obj||{}).sort((a,b)=> ano(obj[a])-ano(obj[b]) || criada(a)-criada(b) || String((obj[a]||{}).nome||'').localeCompare(String((obj[b]||{}).nome||''),'pt-BR'));
+}
 
 // =================== SINCRONIZAÇÃO EM NUVEM (Firebase Firestore) ===================
 // Preencha com os dados do SEU projeto Firebase (veja o passo a passo que te enviei).
@@ -855,7 +862,7 @@ document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click', ()=>
 
 function refreshSafraSelector(){
   const sel = document.getElementById('safra-selector');
-  sel.innerHTML = Object.keys(state.safras).map(k=>`<option value="${k}" ${k===state.safraAtual?'selected':''}>${esc(state.safras[k].nome)}</option>`).join('');
+  sel.innerHTML = ordemSafras(state.safras).map(k=>`<option value="${k}" ${k===state.safraAtual?'selected':''}>${esc(state.safras[k].nome)}</option>`).join('');
 }
 document.getElementById('safra-selector').addEventListener('change', e=>escolherSafra(e.target.value));
 
@@ -919,7 +926,7 @@ function abrirMaisCel(){
   f.innerHTML = `<div class="mais-card">
     <h3>Mais</h3>
     ${extras.length ? `<div class="mais-lista">${extras.map(item).join('')}</div>` : ''}
-    ${perfilDiesel ? '' : `<div style="margin-bottom:14px"><label>Safra</label><select onchange="fecharMaisCel();escolherSafra(this.value)">${Object.keys(state.safras).map(k=>`<option value="${k}" ${k===state.safraAtual?'selected':''}>${esc(state.safras[k].nome)}</option>`).join('')}</select></div>`}
+    ${perfilDiesel ? '' : `<div style="margin-bottom:14px"><label>Safra</label><select onchange="fecharMaisCel();escolherSafra(this.value)">${ordemSafras(state.safras).map(k=>`<option value="${k}" ${k===state.safraAtual?'selected':''}>${esc(state.safras[k].nome)}</option>`).join('')}</select></div>`}
     <div class="mais-lista"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a></div>
   </div>`;
   document.body.appendChild(f);
@@ -963,7 +970,7 @@ function abrirSafraCel(){
   const f = document.createElement('div'); f.className = 'mais-fundo no-print';
   f.onclick = e=>{ if(e.target===f) fecharMaisCel(); };
   const lista = perfilDiesel ? ven.safras : state.safras, atual = perfilDiesel ? venSafraKey() : state.safraAtual, fn = perfilDiesel ? 'venEscolherSafra' : 'escolherSafra';
-  f.innerHTML = `<div class="mais-card"><h3>Safra</h3><div class="mais-lista">${Object.keys(lista).map(k=>`<button type="button" class="mais-it ${k===atual?'on':''}" onclick="fecharMaisCel();${fn}('${k}')">${esc(nomeSafraCurto(lista[k]))}</button>`).join('')}</div></div>`;
+  f.innerHTML = `<div class="mais-card"><h3>Safra</h3><div class="mais-lista">${ordemSafras(lista).map(k=>`<button type="button" class="mais-it ${k===atual?'on':''}" onclick="fecharMaisCel();${fn}('${k}')">${esc(nomeSafraCurto(lista[k]))}</button>`).join('')}</div></div>`;
   document.body.appendChild(f);
 }
 // Título do bloco (Lavoura / Diesel) só aparece se tiver alguma tela liberada embaixo dele
@@ -2030,7 +2037,7 @@ function removerMotorista(i){ recordUndo(); S().motoristas.splice(i,1); render()
 
 // =================== PÁGINA: CADASTRO DE SAFRA ===================
 function pageSafras(){
-  const cards = Object.entries(state.safras).map(([key,s])=>{
+  const cards = ordemSafras(state.safras).map(key=>[key, state.safras[key]]).map(([key,s])=>{
     const areaTotal = s.talhoes.reduce((sum,t)=>sum+Number(t.area||0),0);
     return `
       <div class="safra-card ${key===state.safraAtual?'active':''}">
@@ -2759,7 +2766,7 @@ function sincronizarSafrasVeneno(){
 }
 function venSafraKey(){
   if(!perfilDiesel) return state.safraAtual;
-  const ks = Object.keys(ven.safras), salvo = lsGet('app-nelore-mra-custos-venSafra');
+  const ks = ordemSafras(ven.safras), salvo = lsGet('app-nelore-mra-custos-venSafra');
   if(ks.includes(salvo)) return salvo;
   const comReceita = [...ven.receitas].sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0)).find(r=>ks.includes(r.safra));
   return comReceita ? comReceita.safra : ks[ks.length-1];
@@ -2999,7 +3006,7 @@ function pageVenenosLista(k){
   const nAfazer = todas.filter(r=>r.status!=='feita').length, nFeitas = todas.length - nAfazer;
   const haFeita = todas.filter(r=>r.status==='feita').reduce((s,r)=>s+venAreaFeita(r),0);
   const resumo = venResumoProdutos(f);
-  const ks = Object.keys(ven.safras);
+  const ks = ordemSafras(ven.safras);
   const chip = (v,t)=>`<button class="ven-chip ${venFiltro.status===v?'on':''}" onclick="venFiltro.status='${v}';render()">${t}</button>`;
   return `
     <div class="toolbar no-print">
@@ -3196,7 +3203,7 @@ async function exportBackupCompleto(){
     itens.push([grupo, n, rows.length]);
   };
 
-  for(const s of Object.values(state.safras)){
+  for(const s of ordemSafras(state.safras).map(k=>state.safras[k])){
     const tag = s.nome.replace(/\//g,'-');
     const col = buildColheitaCfg(s), adto = buildAdiantamentosCfg(s), vend = buildVendasCfg(s);
     await add(s.nome, `${tag} Talhões`, [{key:'talhao',label:'Talhão'},{key:'area',label:'Área (ha)',type:'number'},{key:'variedade',label:'Variedade 1'},{key:'variedade2',label:'Variedade 2'},{key:'plantado',label:'Será Plantado?'}],
