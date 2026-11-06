@@ -283,6 +283,8 @@ aside nav{display:flex; flex-direction:column; gap:2px;}
 .side-safra label{font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--menu-sub); font-weight:700; margin-bottom:6px; padding-left:2px;}
 .safra-select{width:100%; margin:0; background:#ffffff14; color:#fff; border:1px solid var(--menu-borda); border-radius:8px; padding:8px 9px; font-size:13px; font-weight:600;}
 .safra-select option{color:#17211c; background:#fff;}
+#logoutBtn{display:none!important;}
+.sync-status{margin-top:auto!important;}
 .logout-btn{margin-top:auto; width:100%; background:transparent; border:1px solid #ffffff2e; color:var(--menu-txt); border-radius:8px; padding:8px; font-size:13px; cursor:pointer;}
 .logout-btn:hover{background:#ffffff12;}
 aside .sync-status{background:none!important; color:var(--menu-txt)!important; padding:10px 4px 0; margin:0; font-size:11.5px;}
@@ -496,7 +498,7 @@ button.ven-nova{width:100%; padding:13px; font-size:16px; font-weight:700; margi
     <button class="navbtn" data-page="diesel-resumo" title="Resumo Diesel"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M8 17v-4M12.5 17V8M17 17v-6"/></svg></i><span data-curto="Resumo">Resumo Diesel</span></button>
     <button type="button" class="nav-mais" onclick="abrirMaisCel()"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></i><span>Mais</span></button>
   </nav>
-  <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
+  <button id="logoutBtn" class="logout-btn" type="button" hidden>Sair</button>
   <div id="sync-status" class="sync-status local">Modo local</div>
 </aside>
 <main id="main"></main>
@@ -918,7 +920,7 @@ function abrirMaisCel(){
     <h3>Mais</h3>
     ${extras.length ? `<div class="mais-lista">${extras.map(item).join('')}</div>` : ''}
     ${perfilDiesel ? '' : `<div style="margin-bottom:14px"><label>Safra</label><select onchange="fecharMaisCel();escolherSafra(this.value)">${Object.keys(state.safras).map(k=>`<option value="${k}" ${k===state.safraAtual?'selected':''}>${esc(state.safras[k].nome)}</option>`).join('')}</select></div>`}
-    <div class="mais-lista"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a><button type="button" class="mais-it sair" onclick="document.getElementById('logoutBtn').click()">Sair</button></div>
+    <div class="mais-lista"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a></div>
   </div>`;
   document.body.appendChild(f);
 }
@@ -950,7 +952,7 @@ function toggleMenuCel(){
   const die = ['diesel-controle','diesel-estoque','diesel-resumo'].filter(navVisivel);
   mc.innerHTML = (lav.length ? `<div class="mc-grupo">Lavoura</div><div class="mc-grade">${lav.map(q).join('')}</div>` : '')
     + (die.length ? `<div class="mc-grupo">Diesel</div><div class="mc-grade">${die.map(q).join('')}</div>` : '')
-    + `<div class="mc-fim"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a><button type="button" class="mais-it sair" onclick="document.getElementById('logoutBtn').click()">Sair</button></div>`;
+    + `<div class="mc-fim"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a></div>`;
   const topo = document.querySelector('.topo-cel');
   mc.style.setProperty('--topo-h', topo.getBoundingClientRect().height + 'px');
   mc.classList.add('aberto'); document.body.classList.add('menu-cel-aberto'); mc.scrollTop = 0;
