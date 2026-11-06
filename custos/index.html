@@ -737,9 +737,33 @@ function initFirebase(){
           m.colheita.forEach(c=>{ if(ehNk(c.variedade)) c.variedade='P 4285'; });
           trocouNk = true;
         }
+        // 05/11/2026 (pedido do dono): os hectares da safra nova foram lançados por engano na Soja 2025/26
+        // (ARUANA 82,58 → 29 e talhão novo PISTA 91). Roda UMA vez só (marca "soja2627Criada"): cria a
+        // Soja 2026/2027 com esses hectares e volta a Soja 2025/26 como estava de manhã.
+        let criouSoja2627 = false;
+        if(!snap.data().soja2627Criada && state.safras.soja2526 && !state.safras.soja2627){
+          const s5 = state.safras.soja2526;
+          if(s5.talhoes.some(t=>t.talhao==='PISTA')){
+            state.safras.soja2627 = {
+              nome:'Soja 2026/2027', cultura:'Soja', produtor: s5.produtor || PRODUTOR_FIXO, propriedade: s5.propriedade,
+              talhoes: s5.talhoes.map(t=>({talhao:t.talhao, area:Number(t.area||0), variedade:'', variedade2:'', plantado:!!t.plantado})),
+              locais:[...(s5.locais||[])], motoristas:[...(s5.motoristas||[])], colheita:[], adiantamentos:[], vendas:[],
+            };
+            s5.talhoes = s5.talhoes.filter(t=>t.talhao!=='PISTA').map(t=> t.talhao==='ARUANA' && Number(t.area)===29 ? {...t, area:82.58} : t);
+            state.safraAtual = 'soja2627';
+            localStorage.setItem('app-nelore-mra-custos-safraAtual', 'soja2627');
+          }
+          criouSoja2627 = true;
+        }
         if(!state.safras[state.safraAtual]) state.safraAtual = Object.keys(state.safras)[0];
         render();
         suppressSave = false;
+        if(criouSoja2627){
+          ultimoSalvoJSON = JSON.stringify(state.safras);
+          const up = {soja2627Criada: true};
+          if(state.safras.soja2627){ up['safras.soja2627'] = JSON.parse(JSON.stringify(state.safras.soja2627)); up['safras.soja2526'] = JSON.parse(JSON.stringify(state.safras.soja2526)); }
+          docRef.update(up);
+        }
         if(trocouNk){
           ultimoSalvoJSON = JSON.stringify(state.safras);
           docRef.update({'safras.milho2526': JSON.parse(JSON.stringify(state.safras.milho2526)), trocaNk165: true});
@@ -1955,7 +1979,7 @@ function pageVendas(){
 function pageCadastros(){
   const s = S();
   const cfg = {
-    tableKey:'talhoes', title:'⚙️ Cadastros · Talhões',
+    tableKey:'talhoes', title:`⚙️ Talhões · ${s.nome}`,
     caption: 'Marque "Será Plantado?" para os talhões que entram nesta safra — só esses contam na Área Plantada do Dashboard e aparecem pra lançar colheita.',
     rows: s.talhoes, exportName:'talhoes', computeDerived: r=>({}),
     columns: [
