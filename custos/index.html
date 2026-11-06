@@ -2804,11 +2804,10 @@ function venReceitasSafra(k){ return ven.receitas.filter(r=>r.safra===k); }
 function venProximoNumero(k){ return venReceitasSafra(k).reduce((m,r)=>Math.max(m, Number(r.numero)||0), 0) + 1; }
 function venUltima(){ return [...ven.receitas].sort((a,b)=>(b.criadoEm||0)-(a.criadoEm||0))[0]; }
 function venNovaReceita(){
-  const k = venSafraKey(), u = venUltima() || {};
+  const k = venSafraKey();
   venEdit = {
     id: novoIdDiesel('r'), novo:true, safra:k, numero: venProximoNumero(k),
-    talhao: '', area: '', data: hojeISO(),
-    tanque: u.tanque ?? 2000, vazao: u.vazao ?? 100, bico: u.bico ?? '', velocidade: u.velocidade ?? '',
+    talhao: '', area: '', data: '', tanque: '', vazao: '', bico: '', velocidade: '',
     produtos: [{produto:'', unid:'LT', dose:'', obs:''},{produto:'', unid:'LT', dose:'', obs:''},{produto:'', unid:'LT', dose:'', obs:''}],
     obs: '', status:'afazer', feita:null,
   };
@@ -2817,12 +2816,14 @@ function venNovaReceita(){
 // Enviar pelo WhatsApp: abre o WhatsApp com a receita escrita (escolhe o grupo/contato lá)
 function venTextoWhats(r){
   const n = x => fmt(venNum(x), 3).replace(/,?0+$/,'');
-  const L = [`*Receita nº ${r.numero} – ${r.talhao}*`, `Data a fazer: ${fmtData(r.data)||'—'}`, `Área aplicada: ${n(r.area)} ha`, ''];
+  const L = [`*Receita – ${r.talhao}*`, `Data a fazer: ${fmtData(r.data)||'—'}`, `Área aplicada: ${n(r.area)} ha`, ''];
   (r.produtos||[]).filter(p=>String(p.produto||'').trim()).forEach(p=>{
     const t = venPorTanque(r,p);
     L.push(`• ${p.produto} – ${n(p.dose)} ${p.unid}/ha${t?` (total ${venQtd(t,p.unid)})`:''}${p.obs?` – ${p.obs}`:''}`);
   });
-  L.push('', `Volume tanque: ${n(r.tanque)} L`, `Vazão: ${n(r.vazao)} L/ha`);
+  L.push('');
+  if(venNum(r.tanque)) L.push(`Volume tanque: ${n(r.tanque)} L`);
+  if(venNum(r.vazao)) L.push(`Vazão: ${n(r.vazao)} L/ha`);
   if(r.bico) L.push(`Bico: ${r.bico}`);
   if(r.velocidade) L.push(`Velocidade: ${r.velocidade}${/km/i.test(r.velocidade)?'':' km/h'}`);
   if(r.obs) L.push('', `Obs: ${r.obs}`);
@@ -2853,12 +2854,13 @@ function venGravar(r){
 function venSalvar(imprimir){
   const r = venEdit; if(!r) return;
   if(!String(r.talhao||'').trim()){ alert('Escolha o talhão.'); return; }
-  if(!(venNum(r.area)>0)){ alert('Informe a área (ha).'); return; }
+  if(!(venNum(r.area)>0)){ alert('Informe a área aplicada (ha).'); return; }
+  if(!r.data){ alert('Informe a data a fazer.'); return; }
   r.produtos = r.produtos.filter(p=>String(p.produto||'').trim() || String(p.dose||'').trim());
   if(!r.produtos.length){ alert('Coloque pelo menos um produto.'); return; }
   if(r.produtos.some(p=>!String(p.produto||'').trim())){ alert('Tem dose sem o nome do produto.'); return; }
   r.produtos.forEach(p=>{ p.produto = String(p.produto).trim(); p.dose = venNum(p.dose); });
-  ['area','tanque','vazao'].forEach(k=>{ r[k] = venNum(r[k]); });
+  ['area','tanque','vazao'].forEach(k=>{ r[k] = String(r[k]??'').trim()==='' ? '' : venNum(r[k]); });
   const salvo = JSON.parse(JSON.stringify(r));
   venGravar(r).then(()=>{ if(imprimir) venImprimir([salvo.id]); }).catch(()=>{});
   venEdit = null; render(); window.scrollTo(0,0);
@@ -3035,7 +3037,7 @@ function pageVenenoReceita(){
       <button class="secondary" onclick="venFechar()">← Voltar pra lista</button>
       ${r.novo ? '' : `<button class="secondary vc-wpp" onclick="venWhats()">${IC_WPP} Enviar pelo WhatsApp</button><button class="secondary" onclick="venImprimir(['${r.id}'])">🖨️ Imprimir</button>`}
     </div>
-    <h2>${r.novo ? 'Nova receita' : 'Receita'} nº ${r.numero}</h2>
+    <h2>${r.novo ? 'Nova receita' : 'Receita · ' + esc(r.talhao)}</h2>
     <div class="caption">Safra ${esc(venSafraNome(r.safra))}${feita?` · ✅ Feita em ${fmtData(r.feita.data)}`:''}</div>
     <datalist id="vnProdutos">${Object.values(cat).map(c=>`<option value="${esc(c.nome)}">`).join('')}</datalist>
     <datalist id="vnBicos">${venListaUnica('bico').map(b=>`<option value="${esc(b)}">`).join('')}</datalist>
@@ -3043,7 +3045,7 @@ function pageVenenoReceita(){
       <p class="section-title">Preparo</p>
       <div class="ven-preparo">
         <div class="vpp-col">
-          <label class="vpp-l">Volume tanque</label><input type="text" inputmode="decimal" value="${v(r.tanque)}" oninput="venCampo('tanque',this)">
+          <label class="vpp-l">Volume tanque</label><input type="text" inputmode="decimal" value="${v(r.tanque)}" oninput="venCampo('tanque',this)" placeholder="L">
           <label class="vpp-l">Talhão</label>
           <div>
             <select id="veTalhao" onchange="if(this.value==='__outro'){venEdit.talhao='';venEdit.outro=true;}else{venEdit.outro=false;venCampo('talhao',this);}render();">
@@ -3054,7 +3056,7 @@ function pageVenenoReceita(){
             ${outro ? `<input type="text" style="margin-top:6px" placeholder="Nome do talhão / área" value="${v(r.talhao)}" oninput="venCampo('talhao',this)">` : ''}
           </div>
           <label class="vpp-l">Modelo bico</label><input type="text" list="vnBicos" value="${v(r.bico)}" oninput="venCampo('bico',this)">
-          <label class="vpp-l">Vazão</label><input type="text" inputmode="decimal" value="${v(r.vazao)}" oninput="venCampo('vazao',this)">
+          <label class="vpp-l">Vazão</label><input type="text" inputmode="decimal" value="${v(r.vazao)}" oninput="venCampo('vazao',this)" placeholder="L/ha">
         </div>
         <div class="vpp-col">
           <label class="vpp-l">Data a fazer</label><input type="date" value="${esc(r.data||'')}" onchange="venCampo('data',this)">
@@ -3089,12 +3091,12 @@ function venFolha(r){
   const prods = (r.produtos||[]).map(p=>`<tr><td>${esc(p.produto)}</td><td>${esc(p.unid)}</td><td class="n">${n(p.dose)}</td><td class="n">${venQtd(venPorTanque(r,p),p.unid)}</td><td>${esc(p.obs||'')}</td></tr>`).join('');
   const vazias = Array.from({length:Math.max(0, 8-(r.produtos||[]).length)}, ()=>'<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>').join('');
   return `<section class="vp-folha">
-    <div class="vp-tit"><div><b>Receita nº ${r.numero}</b> · Venenos · Fazenda Paraíso</div><span>Safra ${esc(venSafraNome(r.safra))}</span></div>
+    <div class="vp-tit"><div><b>Receita · ${esc(r.talhao)}</b> · Venenos · Fazenda Paraíso</div><span>Safra ${esc(venSafraNome(r.safra))}</span></div>
     <table class="vp-cab">
-      <tr><th>Volume tanque</th><td>${n(r.tanque)} L</td><th>Data a fazer</th><td>${fmtData(r.data)}</td></tr>
+      <tr><th>Volume tanque</th><td>${venNum(r.tanque)?n(r.tanque)+' L':''}</td><th>Data a fazer</th><td>${fmtData(r.data)}</td></tr>
       <tr><th>Talhão</th><td class="grande">${esc(r.talhao)}</td><th>Área aplicada</th><td class="grande">${n(r.area)} ha</td></tr>
       <tr><th>Modelo bico</th><td>${esc(r.bico||'')}</td><th></th><td></td></tr>
-      <tr><th>Vazão</th><td>${n(r.vazao)} L/ha</td><th>Velocidade</th><td>${esc(r.velocidade||'')}</td></tr>
+      <tr><th>Vazão</th><td>${venNum(r.vazao)?n(r.vazao)+' L/ha':''}</td><th>Velocidade</th><td>${esc(r.velocidade||'')}</td></tr>
     </table>
     <table class="vp-prod">
       <thead><tr><th>Produto</th><th>Unid</th><th>Dose/há</th><th>Total</th><th>Observação</th></tr></thead>
