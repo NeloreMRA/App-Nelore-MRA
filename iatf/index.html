@@ -398,7 +398,7 @@ body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display
     <button type="button" class="nav-mais" onclick="abrirMaisCel()"><i class="ni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></i> <span>Mais</span></button>
   </nav>
   <div class="side-season"><label>Estação</label><select id="seasonHeader"></select></div>
-  <button id="logoutBtn" class="logout-btn" type="button">Sair</button>
+  <button id="logoutBtn" class="logout-btn" type="button" hidden style="display:none">Sair</button>
   <div class="sidebar-foot"><span class="dot" id="syncDot"></span><span id="saveStatus">Conectando...</span></div>
 </aside>
 <main>
@@ -922,7 +922,7 @@ function abrirMaisCel(){
   const nome=p=>{const b=$(`.nav[data-page="${p}"]`);return b?b.innerText.replace(/\s+/g,' ').trim():p};
   openModal(`<h2>Mais</h2><div class="mais-lista">${extras.map(p=>`<button class="mais-it ${p===page?'on':''}" onclick="closeModal();go('${p}')">${esc(nome(p))}</button>`).join('')}</div>
   <div class="mais-est"><label>Estação</label><select class="input" onchange="closeModal();activateSeason(this.value)">${db.seasons.map(x=>`<option value="${esc(x.id)}" ${x.id===db.meta.activeSeasonId?'selected':''}>${esc(x.name)}</option>`).join('')}</select></div>
-  <div class="mais-lista"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a><button class="mais-it sair" onclick="document.getElementById('logoutBtn').click()">Sair</button></div>`);
+  <div class="mais-lista"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a></div>`);
 } window.abrirMaisCel=abrirMaisCel;
 const IC_MENU='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
 const IC_FECHAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
@@ -941,7 +941,7 @@ function toggleMenuCel(){
   if(mc.classList.contains('aberto')){fecharMenuCel();return}
   const vis=[...document.querySelectorAll('.nav[data-page]')].filter(b=>pageAllowed(b.dataset.page));
   mc.innerHTML=`<div class="mc-grade">${vis.map(b=>`<button type="button" class="mc-q ${b.dataset.page===page?'on':''}" onclick="fecharMenuCel();go('${b.dataset.page}')"><span class="ic">${b.querySelector('svg').outerHTML}</span>${esc(b.querySelector('span').textContent.trim())}</button>`).join('')}</div>
-  <div class="mc-fim"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a><button type="button" class="mais-it sair" onclick="document.getElementById('logoutBtn').click()">Sair</button></div>`;
+  <div class="mc-fim"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a></div>`;
   mc.classList.add('aberto');document.body.classList.add('menu-cel-aberto');mc.scrollTop=0;atualizarTopoCel();
 }
 function abrirEstacaoCel(){

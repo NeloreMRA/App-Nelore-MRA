@@ -1134,18 +1134,7 @@ function renderSync(){
   linha.appendChild(bolinha);
   linha.appendChild(texto);
   box.appendChild(linha);
-  if(fbUsuario){
-    const usuario = document.createElement('div');
-    usuario.className = 'sync-usuario';
-    const email = document.createElement('span');
-    email.textContent = fbUsuario.email || '';
-    const sair = document.createElement('button');
-    sair.textContent = 'Sair';
-    sair.onclick = sairDoSistema;
-    usuario.appendChild(email);
-    usuario.appendChild(sair);
-    box.appendChild(usuario);
-  }
+  // sem e-mail e sem "Sair" aqui: sai-se pela tela inicial do App Nelore MRA
 }
 
 async function comEnvio(fn){
