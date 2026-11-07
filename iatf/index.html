@@ -939,11 +939,24 @@ function fecharMenuCel(){document.getElementById('menuCel').classList.remove('ab
 function toggleMenuCel(){
   const mc=document.getElementById('menuCel');
   if(mc.classList.contains('aberto')){fecharMenuCel();return}
+  montarMenuCel();
+  mc.classList.add('aberto');document.body.classList.add('menu-cel-aberto');mc.scrollTop=0;atualizarTopoCel();
+}
+function montarMenuCel(){
+  const mc=document.getElementById('menuCel');
   const vis=[...document.querySelectorAll('.nav[data-page]')].filter(b=>pageAllowed(b.dataset.page));
   mc.innerHTML=`<div class="mc-grade">${vis.map(b=>`<button type="button" class="mc-q ${b.dataset.page===page?'on':''}" onclick="fecharMenuCel();go('${b.dataset.page}')"><span class="ic">${b.querySelector('svg').outerHTML}</span>${esc(b.querySelector('span').textContent.trim())}</button>`).join('')}</div>
   <div class="mc-fim"><a class="mais-it" href="../index.html">← Voltar pro App Nelore MRA</a></div>`;
-  mc.classList.add('aberto');document.body.classList.add('menu-cel-aberto');mc.scrollTop=0;atualizarTopoCel();
 }
+// Celular: ao abrir o app, já mostra a tela de opções (uma vez só); se a tela redesenhar com o menu aberto, atualiza os quadradinhos
+let menuInicialFeito = false;
+function menuInicialCel(){
+  const t = document.querySelector('.topo-cel'), mc = document.getElementById('menuCel');
+  if(!t || !mc || getComputedStyle(t).display==='none') return;
+  if(!menuInicialFeito){ menuInicialFeito = true; if(!mc.classList.contains('aberto')) toggleMenuCel(); return; }
+  if(mc.classList.contains('aberto')) montarMenuCel();
+}
+
 function abrirEstacaoCel(){
   fecharMenuCel();
   openModal(`<h2>Estação</h2><div class="mais-lista">${db.seasons.map(x=>`<button class="mais-it ${x.id===db.meta.activeSeasonId?'on':''}" onclick="closeModal();activateSeason('${esc(x.id)}')">${esc(x.name)}</button>`).join('')}</div>`);
@@ -1102,6 +1115,7 @@ function render(){
   {const hb=$('#helpBtn');if(hb)hb.hidden=!defaultNoticeTexts()[page]}
   restoreViewPosition(__view);
   mostrarNavAtiva();
+  menuInicialCel();
 }
 function setActions(h){$('#pageActions').innerHTML=h||''}
 
