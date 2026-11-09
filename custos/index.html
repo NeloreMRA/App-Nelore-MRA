@@ -410,6 +410,18 @@ button.ven-nova{width:100%; padding:13px; font-size:16px; font-weight:700; margi
 .ven-salvar .primary{padding:12px 22px; font-size:15px; font-weight:700;}
 .ven-salvar .ghost{margin-left:auto; padding:10px 14px; font-size:13px;}
 .ven-card{position:relative;}
+.ven-tit-linha{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+.ven-tit-linha .section-title{margin-right:auto;}
+.ven-tit-linha button{padding:6px 12px; font-size:13px;}
+.ven-sel{cursor:pointer; user-select:none;}
+.ven-sel.on{outline:2px solid #25D366; outline-offset:-2px;}
+.ven-sel .vc-top{display:flex; align-items:center; gap:12px;}
+.ven-sel .vc-top>div{flex:1; text-align:left;}
+.vc-check{flex:none; width:24px; height:24px; border-radius:7px; border:2px solid #b9c4bc; display:grid; place-items:center; font-weight:900; color:#fff; font-size:15px;}
+.ven-sel.on .vc-check{background:#25D366; border-color:#25D366;}
+.ven-sel-barra{position:sticky; bottom:0; z-index:50; display:flex; gap:10px; justify-content:flex-end; background:#fffffff2; padding:12px 0 calc(12px + env(safe-area-inset-bottom)); margin-top:14px; border-top:1px solid #e3e8e4;}
+.ven-sel-barra .primary{background:#1fa855; border-color:#1fa855;}
+@media (max-width:760px){ .ven-sel-barra button{flex:1; padding:12px;} }
 .vc-x{position:absolute; top:8px; right:8px; width:28px; height:28px; padding:0; border:0; border-radius:7px; background:transparent; color:#9aa59d; display:grid; place-items:center; cursor:pointer;}
 .vc-x:hover{background:#fbe5e5; color:var(--alert);}
 .vc-top{padding-right:18px;}
@@ -2737,6 +2749,7 @@ let ven = {receitas:[], safras:{}};
 let venRef = null, venUnsub = null, venPronto = false;
 let venEdit = null;            // receita aberta (rascunho) ou null = lista
 let venFiltro = {status:'', talhao:''};
+let venSel = null;              // WhatsApp de várias: ids marcados (null = fora do modo seleção)
 const VEN_UNIDS = ['LT','ML','KG','GR'];
 function paginaSemSafra(p){ return paginaDiesel(p) || p==='venenos'; }
 function venDocParaLocal(d){
@@ -2855,6 +2868,17 @@ function venTextoWhats(r){
 function venWhats(id){
   const r = id ? ven.receitas.find(x=>x.id===id) : venEdit; if(!r) return;
   window.open('https://wa.me/?text=' + encodeURIComponent(venTextoWhats(r)), '_blank');
+}
+// WhatsApp de várias receitas: marca as que quer e manda tudo numa mensagem só
+function venSelIniciar(ids){ venSel = new Set(ids); render(); }
+function venSelSair(){ venSel = null; render(); }
+function venSelToggle(id){ if(!venSel) return; venSel.has(id) ? venSel.delete(id) : venSel.add(id); render(); }
+function venSelEnviar(){
+  if(!venSel) return;
+  const lista = ven.receitas.filter(r=>venSel.has(r.id)).sort((a,b)=>String(a.data||'').localeCompare(String(b.data||'')) || String(a.talhao||'').localeCompare(String(b.talhao||''),'pt-BR'));
+  if(!lista.length){ alert('Marque pelo menos uma receita.'); return; }
+  window.open('https://wa.me/?text=' + encodeURIComponent(lista.map(venTextoWhats).join('\n\n━━━━━━━━━━\n\n')), '_blank');
+  venSel = null; render();
 }
 function venAbrir(id){ const r = ven.receitas.find(x=>x.id===id); if(!r) return; venEdit = JSON.parse(JSON.stringify(r)); render(); window.scrollTo(0,0); }
 function venFechar(){
@@ -2985,6 +3009,15 @@ function pageVenenos(){
 }
 function venCard(r){
   const feita = r.status==='feita';
+  if(venSel && !feita){
+    const on = venSel.has(r.id);
+    return `<div class="ven-card ven-sel ${on?'on':''}" onclick="venSelToggle('${r.id}')">
+      <div class="vc-top"><span class="vc-check">${on?'✓':''}</span><div>
+        <b class="vc-talhao">${esc(r.talhao)}</b>
+        <div class="vc-data">A fazer: <b>${fmtData(r.data)||'—'}</b> · ${fmt(venAreaFeita(r),2).replace(/,00$/,'')} ha</div>
+      </div></div>
+    </div>`;
+  }
   return `<div class="ven-card ${feita?'feita':''}">
     <button type="button" class="vc-x no-print" title="Excluir receita" onclick="venExcluirId('${r.id}')"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
     <div class="vc-top" onclick="venAbrir('${r.id}')">
@@ -3040,7 +3073,8 @@ function pageVenenosLista(k){
       <select onchange="venFiltro.talhao=this.value;render()"><option value="">Todos os talhões</option>${talhoes.map(t=>`<option ${t===venFiltro.talhao?'selected':''}>${esc(t)}</option>`).join('')}</select>
     </div>` : ''}
     ${!todas.length ? `<div class="panel"><div class="empty" style="text-align:center">Nenhuma receita nesta safra ainda. Toque em <b>+ Nova receita</b>.</div></div>` : ''}
-    ${afazer.length ? `<p class="section-title">🟡 A fazer (${afazer.length})</p><div class="ven-lista">${afazer.map(venCard).join('')}</div>` : ''}
+    ${afazer.length ? `<div class="ven-tit-linha"><p class="section-title">🟡 A fazer (${afazer.length})</p>${afazer.length>1 && !venSel ? `<button type="button" class="secondary vc-wpp no-print" onclick="venSelIniciar(${esc(JSON.stringify(afazer.map(r=>r.id)))})">${IC_WPP} Enviar várias</button>` : ''}</div><div class="ven-lista">${afazer.map(venCard).join('')}</div>` : ''}
+    ${venSel ? `<div class="ven-sel-barra no-print"><button type="button" class="secondary" onclick="venSelSair()">Cancelar</button><button type="button" class="primary" onclick="venSelEnviar()" ${venSel.size?'':'disabled'}>${IC_WPP.replace('#25D366','#fff')} Enviar ${venSel.size} no WhatsApp</button></div>` : ''}
     ${feitas.length ? `<p class="section-title" style="margin-top:18px">✅ Feitas (${feitas.length})</p><div class="ven-lista">${feitas.map(venCard).join('')}</div>` : ''}
     ${resumo.length ? `<div class="panel" style="margin-top:18px"><p class="section-title">Produtos${venFiltro.talhao?` · ${esc(venFiltro.talhao)}`:''}</p>
       <div class="table-wrap"><table class="simples ven-resumo"><thead><tr><th>Produto</th><th class="num">Já aplicado</th><th class="num">A fazer</th><th class="num">Total</th></tr></thead>
