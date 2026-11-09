@@ -419,9 +419,11 @@ button.ven-nova{width:100%; padding:13px; font-size:16px; font-weight:700; margi
 .ven-sel .vc-top>div{flex:1; text-align:left;}
 .vc-check{flex:none; width:24px; height:24px; border-radius:7px; border:2px solid #b9c4bc; display:grid; place-items:center; font-weight:900; color:#fff; font-size:15px;}
 .ven-sel.on .vc-check{background:#25D366; border-color:#25D366;}
-.ven-sel-barra{position:sticky; bottom:0; z-index:50; display:flex; gap:10px; justify-content:flex-end; background:#fffffff2; padding:12px 0 calc(12px + env(safe-area-inset-bottom)); margin-top:14px; border-top:1px solid #e3e8e4;}
+.ven-sel-barra{position:sticky; bottom:0; z-index:50; display:flex; gap:10px; align-items:center; justify-content:flex-end; background:#fffffff2; padding:12px 0 calc(12px + env(safe-area-inset-bottom)); margin-top:14px; border-top:1px solid #e3e8e4;}
+.vsb-txt{margin-right:auto; font-weight:700; color:var(--ink-soft);}
+.ven-sel-barra .primary:disabled{opacity:.45; cursor:default;}
 .ven-sel-barra .primary{background:#1fa855; border-color:#1fa855;}
-@media (max-width:760px){ .ven-sel-barra button{flex:1; padding:12px;} }
+@media (max-width:760px){ .ven-sel-barra{flex-wrap:wrap;} .vsb-txt{width:100%; text-align:center;} .ven-sel-barra button{flex:1; padding:12px;} }
 .vc-x{position:absolute; top:8px; right:8px; width:28px; height:28px; padding:0; border:0; border-radius:7px; background:transparent; color:#9aa59d; display:grid; place-items:center; cursor:pointer;}
 .vc-x:hover{background:#fbe5e5; color:var(--alert);}
 .vc-top{padding-right:18px;}
@@ -2870,7 +2872,7 @@ function venWhats(id){
   window.open('https://wa.me/?text=' + encodeURIComponent(venTextoWhats(r)), '_blank');
 }
 // WhatsApp de várias receitas: marca as que quer e manda tudo numa mensagem só
-function venSelIniciar(ids){ venSel = new Set(ids); render(); }
+function venSelIniciar(){ venSel = new Set(); render(); }
 function venSelSair(){ venSel = null; render(); }
 function venSelToggle(id){ if(!venSel) return; venSel.has(id) ? venSel.delete(id) : venSel.add(id); render(); }
 function venSelEnviar(){
@@ -3073,8 +3075,8 @@ function pageVenenosLista(k){
       <select onchange="venFiltro.talhao=this.value;render()"><option value="">Todos os talhões</option>${talhoes.map(t=>`<option ${t===venFiltro.talhao?'selected':''}>${esc(t)}</option>`).join('')}</select>
     </div>` : ''}
     ${!todas.length ? `<div class="panel"><div class="empty" style="text-align:center">Nenhuma receita nesta safra ainda. Toque em <b>+ Nova receita</b>.</div></div>` : ''}
-    ${afazer.length ? `<div class="ven-tit-linha"><p class="section-title">🟡 A fazer (${afazer.length})</p>${afazer.length>1 && !venSel ? `<button type="button" class="secondary vc-wpp no-print" onclick="venSelIniciar(${esc(JSON.stringify(afazer.map(r=>r.id)))})">${IC_WPP} Enviar várias</button>` : ''}</div><div class="ven-lista">${afazer.map(venCard).join('')}</div>` : ''}
-    ${venSel ? `<div class="ven-sel-barra no-print"><button type="button" class="secondary" onclick="venSelSair()">Cancelar</button><button type="button" class="primary" onclick="venSelEnviar()" ${venSel.size?'':'disabled'}>${IC_WPP.replace('#25D366','#fff')} Enviar ${venSel.size} no WhatsApp</button></div>` : ''}
+    ${afazer.length ? `<div class="ven-tit-linha"><p class="section-title">🟡 A fazer (${afazer.length})</p>${afazer.length>1 && !venSel ? `<button type="button" class="secondary vc-wpp no-print" onclick="venSelIniciar()">${IC_WPP} Selecionar pra enviar</button>` : ''}</div><div class="ven-lista">${afazer.map(venCard).join('')}</div>` : ''}
+    ${venSel ? `<div class="ven-sel-barra no-print"><span class="vsb-txt">${venSel.size ? `${venSel.size} marcada${venSel.size>1?'s':''}` : 'Toque nas receitas pra marcar'}</span><button type="button" class="secondary" onclick="venSelSair()">Cancelar</button><button type="button" class="primary" onclick="venSelEnviar()" ${venSel.size?'':'disabled'}>${IC_WPP.replace('#25D366','#fff')} Enviar no WhatsApp</button></div>` : ''}
     ${feitas.length ? `<p class="section-title" style="margin-top:18px">✅ Feitas (${feitas.length})</p><div class="ven-lista">${feitas.map(venCard).join('')}</div>` : ''}
     ${resumo.length ? `<div class="panel" style="margin-top:18px"><p class="section-title">Produtos${venFiltro.talhao?` · ${esc(venFiltro.talhao)}`:''}</p>
       <div class="table-wrap"><table class="simples ven-resumo"><thead><tr><th>Produto</th><th class="num">Já aplicado</th><th class="num">A fazer</th><th class="num">Total</th></tr></thead>

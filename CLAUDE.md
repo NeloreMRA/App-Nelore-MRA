@@ -88,4 +88,4 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - **Ordem das safras nas listas (06/11/2026):** da mais antiga pra mais nova (ano do nome; mesmo ano → a criada por último embaixo) — `ordemSafras()`, usada no seletor, na tela Safra, nos Venenos, no celular e no Backup completo. Só pra mostrar: NÃO reordenar `state.safras` (a comparação de "nada mudou" usa o JSON na ordem salva).
 
 - Celular (Agricultura e Cobertura): ao abrir o app já aparece a tela de opções (quadradinhos); escolhe a tela e ela fecha. No PC nada muda.
-- Venenos: botão "Enviar várias" ao lado de "A fazer" → já marca todas as receitas a fazer, desmarca as que não quer e manda tudo numa mensagem só no WhatsApp.
+- Venenos: botão "Selecionar pra enviar" ao lado de "A fazer" → começa sem nenhuma marcada, toca nas receitas que quer e manda tudo numa mensagem só no WhatsApp.
