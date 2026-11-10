@@ -89,3 +89,4 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 
 - Celular (Agricultura e Cobertura): ao abrir o app já aparece a tela de opções (quadradinhos); escolhe a tela e ela fecha. No PC nada muda.
 - Venenos: botão "Selecionar pra enviar" ao lado de "A fazer" → começa sem nenhuma marcada, toca nas receitas que quer e manda tudo numa mensagem só no WhatsApp.
+- Cobertura · Estoque (celular): ordenar os touros pelo menu Opções (Touro A a Z, Maior/Menor saldo, Mais usado na IATF, Botijão, Ordem normal); aparece "Ordem: …  ✕" em cima dos cartões.
