@@ -181,6 +181,9 @@ td:has(> .cell-input:focus){outline:2px solid #1f7a4d;outline-offset:-2px;backgr
 .acs-pop button{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;padding:7px 6px;border-radius:7px;font-size:13px;cursor:pointer;color:#26332b}
 .acs-pop button:hover{background:#f2f5f3}.acs-pop button.on{background:#e5f5eb}
 .acs-l{font-size:11px;color:#7a857d;font-weight:700}.acs-p{font-weight:800;color:#216440;white-space:nowrap}.acs-p small{font-weight:500;color:#7a857d}
+.td-hist .nav-cycle{padding-right:20px!important}
+.hm-pop{width:360px}.hm-l{display:grid;grid-template-columns:78px 1fr auto;align-items:center;gap:8px;padding:6px;border-radius:7px;font-size:13px}.hm-l:nth-child(even){background:#f6f8f6}
+.hm-l b{font-size:12px;color:#233129}.hm-l span{color:#4a5850}.hm-sem{font-size:11px;color:#9aa49d!important}.hm-fim{border-top:1px solid #e8ece9;margin-top:4px;padding:8px 6px 3px;font-size:12px;font-weight:700;color:#4a5850}
 .acs-pop em{font-style:normal;font-size:10px;color:#c0392b;font-weight:700;margin-left:4px}.acs-vazio{font-size:13px;color:#69746c;padding:6px}
 @media print{.acs-q,.acs-pop{display:none!important}}
 .prt-linha{display:flex;align-items:center;gap:8px;border-bottom:1px solid #edf0ee;padding:4px 2px}.prt-linha .excel-value{flex:1;padding:4px 0}.prt-res{width:auto;min-width:72px;padding:5px 8px;border-radius:8px;border:1px solid #d7ded9;font-weight:800;text-align:center}.prt-res.res-m{background:#fff1dc;color:#875716}.prt-res.res-v{background:#fde7e5;color:#9b3127}.dash-h.fiv:before{background:#b39a3b}
@@ -1954,7 +1957,7 @@ function renderAnimalTable(){
   <td><input class="cell-input nav-sire" list="bullsList" style="min-width:210px" value="${esc(a.firstSire)}" data-prev="${esc(a.firstSire)}" onkeydown="iatfEnter(event,'nav-sire')" onfocus="this.select()" onchange="editAnimalCell('${a.id}','firstSire',this.value,this)"></td>
   <td><select class="cell-input category-select nav-cat ${catClass(a.category)}" style="min-width:120px" onkeydown="iatfEnter(event,'nav-cat')" onchange="editAnimalCell('${a.id}','category',this.value,this)">${categories().map(x=>`<option ${x===a.category?'selected':''}>${x}</option>`).join('')}</select></td>
   <td><span class="badge ${resClass(a.status)}">${statusLabel(a.status)}</span></td>
-  <td><input class="cell-input nav-cycle" type="number" min="1" step="1" style="width:70px;text-align:center" value="${a.curCycle}" placeholder="—" title="Número da IATF em que essa matriz está. Vazio = ainda não está em nenhuma." onkeydown="iatfEnter(event,'nav-cycle')" onchange="setAnimalIatfCycle('${a.id}',this.value,this)"></td>
+  <td class="td-acs td-hist"><button type="button" class="acs-q no-print" tabindex="-1" title="Histórico da matriz" onmousedown="event.preventDefault()" onclick="abrirHistMatriz(event,'${a.id}')">?</button><input class="cell-input nav-cycle" type="number" min="1" step="1" style="width:70px;text-align:center" value="${a.curCycle}" placeholder="—" title="Número da IATF em que essa matriz está. Vazio = ainda não está em nenhuma." onkeydown="iatfEnter(event,'nav-cycle')" onchange="setAnimalIatfCycle('${a.id}',this.value,this)"></td>
   <td><input class="cell-input nav-obs" style="min-width:190px" value="${esc(a.obs||'')}" onkeydown="iatfEnter(event,'nav-obs')" onchange="editAnimalCell('${a.id}','obs',this.value,this)"></td>
   <td style="white-space:nowrap"><input class="cell-input nav-created" type="date" style="width:135px" value="${esc(a.createdAt||'')}" onkeydown="iatfEnter(event,'nav-created')" onchange="editAnimalCell('${a.id}','createdAt',this.value,this)"></td>
   <td><button class="mini" onclick="deleteAnimal('${a.id}')">Excluir</button></td></tr>`).join('')}</tbody></table></div>`;
@@ -2325,6 +2328,31 @@ function abrirOpcoesTouro(ev,id){
   let left=Math.min(bt.left,innerWidth-w-8);left=Math.max(8,left);let top=bt.bottom+4;if(top+h>innerHeight-8)top=Math.max(8,bt.top-h-4);
   p.style.left=left+'px';p.style.top=top+'px';
 } window.abrirOpcoesTouro=abrirOpcoesTouro;
+/* "?" na coluna IATF atual (Matrizes): por onde a matriz andou nesta estação — IATFs (touro, qtd, resultado),
+   retornos, montas, FIV como doadora e de qual IATF foi tirada. Só na tela. */
+function histMatriz(rgd){
+  const it=[],n=norm(rgd),res=v=>v?`<span class="badge ${resClass(v)}">${v}</span>`:'<span class="hm-sem">sem resultado</span>',d=v=>v?fmtDate(v).slice(0,5):'';
+  seasonRows().filter(r=>norm(r.rgd)===n).sort((a,b)=>Number(a.cycle)-Number(b.cycle)).forEach(r=>{
+    it.push({o:Number(r.cycle)*10,h:`<b>${r.cycle}ª IATF</b><span>${[d(cycleDate(r.cycle)),esc(r.firstSire||'—'),Number(r.qty)?r.qty+' dose(s)':''].filter(Boolean).join(' · ')}</span>${res(normResult(r.result))}`});
+    if(hasReturn(r))it.push({o:Number(r.cycle)*10+5,h:`<b>↩ Retorno</b><span>${[d(r.return),esc(r.returnSire||'—')].filter(Boolean).join(' · ')}</span>${res(normResult(r.returnResult))}`});
+  });
+  (db.iatfExcluded||[]).filter(e=>e.seasonId===db.meta.activeSeasonId&&norm(e.rgd)===n).forEach(e=>it.push({o:Number(e.cycle)*10+1,h:`<b>${e.cycle}ª IATF</b><span>tirada dessa IATF</span><span class="hm-sem">excluída</span>`}));
+  seasonMontas().forEach(m=>montaRowsDe(m.id).filter(r=>norm(r.rgd)===n).forEach(r=>it.push({o:100000+Number(m.n),h:`<b>${m.n}ª Monta</b><span>${[d(m.data),esc(r.sire||m.touro||'—')].filter(Boolean).join(' · ')}</span>${res(montaRes(r.result))}`})));
+  const fv=seasonFiv().filter(r=>norm(r.rgdDoadora)===n);
+  if(fv.length){const q=fivResumo(fv);it.push({o:200000,h:`<b>FIV doadora</b><span>${fv.length} transferência(s) · ${q.p} prenha(s)</span><span></span>`})}
+  return it.sort((a,b)=>a.o-b.o).map(x=>x.h);
+}
+function abrirHistMatriz(ev,id){
+  ev.preventDefault();ev.stopPropagation();fecharOpcoesTouro();
+  const a=db.animals.find(x=>x.id===id);if(!a)return;
+  const linhas=histMatriz(a.rgd),st=latestStatus(a.rgd);
+  const p=document.createElement('div');p.id='acsPop';p.className='acs-pop hm-pop no-print';
+  p.innerHTML=`<div class="acs-t">${esc(a.rgd)} <span>· histórico na ${esc(activeSeason().name)}</span></div>${linhas.length?linhas.map(h=>`<div class="hm-l">${h}</div>`).join(''):'<div class="acs-vazio">Ainda não entrou em nenhuma IATF nesta estação.</div>'}<div class="hm-fim">Situação: <span class="badge ${resClass(st)}">${statusLabel(st)}</span></div>`;
+  document.body.appendChild(p);
+  const bt=ev.currentTarget.getBoundingClientRect(),w=p.offsetWidth,h=p.offsetHeight;
+  let left=Math.min(bt.left,innerWidth-w-8);left=Math.max(8,left);let top=bt.bottom+4;if(top+h>innerHeight-8)top=Math.max(8,bt.top-h-4);
+  p.style.left=left+'px';p.style.top=top+'px';
+} window.abrirHistMatriz=abrirHistMatriz;
 function escolherTouroOp(id,nome){
   fecharOpcoesTouro();
   const el=document.querySelector(`.iatf-sire[data-id="${id}"]`);if(!el)return;
