@@ -171,7 +171,9 @@ td:has(> .cell-input:focus){outline:2px solid #1f7a4d;outline-offset:-2px;backgr
 .dkpi .l{font-size:12px;color:#5d6a62;font-weight:600}.dkpi .v{font-size:26px;font-weight:800;margin-top:6px;color:#17211c}
 .dash-h{display:flex;align-items:center;gap:10px;margin:28px 0 12px;font-size:15px;font-weight:800;color:#153e2c}
 .dash-h:before{content:"";width:5px;height:20px;border-radius:3px;background:#1f6a49}
-.dash-h.fiv{color:#5c4a10}.dash-h.fiv:before{background:#b39a3b}
+.dash-h.fiv{color:#5c4a10}.dash-h.monta{color:#1f5f52}
+.criar-op{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 4px}.criar-op button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 10px;font-size:17px;font-weight:800;border-radius:12px}.criar-op button small{font-size:12px;font-weight:500;opacity:.85}.criar-op button.monta{background:#2f7d6d;border-color:#2f7d6d}
+.prt-linha{display:flex;align-items:center;gap:8px;border-bottom:1px solid #edf0ee;padding:4px 2px}.prt-linha .excel-value{flex:1;padding:4px 0}.prt-res{width:auto;min-width:72px;padding:5px 8px;border-radius:8px;border:1px solid #d7ded9;font-weight:800;text-align:center}.prt-res.res-m{background:#fff1dc;color:#875716}.prt-res.res-v{background:#fde7e5;color:#9b3127}.dash-h.fiv:before{background:#b39a3b}
 .dash-split{border:0;border-top:2px dashed #d9cfa6;margin:34px 0 0}
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
 .dash-2{display:grid;grid-template-columns:1.6fr 1fr;gap:12px}
@@ -434,7 +436,7 @@ const ADMIN_EMAIL='mandrade.gado@terra.com.br';
 let ALLOWED_PAGES=null;
 let firestore=null, stateRef=null, syncTimer=null, unsubscribeFirestore=null, applyingRemote=false, lastRemoteJSON='';
 
-let db=null,page='dashboard',iatfCategory='',iatfCycle=1,animalSelecting=false,animalSelected=new Set();
+let db=null,page='dashboard',iatfCategory='',iatfCycle=1,montaAtual='',animalSelecting=false,animalSelected=new Set();
 let undoStack=[],undoBaselineJSON='',suppressUndoHistory=false,localWritePending=false;
 const UNDO_LIMIT=50;
 let animalSort={key:'',dir:1},iatfSort={key:'',dir:1},stockSort={key:'',dir:1};
@@ -471,6 +473,8 @@ function migrate(x){
   x.toqueDates=x.toqueDates||{}; // Data do Toque de cada IATF: toqueDates[estação][ciclo]
   x.iatfCycleCategories=x.iatfCycleCategories||{};
   x.iatfMaxCycles=x.iatfMaxCycles||{};
+  x.montas=Array.isArray(x.montas)?x.montas:[];        // Monta natural: {id,seasonId,n,data,touro,toque}
+  x.montaRows=Array.isArray(x.montaRows)?x.montaRows:[]; // matrizes da monta: {id,seasonId,montaId,n,rgd,category,sire,result}
   x.fivDatas=x.fivDatas||{};
   x.acasalDatas=x.acasalDatas||{}; // datas criadas em Acasalamentos (por estação)
   x.fivLocais=x.fivLocais||{};
@@ -614,6 +618,20 @@ function migrate(x){
   {const mx={},k=f=>f.seasonId+'|'+(f.data||'');
    (x.fiv||[]).forEach(f=>{if(Number(f.n)>0)mx[k(f)]=Math.max(mx[k(f)]||0,Number(f.n))});
    (x.fiv||[]).forEach(f=>{if(!(Number(f.n)>0)){mx[k(f)]=(mx[k(f)]||0)+1;f.n=mx[k(f)]}});}
+  // Nº das matrizes = ordem de cadastro dentro da estação (fixo)
+  garantirNAnimais(x.animals||[]);
+  // IATFs vazias (sem matriz, sem data e sem toque) somem do seletor — antes sempre mostrava até a 12ª
+  if(!x.meta.iatfVaziasLimpas_v1){
+    (x.seasons||[]).forEach(se=>{
+      const sid=se.id,num=o=>Object.keys(o||{}).filter(k=>o[k]&&(!Array.isArray(o[k])||o[k].length)).map(Number);
+      const mx=Math.max(1,...(x.iatf||[]).filter(r=>r.seasonId===sid).map(r=>Number(r.cycle)||0),...num((x.cycleDates||{})[sid]),...num((x.toqueDates||{})[sid]),...num((x.iatfCycleCategories||{})[sid]));
+      x.iatfMaxCycles[sid]=mx;
+      [x.cycleDates,x.toqueDates,x.iatfCycleCategories].forEach(m=>{const o=m&&m[sid];if(o)Object.keys(o).forEach(k=>{if(Number(k)>mx)delete o[k]})});
+    });
+    const mxDe=sid=>x.iatfMaxCycles[sid]||1;
+    x.iatfExcluded=(x.iatfExcluded||[]).filter(e=>Number(e.cycle)<=mxDe(e.seasonId));
+    x.meta.iatfVaziasLimpas_v1=true;
+  }
   // restos das antigas "Configurações avançadas" (removidas)
   delete x.settings.noticeTexts;delete x.settings.brandName;delete x.settings.brandSubtitle;
   return x
@@ -770,9 +788,36 @@ const touroVermelho=r=>!(Number(r.qty)>0)&&semSaldo(r.firstSire);
 function pintarTouroIatf(r,el){el=el||document.querySelector(`.iatf-sire[data-id="${r.id}"]`);if(!el)return;const v=touroVermelho(r);el.style.cssText=v?corSemSaldo(r.firstSire):'';el.title=v?'Sem sêmen no estoque':''}
 function normalizedResult(r){return normResult(r)}
 function isDiagnosed(r){return ['P','V','PRT'].includes(normResult(r))}
-function latestStatus(rgd){
+// situação só pelas IATFs (última IATF com resultado; retorno vale por cima)
+function iatfStatus(rgd){
   const rows=seasonRows().filter(r=>r.rgd===rgd&&effectiveResult(r)).sort((a,b)=>Number(b.cycle)-Number(a.cycle));
   return rows.length?effectiveResult(rows[0]):''
+}
+// situação da matriz: o resultado da Monta natural é o final (ex: P na IATF e V na monta = perdeu, fica Vazia)
+function latestStatus(rgd){return montaStatus(rgd)||iatfStatus(rgd)}
+/* ===== MONTA NATURAL ==================================================================
+   Fica no mesmo seletor da IATF. Touro de pasto: não usa o Estoque de Sêmen (sem Qtd, caneca, retorno).
+   Resultado IATF = puxado da última IATF da matriz; Resultado monta (P/V) = resultado final. */
+function seasonMontas(sid=db.meta.activeSeasonId){return (db.montas||[]).filter(m=>m.seasonId===sid).sort((a,b)=>Number(a.n)-Number(b.n))}
+function montaById(id){return (db.montas||[]).find(m=>m.id===id)}
+function montaNome(m){return m?`${m.n}ª Monta natural`:''}
+function montaRowsDe(id){return (db.montaRows||[]).filter(r=>r.montaId===id)}
+function seasonMontaRows(sid=db.meta.activeSeasonId){const ids=new Set(seasonMontas(sid).map(m=>m.id));return (db.montaRows||[]).filter(r=>ids.has(r.montaId))}
+function montaRes(v){v=normResult(v);return v==='P'||v==='V'?v:''}
+function montaStatus(rgd){
+  const ms=seasonMontas();
+  for(let i=ms.length-1;i>=0;i--){const r=(db.montaRows||[]).find(x=>x.montaId===ms[i].id&&x.rgd===rgd&&montaRes(x.result));if(r)return montaRes(r.result)}
+  return '';
+}
+function garantirNMonta(lista){
+  const mx={};
+  lista.forEach(r=>{if(Number(r.n)>0)mx[r.montaId]=Math.max(mx[r.montaId]||0,Number(r.n))});
+  lista.forEach(r=>{if(!(Number(r.n)>0)){mx[r.montaId]=(mx[r.montaId]||0)+1;r.n=mx[r.montaId]}});
+}
+function garantirNAnimais(lista){
+  const mx={};
+  lista.forEach(a=>{if(Number(a.n)>0)mx[a.seasonId]=Math.max(mx[a.seasonId]||0,Number(a.n))});
+  lista.forEach(a=>{if(!(Number(a.n)>0)){mx[a.seasonId]=(mx[a.seasonId]||0)+1;a.n=mx[a.seasonId]}});
 }
 // Listas editáveis em Configurações → Listas
 function categories(){return (db&&db.settings&&db.settings.categories&&db.settings.categories.length)?db.settings.categories:DEFAULT_CATEGORIES}
@@ -992,10 +1037,12 @@ const ICONES_OP={
   selecionar:['#fbe5e5','#b83a3a','<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12l2.5 2.5 4.5-5"/>'],
   ligado:['#e3f3e9','#1f7a4d','<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>'],
   pausado:['#eef0ee','#69746c','<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>'],
-  ordenar:['#e6f2ef','#1f6a5a','<path d="M7 4v16M3 16l4 4 4-4"/><path d="M17 20V4M13 8l4-4 4 4"/>']
+  ordenar:['#e6f2ef','#1f6a5a','<path d="M7 4v16M3 16l4 4 4-4"/><path d="M17 20V4M13 8l4-4 4 4"/>'],
+  excluir:['#fbe5e5','#b83a3a','<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>'],
+  restaurar:['#eef0ee','#4a5850','<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>']
 };
 function iconeOp(t){
-  const k=/Modelo/.test(t)?'modelo':t.startsWith('⬆')?'subir':t.startsWith('⬇')?'baixar':t.startsWith('🖨')?'imprimir':t.startsWith('☑')?'selecionar':t.startsWith('✅')?'ligado':t.startsWith('⏸')?'pausado':t.startsWith('↕')?'ordenar':'';
+  const k=/Modelo/.test(t)?'modelo':t.startsWith('⬆')?'subir':t.startsWith('⬇')?'baixar':t.startsWith('🖨')?'imprimir':t.startsWith('☑')?'selecionar':t.startsWith('✅')?'ligado':t.startsWith('⏸')?'pausado':t.startsWith('↕')?'ordenar':t.startsWith('🗑')?'excluir':t.startsWith('↩')?'restaurar':'';
   if(!k)return t;
   const [fundo,cor,d]=ICONES_OP[k],txt=t.replace(/^\S+\s*/,'');
   return `<span class="op-ico" style="background:${fundo};color:${cor}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg></span><span>${txt}</span>`;
@@ -1067,7 +1114,7 @@ function colResizeStart(e,id,lab,th){
    A→Z/Z→A (ordenação) volta; os filtros ▼ NÃO: abrir o app ou dar F5 começa sem filtro (pedido do dono). */
 const VIEW_KEY='app-nelore-mra-iatf-view-state';
 function saveViewState(){
-  try{localStorage.setItem(VIEW_KEY,JSON.stringify({seasonId:db&&db.meta?db.meta.activeSeasonId:'',page,iatfCycle,fivData,acasalData,excelFilters,
+  try{localStorage.setItem(VIEW_KEY,JSON.stringify({seasonId:db&&db.meta?db.meta.activeSeasonId:'',page,iatfCycle,montaAtual,fivData,acasalData,excelFilters,
     sorts:{animalSort,iatfSort,stockSort,acasalSort,embrioesSort,fivSort}}))}catch(e){}
 }
 function loadViewState(){
@@ -1080,6 +1127,7 @@ function loadViewState(){
   animalSort=ok(so.animalSort);iatfSort=ok(so.iatfSort);stockSort=ok(so.stockSort);acasalSort=ok(so.acasalSort);embrioesSort=ok(so.embrioesSort);fivSort=ok(so.fivSort);
   if(v.seasonId===db.meta.activeSeasonId){
     if(Number(v.iatfCycle)>=1)iatfCycle=Number(v.iatfCycle);
+    if(typeof v.montaAtual==='string'&&montaById(v.montaAtual))montaAtual=v.montaAtual;
     if(typeof v.acasalData==='string')acasalData=v.acasalData;
     if(typeof v.fivData==='string')fivData=v.fivData; // FIV que estava aberta (se ainda existir; senão fivAtual escolhe outra)
   }
@@ -1556,6 +1604,7 @@ function rawRowsForExcel(kind){
   if(kind==='acasal')return acasalDaData();
   if(kind==='embrioes')return (db.embrioes||[]).map(e=>({...e,...embRowCalc(e)}));
   if(kind==='fiv')return fivDaData();
+  if(kind==='monta')return montaRowsDe(montaAtual).map(r=>({...r,iatfRes:iatfStatus(r.rgd)}));
   return []
 }
 function excelValue(row,key){const v=row?.[key];return v===null||v===undefined?'':String(v)}
@@ -1610,14 +1659,14 @@ function excelSearchEnter(e){
   excelApply();
 } window.excelSearchEnter=excelSearchEnter;
 function renderByKind(k){
-  const fns={animals:renderAnimalTable,iatf:renderIatfRows,acasal:renderAcasalTable,stock:renderStock,embrioes:renderEmbrioesTable,fiv:renderFivTable};
+  const fns={animals:renderAnimalTable,iatf:renderIatfRows,acasal:renderAcasalTable,stock:renderStock,embrioes:renderEmbrioesTable,fiv:renderFivTable,monta:renderMontaRows};
   (fns[k]||function(){})();
 }
 function excelApply(){if(!excelFilterContext)return;const {kind,key,values}=excelFilterContext;let selected=excelFilterContext.selected;
   // digitou na busca: vale só o que aparece na lista (marcado), igual Excel
   const q=($('#excelFilterPopup .excel-search')||{}).value;if(q&&q.trim()){const vis=new Set(excelVisiveis().map(i=>values[i]));selected=new Set([...selected].filter(v=>vis.has(v)));if(!selected.size)return}if(selected.size===values.length)delete excelFilters[kind][key];else excelFilters[kind][key]=[...selected];const k=kind;novaOrdem(k);closeExcelFilter();renderByKind(k)} window.excelApply=excelApply;
 function excelClear(){if(!excelFilterContext)return;const {kind,key}=excelFilterContext;delete excelFilters[kind][key];const k=kind;novaOrdem(k);closeExcelFilter();renderByKind(k)} window.excelClear=excelClear;
-function excelSort(dir){if(!excelFilterContext)return;const {kind,key}=excelFilterContext;if(kind==='animals')animalSort={key,dir};else if(kind==='iatf')iatfSort={key,dir};else if(kind==='acasal')acasalSort={key,dir};else if(kind==='embrioes')embrioesSort={key,dir};else if(kind==='fiv')fivSort={key,dir};else stockSort={key,dir};novaOrdem(kind);closeExcelFilter();renderByKind(kind)} window.excelSort=excelSort;
+function excelSort(dir){if(!excelFilterContext)return;const {kind,key}=excelFilterContext;if(kind==='animals')animalSort={key,dir};else if(kind==='iatf')iatfSort={key,dir};else if(kind==='acasal')acasalSort={key,dir};else if(kind==='embrioes')embrioesSort={key,dir};else if(kind==='fiv')fivSort={key,dir};else if(kind==='monta')montaSort={key,dir};else stockSort={key,dir};novaOrdem(kind);closeExcelFilter();renderByKind(kind)} window.excelSort=excelSort;
 document.addEventListener('click',e=>{const p=$('#excelFilterPopup');if(p&&!p.contains(e.target)&&!e.target.closest('.excel-filter-btn'))closeExcelFilter()});
 
 /* DASHBOARD */
@@ -1627,17 +1676,17 @@ function finalOutcomeCounts(){
   return counts
 }
 function maxIatfCycle(sid=db?.meta?.activeSeasonId){
-  const saved=Number((db.iatfMaxCycles||{})[sid]||12);
+  const saved=Number((db.iatfMaxCycles||{})[sid]||1);
   const used=Math.max(0,...(db.iatf||[]).filter(r=>r.seasonId===sid).map(r=>Number(r.cycle)||0));
   const configured=Math.max(0,...Object.keys(((db.iatfCycleCategories||{})[sid])||{}).map(Number));
-  return Math.max(12,saved,used,configured);
+  return Math.max(1,saved,used,configured);
 }
 function createNextIatf(){
   const sid=db.meta.activeSeasonId;
   db.iatfMaxCycles=db.iatfMaxCycles||{};
   const next=maxIatfCycle(sid)+1;
   db.iatfMaxCycles[sid]=next;
-  iatfCycle=next;
+  iatfCycle=next;montaAtual='';
   iatfCategory='';
   excelFilters.iatf={};
   save();
@@ -1741,28 +1790,44 @@ function fivSection(){
   return `<div class="dash-kpis">${kpi('Transferências',rows.length)}${kpi('Prenhez FIV',pctTxt(g.rate))}${kpi('Prenhas',g.p)}${kpi('Aguardando resultado',aguard)}${kpi('Doadoras',doadoras)}${kpi('FIVs feitas',datas.length)}</div>
   ${rows.length?`<div class="dash-lado" style="margin-top:12px"><div>${cardAbas('% de prenhez por touro — FIV','fivBulls','sire')}${cardAbas('% de prenhez por doadora','donors','rgdDoadora')}</div><div class="lado-cards">${cards}</div></div>`:''}`;
 }
+/* ----- MONTA NATURAL ----- */
+function montaSection(){
+  const ms=seasonMontas(),rows=seasonMontaRows(),res=r=>montaRes(r.result);
+  const g=rateOf(rows,res),aguard=rows.filter(r=>!res(r)).length;
+  const kpi=(l,v)=>`<div class="dkpi" style="--k:#2f7d6d"><div class="l">${l}</div><div class="v">${v}</div></div>`;
+  const card=(titulo,data,rs,total)=>{const gg=rateOf(rs,res);const cats=categories().map(c=>[c,rateOf(rs.filter(r=>r.category===c),res)]).filter(([,st])=>st.n);
+    return `<div class="dcard${total?' total':''}"><div class="hd"><div><div class="t">${esc(titulo)}</div>${data?`<div class="d">${esc(data)}</div>`:''}</div><div class="big">${pctTxt(gg.rate)}<small>${gg.p} de ${gg.n} prenhas</small></div></div>
+    ${cats.map(([c,st])=>barRow(c,catBarColor(c),st)).join('')||'<div class="dempty">Sem resultado ainda</div>'}</div>`};
+  const cards=`<div class="dash-grid">${card('Todas as montas','',rows,true)}${ms.map(m=>card(montaNome(m),[m.data?fmtDate(m.data):'',m.touro||''].filter(Boolean).join(' · '),montaRowsDe(m.id),false)).join('')}</div>`;
+  const abas=[{k:'g',l:'Geral'},...ms.map(m=>({k:m.id,l:`${m.n}ª Monta`,d:m.data?fmtDate(m.data).slice(0,5):''}))];
+  const itens=rows.map(r=>{const m=montaById(r.montaId)||{};return {c:r.montaId,nome:String(r.sire||m.touro||'').trim()||'(sem touro)',res:r.result,x:1}});
+  return `<div class="dash-kpis">${kpi('Matrizes na monta',rows.length)}${kpi('Prenhez monta',pctTxt(g.rate))}${kpi('Prenhas',g.p)}${kpi('Aguardando resultado',aguard)}${kpi('Montas feitas',ms.length)}</div>
+  ${rows.length?`<div class="dash-lado" style="margin-top:12px"><div class="dcard"><div class="hd"><div class="t">% de prenhez por touro — Monta</div></div>${tabelaAbas('montaBulls',abas,itens,{nomeCol:'Touro',xLabel:'Matrizes',cor:'#2f7d6d',vazio:'Sem resultado ainda.'})}</div><div class="lado-cards">${cards}</div></div>`:''}`;
+}
 function dashboard(){
   title('Dashboard','Resumo da '+activeSeason().name);
   setActions(`<button class="ghost" onclick="printDashboard()">🖨 Imprimir página</button>`);
   const g=rateOf(seasonRows(),r=>r.result);
   // geral do topo = IATF + FIV somadas (prenhas / IATFs e transferências com resultado)
   const gf=rateOf(seasonFiv().filter(r=>String(r.rgdDoadora||'').trim()),r=>r.resultado);
-  const tudo={p:g.p+gf.p,n:g.n+gf.n};tudo.rate=tudo.n?tudo.p/tudo.n*100:null;
+  const gm=rateOf(seasonMontaRows(),r=>montaRes(r.result));
+  const tudo={p:g.p+gf.p+gm.p,n:g.n+gf.n+gm.n};tudo.rate=tudo.n?tudo.p/tudo.n*100:null;
   const oc=finalOutcomeCounts();
   const kpi=(l,v,c)=>`<div class="dkpi" style="--k:${c}"><div class="l">${l}</div><div class="v">${v}</div></div>`;
   $('#content').innerHTML=`
   <div class="dash-hero"><img src="${MRA_LOGO}" alt="Nelore MRA"><div><div class="bt">Nelore MRA</div><div class="bs">Fazenda Paraíso · ${esc(activeSeason().name)}</div></div>
-    <div class="hn">${tudo.n?`<div class="hx">${tudo.p} de ${tudo.n}</div>`:''}<div class="v">${pctTxt(tudo.rate)}</div><div class="hq">${[['IATF',g],['FIV',gf]].filter(([,x])=>x.n).map(([l,x])=>`<span><b>${pctTxt(x.rate)}</b> ${l}</span>`).join('')}</div></div></div>
+    <div class="hn">${tudo.n?`<div class="hx">${tudo.p} de ${tudo.n}</div>`:''}<div class="v">${pctTxt(tudo.rate)}</div><div class="hq">${[['IATF',g],['FIV',gf],['Monta',gm]].filter(([,x])=>x.n).map(([l,x])=>`<span><b>${pctTxt(x.rate)}</b> ${l}</span>`).join('')}</div></div></div>
   <div class="dash-kpis">${kpi('Matrizes',seasonAnimals().length,'#5d6a62')}${kpi('Prenhas',oc.P,'#216440')}${kpi('Vazias',oc.V,'#b8483a')}${kpi('PRT',oc.PRT,'#c08a2e')}${kpi('Sem resultado',oc.none,'#9aa49d')}${kpi('Doses em saldo',db.semen.reduce((a,s)=>a+stockBalance(s),0),'#1f6a49')}</div>
   <div class="dash-h">% de prenhez por IATF</div>
   <div class="dash-lado"><div class="dcard"><div class="hd"><div class="t">% de prenhez por touro</div></div>${bullSection()}</div><div class="lado-cards">${iatfSection()}</div></div>
   <hr class="dash-split">
   <div class="dash-h fiv">FIV</div>
-  ${fivSection()}`;
+  ${fivSection()}
+  ${seasonMontas().length?`<hr class="dash-split"><div class="dash-h monta">Monta natural</div>${montaSection()}`:''}`;
 }
 function printDashboard(){
   openModal(`<h2>Imprimir Dashboard</h2>
-  <div class="actions" style="justify-content:flex-start;flex-wrap:wrap"><button class="primary" onclick="imprimirDash(true)">Imprimir com todas as IATFs e FIVs</button><button class="ghost" onclick="imprimirDash(false)">Só o que está na tela</button></div>`);
+  <div class="actions" style="justify-content:flex-start;flex-wrap:wrap"><button class="primary" onclick="imprimirDash(true)">Imprimir com todas as IATFs, FIVs e Montas</button><button class="ghost" onclick="imprimirDash(false)">Só o que está na tela</button></div>`);
 }
 function imprimirDash(tudo){
   closeModal();dashImprimirTudo=!!tudo;let html='';
@@ -1865,14 +1930,16 @@ function addBlankAnimal(){
 } window.addBlankAnimal=addBlankAnimal;
 function renderAnimalTable(){
   const root=$('#animalTable');if(!root)return;
+  garantirNAnimais(db.animals);
   const __view=captureViewPosition();
   const rows=animalRowsFiltered();
   const total=seasonAnimals().length;
   root.innerHTML=`<div style="display:flex;justify-content:flex-end;align-items:center;margin:0 2px 10px;font-size:12px;color:#69746c"><strong style="color:#233129;margin-right:4px">${rows.length}</strong> matrizes exibidas de <strong style="color:#233129;margin:0 4px">${total}</strong> cadastradas</div><div class="table-wrap"><table><thead>
-  <tr><th></th>${animalSelecting?'<th>✓</th>':''}<th>${excelHead('animals','rgd','RGD')}</th><th>${excelHead('animals','firstSire','1º Acasalamento')}</th><th>${excelHead('animals','category','Categoria')}</th><th>${excelHead('animals','status','Situação')}</th><th>${excelHead('animals','curCycle','IATF atual')}</th><th>${excelHead('animals','obs','Observação')}</th><th>${excelHead('animals','createdAt','Criada em')}</th><th></th></tr>
+  <tr><th></th>${animalSelecting?'<th>✓</th>':''}<th style="width:44px;min-width:44px">${excelHead('animals','n','Nº')}</th><th>${excelHead('animals','rgd','RGD')}</th><th>${excelHead('animals','firstSire','1º Acasalamento')}</th><th>${excelHead('animals','category','Categoria')}</th><th>${excelHead('animals','status','Situação')}</th><th>${excelHead('animals','curCycle','IATF atual')}</th><th>${excelHead('animals','obs','Observação')}</th><th>${excelHead('animals','createdAt','Criada em')}</th><th></th></tr>
   </thead><tbody>${rows.map(a=>`<tr ondragover="rowDragOver(event)" ondrop="rowDrop(event,'animals','${a.id}')">
   ${rowHandleTd('animals',a.id)}
   ${animalSelecting?`<td><input class="checkbox" type="checkbox" ${animalSelected.has(a.id)?'checked':''} onchange="selectAnimal('${a.id}',this.checked)"></td>`:''}
+  <td style="text-align:center;color:#69746c;font-size:10.5px">${a.n||''}</td>
   <td><input class="cell-input nav-rgd" style="font-weight:700;min-width:110px" value="${esc(a.rgd)}" data-prev="${esc(a.rgd)}" onkeydown="iatfEnter(event,'nav-rgd')" onchange="editAnimalCell('${a.id}','rgd',this.value,this)"></td>
   <td><input class="cell-input nav-sire" list="bullsList" style="min-width:210px" value="${esc(a.firstSire)}" data-prev="${esc(a.firstSire)}" onkeydown="iatfEnter(event,'nav-sire')" onfocus="this.select()" onchange="editAnimalCell('${a.id}','firstSire',this.value,this)"></td>
   <td><select class="cell-input category-select nav-cat ${catClass(a.category)}" style="min-width:120px" onkeydown="iatfEnter(event,'nav-cat')" onchange="editAnimalCell('${a.id}','category',this.value,this)">${categories().map(x=>`<option ${x===a.category?'selected':''}>${x}</option>`).join('')}</select></td>
@@ -2037,21 +2104,36 @@ function toggleIatfCategory(cat,checked){
   if(checked)prepareIatfCategories();else save();
   renderIatfRows();
 } window.toggleIatfCategory=toggleIatfCategory;
-function selectIatfCycle(v){iatfCycle=Number(v);iatfCategory='';excelFilters.iatf={};iatfPage()} window.selectIatfCycle=selectIatfCycle;
+function selectIatfCycle(v){v=String(v);if(v.startsWith('m:')){montaAtual=v.slice(2)}else{montaAtual='';iatfCycle=Number(v)}iatfCategory='';excelFilters.iatf={};excelFilters.monta={};iatfPage()} window.selectIatfCycle=selectIatfCycle;
+// seletor único: IATFs numeradas + Montas naturais
+function seletorIatfHTML(){
+  const ms=seasonMontas();
+  return `<select id="cycleSel" onchange="selectIatfCycle(this.value)">${Array.from({length:maxIatfCycle()},(_,i)=>i+1).map(c=>`<option value="${c}" ${!montaAtual&&c===iatfCycle?'selected':''}>${c}ª IATF</option>`).join('')}${ms.length?`<optgroup label="Monta natural">${ms.map(m=>`<option value="m:${esc(m.id)}" ${montaAtual===m.id?'selected':''}>${esc(montaNome(m))}</option>`).join('')}</optgroup>`:''}</select><button class="ghost" onclick="abrirCriar()">+ Criar</button>`;
+}
+function abrirCriar(){
+  openModal(`<h2>Criar</h2><div class="criar-op"><button class="primary" onclick="closeModal();createNextIatf()">💉 IATF<small>${maxIatfCycle()+1}ª IATF</small></button><button class="primary monta" onclick="closeModal();criarMonta()">🐂 Monta natural<small>${seasonMontas().length+1}ª Monta natural</small></button></div><div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button></div>`);
+} window.abrirCriar=abrirCriar;
+function criarMonta(){
+  const sid=db.meta.activeSeasonId,n=Math.max(0,...seasonMontas().map(m=>Number(m.n)||0))+1;
+  const m={id:uid('mn'),seasonId:sid,n,data:'',touro:'',toque:''};
+  db.montas.push(m);montaAtual=m.id;excelFilters.monta={};save();iatfPage();quickAddAnimalToCycle();
+} window.criarMonta=criarMonta;
 function iatfPage(){
-  title('IATF','Lançamentos da '+activeSeason().name);setActions(menuOpcoes([['⬇ Baixar Excel',"openIatfOutput('export')"],['🖨 Imprimir',"openIatfOutput('print')"]]));
+  if(montaAtual&&!montaById(montaAtual))montaAtual='';
+  if(montaAtual)return montaPage();
+  title('IATF','Lançamentos da '+activeSeason().name);setActions(menuOpcoes([['⬇ Baixar Excel',"openIatfOutput('export')"],['🖨 Imprimir',"openIatfOutput('print')"],[`↩ Excluídas desta IATF (${iatfExcludedCurrent().length})`,'openIatfExcluded()'],['🗑 Excluir esta IATF','excluirIatfAtual()']]));
   $('#content').innerHTML=`
   ${bullDatalist()}${animalDatalist()}<datalist id="resultList"><option value="P"></option><option value="V"></option><option value="PRT"></option></datalist>
   <div class="iatf-page">
   <div class="toolbar" style="margin-bottom:9px">
     <div class="filters">
-      <select id="cycleSel" onchange="selectIatfCycle(this.value)">${Array.from({length:maxIatfCycle()},(_,i)=>i+1).map(c=>`<option value="${c}" ${c===iatfCycle?'selected':''}>${c}ª IATF</option>`).join('')}</select><button class="ghost" onclick="createNextIatf()">+ Criar IATF</button>
+      ${seletorIatfHTML()}
       ${caixaTopo('data',`Data da ${iatfCycle}ª IATF`,cycleDate(iatfCycle),`<input type="date" class="input" style="min-width:145px" value="${esc(cycleDate(iatfCycle))}" onchange="setCycleDate(${iatfCycle},this.value)">`)}${caixaTopo('toque','Data do Toque',toqueDate(iatfCycle),`<input type="date" class="input" style="min-width:145px" value="${esc(toqueDate(iatfCycle))}" onchange="setToqueDate(${iatfCycle},this.value)">`)}
     </div>
   </div>
   <div class="toolbar">
     <div class="filters">
-      <button class="primary" onclick="quickAddAnimalToCycle()">+ Matriz(es) nesta IATF</button><button class="ghost" onclick="openIatfExcluded()">Excluídas desta IATF (${iatfExcludedCurrent().length})</button><button class="ghost" onclick="openPrtPanel()">⟳ PRTs (${prtAnimals().length})</button><button class="ghost" onclick="openReturnsPanel()">↩ Retornos (${returnRows().length})</button><button class="ghost btn-prev" onclick="abrirPrevisaoDoses()" title="Previsão Doses x Tem no Estoque">🧪 Previsão doses</button>
+      <button class="primary" onclick="quickAddAnimalToCycle()">+ Matriz</button><button class="ghost" onclick="openPrtPanel()">⟳ PRTs (${prtAnimals().length})</button><button class="ghost" onclick="openReturnsPanel()">↩ Retornos (${returnRows().length})</button><button class="ghost btn-prev" onclick="abrirPrevisaoDoses()" title="Previsão Doses x Tem no Estoque">🧪 Previsão doses</button>
       <div id="iatfResumo" class="fiv-resumo inline"></div>
     </div>
   </div>
@@ -2059,11 +2141,114 @@ function iatfPage(){
   </div>`;
   renderIatfRows()
 }
+let montaSort={key:'',dir:1};
+function montaPage(){
+  const m=montaById(montaAtual);
+  title('Monta natural','Lançamentos da '+activeSeason().name);
+  setActions(menuOpcoes([['⬇ Baixar Excel','exportMonta()'],['🖨 Imprimir','printMonta()'],['🗑 Excluir esta monta','excluirMontaAtual()']]));
+  $('#content').innerHTML=`
+  ${bullDatalist()}<datalist id="montaResList"><option value="P"></option><option value="V"></option></datalist>
+  <div class="iatf-page monta-page">
+  <div class="toolbar" style="margin-bottom:9px">
+    <div class="filters">
+      ${seletorIatfHTML()}
+      ${caixaTopo('data','Data da monta',m.data,`<input type="date" class="input" style="min-width:145px" value="${esc(m.data||'')}" onchange="setMontaCampo('data',this.value)">`)}${caixaTopo('local','Touro',m.touro,`<input class="input" list="bullsList" style="min-width:170px" value="${esc(m.touro||'')}" placeholder="Touro de pasto" onchange="setMontaCampo('touro',this.value)">`)}${caixaTopo('toque','Data do Toque',m.toque,`<input type="date" class="input" style="min-width:145px" value="${esc(m.toque||'')}" onchange="setMontaCampo('toque',this.value)">`)}
+    </div>
+  </div>
+  <div class="toolbar">
+    <div class="filters">
+      <button class="primary" onclick="quickAddAnimalToCycle()">+ Matriz</button>
+      <div id="montaResumo" class="fiv-resumo inline"></div>
+    </div>
+  </div>
+  <div id="montaTable"></div>
+  </div>`;
+  renderMontaRows();
+}
+function setMontaCampo(k,v){const m=montaById(montaAtual);if(!m)return;m[k]=String(v||'').trim();save()} window.setMontaCampo=setMontaCampo;
+function montaRowsFiltered(){
+  const all=montaRowsDe(montaAtual).map(r=>({...r,iatfRes:iatfStatus(r.rgd)}));
+  const k=montaSort.key,d=montaSort.dir;
+  return linhasEstaveis('monta',all,r=>excelPass('monta',r),rows=>{
+    if(k==='n')rows.sort((a,b)=>((Number(a.n)||0)-(Number(b.n)||0))*d);
+    else if(k)rows.sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'pt-BR',{numeric:true})*d);return rows},[db.meta.activeSeasonId,montaAtual,montaSort]);
+}
+function atualizarResumoMonta(){const el=$('#montaResumo');if(el)el.innerHTML=resumoHTML(resumoRes(montaRowsDe(montaAtual),r=>montaRes(r.result)),true)}
+const resBadge=v=>v?`<span class="badge ${resClass(v)}">${v}</span>`:'<span style="color:#aab3ad">—</span>';
+function renderMontaRows(){
+  const root=$('#montaTable');if(!root)return;
+  const __view=captureViewPosition();
+  garantirNMonta(db.montaRows);
+  atualizarResumoMonta();
+  const rows=montaRowsFiltered(),total=montaRowsDe(montaAtual).length;
+  root.innerHTML=`<div style="display:flex;justify-content:flex-end;align-items:center;margin:0 2px 8px;font-size:11px;color:#69746c"><span><strong style="color:#233129;margin-right:4px">${rows.length}</strong> matriz(es) exibida(s) de <strong style="color:#233129;margin:0 4px">${total}</strong> nesta monta</span></div><div class="table-wrap"><table class="monta-tab"><thead>
+  <tr><th style="width:44px;min-width:44px">${excelHead('monta','n','Nº')}</th><th>${excelHead('monta','rgd','RGD')}</th><th>${excelHead('monta','sire','Acasalamento')}</th><th>${excelHead('monta','iatfRes','Resultado IATF')}</th><th>${excelHead('monta','result','Resultado monta')}</th><th>${excelHead('monta','category','Categoria')}</th><th></th></tr>
+  </thead><tbody>${rows.map(r=>`<tr>
+  <td style="text-align:center;color:#69746c;font-size:10.5px">${r.n||''}</td>
+  <td><strong>${esc(r.rgd)}</strong></td>
+  <td><input class="cell-input nav-msire" list="bullsList" style="min-width:190px" value="${esc(r.sire||'')}" placeholder="—" onfocus="this.select()" onkeydown="iatfEnter(event,'nav-msire')" onchange="updateMontaCell('${r.id}','sire',this.value)"></td>
+  <td style="text-align:center" title="Puxado da última IATF dessa matriz">${resBadge(r.iatfRes)}</td>
+  <td><input class="cell-input nav-mres" list="montaResList" maxlength="1" style="width:70px;text-align:center" value="${esc(montaRes(r.result))}" oninput="this.value=this.value.toUpperCase()" onkeydown="iatfEnter(event,'nav-mres')" onchange="updateMontaResult('${r.id}',this.value,this)"></td>
+  <td><span class="badge ${catClass(r.category)}">${esc(r.category)}</span></td>
+  <td><button class="mini" onclick="tirarDaMonta('${r.id}')">Excluir</button></td></tr>`).join('')}</tbody></table></div>`;
+  restoreViewPosition(__view);
+}
+function updateMontaCell(id,k,v){const r=(db.montaRows||[]).find(x=>x.id===id);if(!r)return;r[k]=String(v||'').trim();save()} window.updateMontaCell=updateMontaCell;
+function updateMontaResult(id,val,el){
+  const v=montaRes(val);
+  if(String(val||'').trim()&&!v){alert('Resultado da monta deve ser P ou V.');const r0=(db.montaRows||[]).find(x=>x.id===id);el.value=r0?montaRes(r0.result):'';return}
+  const r=(db.montaRows||[]).find(x=>x.id===id);if(!r)return;
+  r.result=v;el.value=v;save();atualizarResumoMonta();
+} window.updateMontaResult=updateMontaResult;
+function tirarDaMonta(id){
+  const r=(db.montaRows||[]).find(x=>x.id===id);if(!r)return;
+  if(!confirm(`Tirar ${r.rgd} desta monta?`))return;
+  db.montaRows=db.montaRows.filter(x=>x.id!==id);save();manterTela(montaPage);
+} window.tirarDaMonta=tirarDaMonta;
+function excluirMontaAtual(){
+  const m=montaById(montaAtual);if(!m)return;const n=montaRowsDe(m.id).length;
+  if(!confirm(`Excluir a ${montaNome(m)}${n?` e as ${n} matriz(es) lançadas nela`:''}?\n\nSe foi engano, dá pra voltar no botão Desfazer.`))return;
+  db.montaRows=db.montaRows.filter(r=>r.montaId!==m.id);db.montas=db.montas.filter(x=>x.id!==m.id);
+  // renumera as montas seguintes (a 3ª vira 2ª)
+  seasonMontas().forEach((x,i)=>x.n=i+1);
+  montaAtual='';iatfCycle=Math.min(iatfCycle,maxIatfCycle());save();iatfPage();
+} window.excluirMontaAtual=excluirMontaAtual;
+function excluirIatfAtual(){
+  const sid=db.meta.activeSeasonId,c=Number(iatfCycle),max=maxIatfCycle(),n=seasonRows().filter(r=>Number(r.cycle)===c).length;
+  if(!confirm(`Excluir a ${c}ª IATF${n?` e as ${n} matriz(es) lançadas nela`:''}?`+(c<max?`\n\nAs IATFs depois dela mudam de número (a ${c+1}ª vira ${c}ª).`:'')+`\n\nSe foi engano, dá pra voltar no botão Desfazer.`))return;
+  db.iatf=db.iatf.filter(r=>!(r.seasonId===sid&&Number(r.cycle)===c));
+  db.iatf.forEach(r=>{if(r.seasonId===sid&&Number(r.cycle)>c)r.cycle=Number(r.cycle)-1});
+  [db.cycleDates,db.toqueDates,db.iatfCycleCategories].forEach(mp=>{const o=mp&&mp[sid];if(!o)return;const novo={};Object.keys(o).forEach(k=>{const kk=Number(k);if(kk<c)novo[k]=o[k];else if(kk>c)novo[String(kk-1)]=o[k]});mp[sid]=novo});
+  db.iatfExcluded=(db.iatfExcluded||[]).filter(e=>!(e.seasonId===sid&&Number(e.cycle)===c));
+  db.iatfExcluded.forEach(e=>{if(e.seasonId===sid&&Number(e.cycle)>c)e.cycle=Number(e.cycle)-1});
+  db.iatfMaxCycles=db.iatfMaxCycles||{};db.iatfMaxCycles[sid]=Math.max(1,max-1);
+  iatfCycle=Math.max(1,Math.min(c,maxIatfCycle()));excelFilters.iatf={};save();iatfPage();
+} window.excluirIatfAtual=excluirIatfAtual;
+function montaExportRows(lista){
+  return lista.map(r=>{const m=montaById(r.montaId)||{};return {MONTA:montaNome(m),DATA_MONTA:fmtDate(m.data),TOURO_MONTA:m.touro||'',DATA_TOQUE:fmtDate(m.toque),N:Number(r.n)||'',RGD:r.rgd,ACASALAMENTO:r.sire||'',RESULTADO_IATF:iatfStatus(r.rgd),RESULTADO_MONTA:montaRes(r.result),CATEGORIA:r.category||''}});
+}
+function exportMonta(){
+  const m=montaById(montaAtual);if(!m)return;
+  downloadSheets([[`${m.n}ª Monta`,montaExportRows(montaRowsFiltered())]],fileSafe(montaNome(m)+' '+activeSeason().name)+'.xlsx');
+} window.exportMonta=exportMonta;
+function printMonta(){
+  const m=montaById(montaAtual);if(!m)return;const rows=montaRowsFiltered();
+  const info=[m.data?`Data: ${fmtDate(m.data)}`:'',m.touro?`Touro: ${esc(m.touro)}`:'',m.toque?`Toque: ${fmtDate(m.toque)}`:''].filter(Boolean).join(' · ');
+  printHTML(`${montaNome(m)} - ${activeSeason().name}`,`<h2>${esc(montaNome(m))}</h2>${info?`<p>${info}</p>`:''}${resumoPrintHTML(resumoRes(montaRowsDe(m.id),r=>montaRes(r.result))).replace('<th>PRT</th>','').replace(/<td>0<\/td>(?=<td><b>)/,'')}<table><thead><tr><th>Nº</th><th>RGD</th><th>Acasalamento</th><th>Resultado IATF</th><th>Resultado monta</th><th>Categoria</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.n||''}</td><td><b>${esc(r.rgd)}</b></td><td>${esc(r.sire||'')}</td><td>${r.iatfRes||''}</td><td>${montaRes(r.result)}</td><td>${esc(r.category||'')}</td></tr>`).join('')}</tbody></table>`);
+} window.printMonta=printMonta;
 function animalDatalist(){return `<datalist id="animalsList">${seasonAnimals().map(a=>`<option value="${esc(a.rgd)}">${esc(a.category)}</option>`).join('')}</datalist>`}
+// linha da última IATF com resultado da matriz (é nela que o PRT foi lançado)
+function prtLinha(rgd){return seasonRows().filter(r=>r.rgd===rgd&&effectiveResult(r)).sort((x,y)=>Number(y.cycle)-Number(x.cycle))[0]}
+// Lista de PRTs: quem está com PRT, e quem era PRT e virou V no toque (prtV) — essa fica na lista até ir pra outra IATF
 function prtAnimals(){
-  return seasonAnimals().filter(a=>latestStatus(a.rgd)==='PRT').map(a=>{
-    const rows=seasonRows().filter(r=>r.rgd===a.rgd&&effectiveResult(r)==='PRT').sort((x,y)=>Number(y.cycle)-Number(x.cycle));
-    return {...a, prtCycle: rows.length?Number(rows[0].cycle):''}
+  return seasonAnimals().filter(a=>{
+    if(montaStatus(a.rgd))return false;
+    const r=prtLinha(a.rgd);if(!r)return false;const res=effectiveResult(r);
+    if(res==='PRT')return true;
+    return res==='V'&&r.prtV&&!seasonRows().some(x=>x.rgd===a.rgd&&Number(x.cycle)>Number(r.cycle));
+  }).map(a=>{
+    const r=prtLinha(a.rgd);
+    return {...a, prtCycle:Number(r.cycle), prtRes:effectiveResult(r)}
   })
 }
 function renderIatfRows(){
@@ -2153,7 +2338,7 @@ function updateIatfResult(id,val,el){
   val=normResult(val);
   if(el.value.trim() && !val){alert('Resultado deve ser P, V ou PRT.');el.value='';return}
   const r=db.iatf.find(x=>x.id===id);if(!r)return;
-  r.result=val; el.value=val;
+  r.result=val; el.value=val;if(val!=='V')delete r.prtV;
   atualizarResumoIatf();
   // Na nova lógica, nenhuma matriz é lançada automaticamente na próxima IATF.
   const before=db.iatf.length;
@@ -2177,10 +2362,10 @@ function openPrtPanel(){
     const l=list.filter(a=>a.category===cat);
     if(!l.length)return '';
     return `<div style="margin-bottom:14px"><div class="sub" style="font-weight:700;margin-bottom:6px"><span class="badge ${catClass(cat)}">${cat}</span> — ${l.length}</div>
-    ${l.map(a=>`<label class="excel-value" style="padding:6px 2px;border-bottom:1px solid #edf0ee"><input type="checkbox" class="prt-pick" value="${esc(a.rgd)}"><span><strong>${esc(a.rgd)}</strong> <span class="muted">— PRT na ${a.prtCycle}ª IATF</span>${toqueDate(a.prtCycle)?` <span class="muted">· toque ${fmtDate(toqueDate(a.prtCycle))}</span>`:''}</span></label>`).join('')}</div>`
+    ${l.map(a=>`<div class="prt-linha"><label class="excel-value"><input type="checkbox" class="prt-pick" value="${esc(a.rgd)}"><span><strong>${esc(a.rgd)}</strong> <span class="muted">— ${a.prtRes==='V'?'era PRT, deu Vazia':'PRT'} na ${a.prtCycle}ª IATF</span>${toqueDate(a.prtCycle)?` <span class="muted">· toque ${fmtDate(toqueDate(a.prtCycle))}</span>`:''}</span></label><select class="prt-res ${a.prtRes==='V'?'res-v':'res-m'}" title="Resultado" onchange="setPrtResult('${esc(a.rgd)}',this.value)"><option value="PRT" ${a.prtRes==='PRT'?'selected':''}>PRT</option><option value="P">P</option><option value="V" ${a.prtRes==='V'?'selected':''}>V</option></select></div>`).join('')}</div>`
   }).join('');
   openModal(`<h2>PRTs — devolver para uma IATF</h2>
-  <div class="notice green">Marque as matrizes que voltam a ser trabalhadas e escolha em qual IATF elas devem reaparecer para você classificar de novo.</div>
+  <div class="notice green">Lance o resultado do toque do lado (P sai da lista; V continua aqui pra ir pra outra IATF). Pra devolver, marque e escolha a IATF embaixo.</div>
   <div style="max-height:340px;overflow:auto;border:1px solid #e3e7e4;border-radius:8px;padding:10px">${porCat}</div>
   <div class="form-grid" style="margin-top:14px">
     <div class="field"><label>Devolver para</label><select id="prtCycle">${Array.from({length:maxIatfCycle()},(_,i)=>i+1).map(c=>`<option value="${c}" ${c===iatfCycle?'selected':''}>${c}ª IATF</option>`).join('')}</select></div>
@@ -2245,6 +2430,18 @@ function exportReturns(){
   const out=returnRows().map(r=>({DATA_RETORNO:fmtDate(r.return),RGD:r.rgd,CATEGORIA:r.category||'',APOS_IATF:Number(r.cycle),TOURO_RETORNO:r.returnSire||'',RESULTADO_RETORNO:r.returnResult||''}));
   jsonToXlsx(out,'retornos_'+fileSafe(activeSeason().name)+'.xlsx','Retornos');
 } window.exportReturns=exportReturns;
+function setPrtResult(rgd,v){
+  const r=prtLinha(rgd);if(!r)return;
+  const campo=normResult(r.returnResult)?'returnResult':'result';
+  if(v==='P'){r[campo]='P';delete r.prtV;removeEmptyFollowUps(r)}
+  else if(v==='V'){r[campo]='V';r.prtV=true}
+  else{r[campo]='PRT';delete r.prtV}
+  save();
+  const marcadas=new Set($$('.prt-pick').filter(x=>x.checked).map(x=>x.value)),cy=($('#prtCycle')||{}).value;
+  if(page==='iatf')iatfPage();
+  if(prtAnimals().length){openPrtPanel();$$('.prt-pick').forEach(x=>x.checked=marcadas.has(x.value));const s=$('#prtCycle');if(s&&cy)s.value=cy}
+  else closeModal();
+} window.setPrtResult=setPrtResult;
 function prtSelectAll(){$$('.prt-pick').forEach(x=>x.checked=true)} window.prtSelectAll=prtSelectAll;
 function returnPrts(){
   const picks=$$('.prt-pick').filter(x=>x.checked).map(x=>x.value);
@@ -2262,18 +2459,19 @@ function returnPrts(){
   iatfPage()
 } window.returnPrts=returnPrts;
 function quickAddAnimalToCycle(){
-  const jaNaIatf=new Set(seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle)).map(r=>r.rgd));
+  const mAlvo=montaAtual?montaById(montaAtual):null;
+  const jaNaIatf=new Set(mAlvo?montaRowsDe(mAlvo.id).map(r=>r.rgd):seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle)).map(r=>r.rgd));
   const disponiveis=seasonAnimals().filter(a=>!jaNaIatf.has(a.rgd)).map(a=>{
     // resultado e retorno em cada IATF (pra filtrar "resultado só da 1ª IATF", por exemplo)
     const por={};seasonRows().filter(r=>r.rgd===a.rgd).forEach(r=>{por[Number(r.cycle)]={s:normResult(r.result),ret:hasReturn(r)?1:0}});
     return {...a,status:latestStatus(a.rgd),ret:seasonRows().some(r=>r.rgd===a.rgd&&hasReturn(r))?1:0,por};
   }).sort((a,b)=>a.rgd.localeCompare(b.rgd,'pt-BR',{numeric:true}));
-  if(!disponiveis.length)return alert('Todas as matrizes cadastradas já estão nesta IATF.');
-  const ciclosQa=[...new Set(seasonRows().map(r=>Number(r.cycle)))].filter(c=>c!==Number(iatfCycle)).sort((a,b)=>a-b);
+  if(!disponiveis.length)return alert(`Todas as matrizes cadastradas já estão nesta ${mAlvo?'monta':'IATF'}.`);
+  const ciclosQa=[...new Set(seasonRows().map(r=>Number(r.cycle)))].filter(c=>mAlvo||c!==Number(iatfCycle)).sort((a,b)=>a-b);
   // já vem marcada a IATF anterior a esta (ex.: adicionando na 3ª, mostra o resultado da 2ª)
-  const cicloPadraoQa=ciclosQa.filter(c=>c<Number(iatfCycle)).pop()??ciclosQa[ciclosQa.length-1];
+  const cicloPadraoQa=mAlvo?ciclosQa[ciclosQa.length-1]:ciclosQa.filter(c=>c<Number(iatfCycle)).pop()??ciclosQa[ciclosQa.length-1];
   const linhas=disponiveis.map(a=>`<label class="excel-value qa-row" data-cat="${esc(a.category)}" data-status="${a.status}" data-ret="${a.ret}" data-por='${esc(JSON.stringify(a.por))}' data-search="${esc(norm(a.rgd)).toLowerCase()}" style="padding:6px 2px;border-bottom:1px solid #edf0ee"><input type="checkbox" class="qa-pick" value="${esc(a.rgd)}"><span><strong>${esc(a.rgd)}</strong> <span class="badge ${catClass(a.category)}" style="margin-left:6px">${esc(a.category)}</span> <span class="badge qa-st ${resClass(a.status)}" style="margin-left:4px">${statusLabel(a.status)}</span>${a.ret?' <span class="badge qa-ret" style="margin-left:4px;background:#e8eefb;color:#2c4a86">Retorno</span>':''}</span></label>`).join('');
-  openModal(`<h2>Adicionar na ${iatfCycle}ª IATF</h2>
+  openModal(`<h2>Adicionar na ${mAlvo?esc(montaNome(mAlvo)):iatfCycle+'ª IATF'}</h2>
   <div class="form-grid qa-filtros" style="margin-bottom:10px">
     <div class="field"><label>Categoria</label>
       <div class="quick-add">
@@ -2326,6 +2524,12 @@ function saveQuickAnimal(){
   const rgds=$$('.qa-pick').filter(x=>x.checked).map(x=>x.value);
   if(!rgds.length)return alert('Marque pelo menos uma matriz.');
   let ok=0;
+  if(montaAtual&&montaById(montaAtual)){
+    const ja=new Set(montaRowsDe(montaAtual).map(r=>r.rgd));
+    rgds.forEach(rgd=>{const a=seasonAnimals().find(x=>x.rgd===rgd);if(!a||ja.has(a.rgd))return;
+      db.montaRows.push({id:uid('mr'),seasonId:db.meta.activeSeasonId,montaId:montaAtual,rgd:a.rgd,category:a.category,sire:'',result:''});ja.add(a.rgd)});
+    garantirNMonta(db.montaRows);save();closeModal();iatfPage();return;
+  }
   rgds.forEach(rgd=>{
     const a=seasonAnimals().find(x=>x.rgd===rgd);if(!a)return;
     if(seasonRows().some(r=>r.rgd===a.rgd&&Number(r.cycle)===iatfCycle))return;
@@ -3004,9 +3208,9 @@ function iatfResumo(rows){return resumoRes(rows,r=>r.result)}
 // linhas do quadro pro Excel (planilha comum) e tabela pra impressão
 const resumoLinhasXlsx=(q,titulo)=>[[titulo],[],['PRENHA','VAZIA','PRT','TOTAL'],[q.p,q.v,q.prt,q.total],[],['% PRENHA','% VAZIA'],[pctTxt(q.pctP),pctTxt(q.pctV)],[]];
 const resumoPrintHTML=q=>`<div style="display:flex;gap:14px;margin:0 0 14px"><table style="width:auto"><thead><tr><th>Prenha</th><th>Vazia</th><th>PRT</th><th>Total</th></tr></thead><tbody><tr><td>${q.p}</td><td>${q.v}</td><td>${q.prt}</td><td><b>${q.total}</b></td></tr></tbody></table><table style="width:auto"><thead><tr><th>% Prenha</th><th>% Vazia</th></tr></thead><tbody><tr><td><b>${pctTxt(q.pctP)}</b></td><td><b>${pctTxt(q.pctV)}</b></td></tr></tbody></table></div>`;
-function resumoHTML(q){
+function resumoHTML(q,semPrt){
   const box=(t,cells)=>`<div class="fiv-q"><div class="fiv-q-t">${t}</div><div class="fiv-q-c">${cells.map(([l,v,cor])=>`<div><span>${l}</span><strong style="color:${cor||'#233129'}">${v}</strong></div>`).join('')}</div></div>`;
-  return box('Quantidade',[['Prenha',q.p,'#216440'],['Vazia',q.v,'#b8483a'],['PRT',q.prt,'#c08a2e'],['Total',q.total]])
+  return box('Quantidade',[['Prenha',q.p,'#216440'],['Vazia',q.v,'#b8483a'],...(semPrt?[]:[['PRT',q.prt,'#c08a2e']]),['Total',q.total]])
     +box('Resultado',[['% Prenha',pctTxt(q.pctP),'#216440'],['% Vazia',pctTxt(q.pctV),'#b8483a']]);
 }
 function fivResumoHTML(){return resumoHTML(fivResumo(fivDaData()))}
@@ -3403,7 +3607,7 @@ function deleteStock(id){const s=db.semen.find(x=>x.id===id);if(!s)return;if(sir
 function defaultNoticeTexts(){
   return {
     animals:'Clique direto nas células para editar. O 1º acasalamento e a categoria são espelhados com a aba IATF automaticamente. Adicionar uma matriz não a coloca em nenhuma IATF sozinha — use a coluna "IATF atual" pra colocar ela numa IATF quando quiser.',
-    iatf:'Nº Caneca puxa sozinho a caneca do touro cadastrada no Estoque (cinza); se digitar, vale o que você digitou. Retorno: se a matriz foi pro curral depois da IATF (ex: apareceu no cio), preencha a data do Retorno, e o Touro Retorno (desconta 1 dose do Estoque); o resultado do retorno é lançado no botão ↩ Retornos. 🧪 Previsão doses: pega as linhas com touro e sem QTD (ainda não baixaram do estoque; cada uma = 1 dose) e mostra só os touros que vão faltar. O resultado do retorno passa a valer como situação dela, e o touro do retorno aparece em Matrizes até ela entrar numa próxima IATF. O botão ↩ Retornos lista todas e deixa colocar numa IATF. Inserção sempre manual, com filtro pra te ajudar a achar rápido. Clica em "+ Matriz(es) nesta IATF", filtra por categoria e situação (Vazia, Sem resultado, PRT...) e marca quem entra. Nada entra sozinho — nem matriz nova, nem por categoria inteira.',
+    iatf:'Nº Caneca puxa sozinho a caneca do touro cadastrada no Estoque (cinza); se digitar, vale o que você digitou. Retorno: se a matriz foi pro curral depois da IATF (ex: apareceu no cio), preencha a data do Retorno, e o Touro Retorno (desconta 1 dose do Estoque); o resultado do retorno é lançado no botão ↩ Retornos. 🧪 Previsão doses: pega as linhas com touro e sem QTD (ainda não baixaram do estoque; cada uma = 1 dose) e mostra só os touros que vão faltar. O resultado do retorno passa a valer como situação dela, e o touro do retorno aparece em Matrizes até ela entrar numa próxima IATF. O botão ↩ Retornos lista todas e deixa colocar numa IATF. Inserção sempre manual, com filtro pra te ajudar a achar rápido. Clica em "+ Matriz", filtra por categoria e situação (Vazia, Sem resultado, PRT...) e marca quem entra. Nada entra sozinho — nem matriz nova, nem por categoria inteira.',
     acasal:'🔎 Buscar acasalamento pelo RGD: digita o número da matriz e aparecem os touros de IATF e FIV dela (todas as datas da estação). Aba de planejamento, totalmente separada de Matrizes e IATF — não sincroniza com elas. Preenche os touros previstos pra cada IATF/FIV (Enter desce a linha, Tab vai pro campo do lado, igual Excel). O botão dourado usa RGD + Categoria + 1º IATF (como 1º acasalamento) — pronto pra subir direto na aba Matrizes. Os dois downloads respeitam os filtros da tabela, então filtrar por "Criada em" antes de baixar só pega quem você quer.',
     embrioes:'Uma doadora pode ter mais de uma linha, uma pra cada touro usado nela. Usados vem sozinho da aba FIV (conta as linhas de FIV com esse RGD + esse touro + esse Tipo). O − / + em cima de cada grupo (Estoque, Saída Fazenda, Usados, Saldo) esconde ou mostra as colunas dele, igual o Agrupar do Excel. Saldo = Estoque + Saída − Usados (cobre tanto embrião que sai direto do estoque central pra vaca quanto o que passa pela fazenda antes).',
     fiv:'RGD Doadora sugere da lista já cadastrada em Embriões (cadastre lá primeiro se ainda não existir). 1º Acasalamento só sugere os touros que essa doadora específica tem lançados em Embriões — troque o RGD que a lista de touros atualiza sozinha. O Tipo (Fresco/VIT/DT) é o que conta pro "Usados" lá em Embriões — sem ele, essa linha não entra na contagem.',
@@ -3550,7 +3754,7 @@ function saveSeason(id){
   save();closeModal();settings();renderSeasonSelector()
 } window.saveSeason=saveSeason;
 // Ao trocar de estação, limpa filtros/seleções da tela pra nada da estação anterior "vazar" pra nova.
-function resetSeasonView(){Object.keys(excelFilters).forEach(k=>excelFilters[k]={});iatfCycle=1;fivData=null;acasalData=null;iatfCategory='';animalSelecting=false;animalSelected.clear()}
+function resetSeasonView(){Object.keys(excelFilters).forEach(k=>excelFilters[k]={});iatfCycle=1;montaAtual='';fivData=null;acasalData=null;iatfCategory='';animalSelecting=false;animalSelected.clear()}
 function activateSeason(id){if(id!==db.meta.activeSeasonId)resetSeasonView();db.meta.activeSeasonId=id;save();render()} window.activateSeason=activateSeason;
 function deleteSeason(id){
   const s=db.seasons.find(x=>x.id===id);if(!s)return;
@@ -3598,7 +3802,8 @@ async function exportSeasonAll(){
   const byRgd=(a,b)=>String(a.rgd).localeCompare(String(b.rgd),'pt-BR',{numeric:true});
   const iatfRows=seasonRows().slice().sort((a,b)=>String(a.category).localeCompare(String(b.category))||byRgd(a,b));
   const matRows=seasonAnimals().slice().sort(byRgd)
-    .map(a=>({RGD:a.rgd,'1_ACASALAMENTO':currentSire(a),CATEGORIA:a.category,SITUACAO:statusLabel(latestStatus(a.rgd)),IATF_ATUAL:matrizCurrentCycle(a.rgd)}));
+    .map(a=>({N:Number(a.n)||'',RGD:a.rgd,'1_ACASALAMENTO':currentSire(a),CATEGORIA:a.category,SITUACAO:statusLabel(latestStatus(a.rgd)),IATF_ATUAL:matrizCurrentCycle(a.rgd)}));
+  const montaRowsX=montaExportRows(seasonMontaRows().slice().sort((a,b)=>((montaById(a.montaId)||{}).n||0)-((montaById(b.montaId)||{}).n||0)||(Number(a.n)||0)-(Number(b.n)||0)));
   const retRows=returnRows().map(r=>({DATA_RETORNO:fmtDate(r.return),RGD:r.rgd,CATEGORIA:r.category||'',APOS_IATF:Number(r.cycle),TOURO_RETORNO:r.returnSire||'',RESULTADO_RETORNO:r.returnResult||''}));
   const acRows=seasonAcasal().filter(a=>String(a.rgd||'').trim()).map(a=>({RGD:a.rgd,CATEGORIA:a.category||'','1_IATF':a.iatf1||'','2_IATF':a.iatf2||'','3_IATF':a.iatf3||'','4_IATF':a.iatf4||'','1_FIV':a.fiv1||'','2_FIV':a.fiv2||''}));
   const nuRows=seasonNaoUtil().filter(r=>String(r.rgd||'').trim()).map(r=>({RGD:r.rgd,CATEGORIA:r.category||'',DESTINACAO:r.destino||'',MOTIVO:r.motivo||''}));
@@ -3617,6 +3822,7 @@ async function exportSeasonAll(){
     {INDICADOR:'Vazias',VALOR:oc.V},
     {INDICADOR:'PRT',VALOR:oc.PRT},
     {INDICADOR:'Lançamentos de FIV',VALOR:fivRows.length},
+    {INDICADOR:'Lançamentos de Monta natural',VALOR:montaRowsX.length},
     {INDICADOR:'Doses de sêmen em saldo',VALOR:db.semen.reduce((a,s)=>a+stockBalance(s),0)},
     {INDICADOR:'Embriões em saldo',VALOR:embRows.reduce((a,e)=>a+(Number(e.SALDO_TOTAL)||0),0)},
     {INDICADOR:'Gerado em',VALOR:new Date().toLocaleString('pt-BR')},
@@ -3625,7 +3831,7 @@ async function exportSeasonAll(){
     ['Resumo',resumo],
     ...iatfSheets(iatfRows),
     ['Matrizes',matRows],['Retornos',retRows],['Acasalamentos',acRows],['Não utilizadas',nuRows],
-    ['FIV',fivRows],['Estoque Sêmen',stkRows],['Movimentações Sêmen',(db.semenMov||[]).slice().sort((a,b)=>String(a.data).localeCompare(String(b.data))).map(m=>({DATA:fmtDate(m.data),TIPO:m.tipo==='entrada'?'Entrada':'Saída',TOURO:m.touro,BOTIJAO:m.tank||'',CANECA:m.caneca||'',QTD:Number(m.qtd||0),OBSERVACAO:m.obs||'',LANCADO_POR:nomePor(m.por)}))],['Embriões',embRows]
+    ['FIV',fivRows],['Monta natural',montaRowsX],['Estoque Sêmen',stkRows],['Movimentações Sêmen',(db.semenMov||[]).slice().sort((a,b)=>String(a.data).localeCompare(String(b.data))).map(m=>({DATA:fmtDate(m.data),TIPO:m.tipo==='entrada'?'Entrada':'Saída',TOURO:m.touro,BOTIJAO:m.tank||'',CANECA:m.caneca||'',QTD:Number(m.qtd||0),OBSERVACAO:m.obs||'',LANCADO_POR:nomePor(m.por)}))],['Embriões',embRows]
   ],'estacao_'+fileSafe(est.name)+'.xlsx');
 } window.exportSeasonAll=exportSeasonAll;
 
@@ -3749,7 +3955,7 @@ function confirmarImport(titulo,itens,aplicar){
   <div class="actions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="primary" onclick="__importOk&&__importOk()">Confirmar e subir</button></div>`);
 }
 function showImportErrors(titleText,sub,errs){openModal(`<h2>${esc(titleText)}</h2><div class="notice">${esc(sub)}</div><div class="error-list">${errs.map(e=>`<div>• ${esc(e)}</div>`).join('')}</div><div class="actions"><button class="primary" onclick="closeModal()">Entendi</button></div>`)}
-function exportAnimals(){if(!needXLSX())return;const rows=animalRowsFiltered().map(a=>({RGD:a.rgd,'1_ACASALAMENTO':a.firstSire,CATEGORIA:a.category,SITUACAO:statusLabel(a.status),OBSERVACAO:a.obs||''}));jsonToXlsx(rows,'matrizes_'+fileSafe(activeSeason().name)+'.xlsx','Matrizes')} window.exportAnimals=exportAnimals;
+function exportAnimals(){if(!needXLSX())return;const rows=animalRowsFiltered().map(a=>({N:Number(a.n)||'',RGD:a.rgd,'1_ACASALAMENTO':a.firstSire,CATEGORIA:a.category,SITUACAO:statusLabel(a.status),OBSERVACAO:a.obs||''}));jsonToXlsx(rows,'matrizes_'+fileSafe(activeSeason().name)+'.xlsx','Matrizes')} window.exportAnimals=exportAnimals;
 function exportIatfRows(rows,comResumo){
   const nome='iatf_'+fileSafe(activeSeason().name)+'.xlsx';
   if(!comResumo)return downloadSheets(iatfSheets(rows),nome);
