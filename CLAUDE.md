@@ -90,3 +90,17 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - Celular (Agricultura e Cobertura): ao abrir o app já aparece a tela de opções (quadradinhos); escolhe a tela e ela fecha. No PC nada muda.
 - Venenos: botão "Selecionar pra enviar" ao lado de "A fazer" → começa sem nenhuma marcada, toca nas receitas que quer e manda tudo numa mensagem só no WhatsApp.
 - Cobertura · Estoque (celular): ordenar os touros pelo menu Opções (Touro A a Z, Maior/Menor saldo, Mais usado na IATF, Botijão, Ordem normal); aparece "Ordem: …  ✕" em cima dos cartões.
+- Cobertura · IATF:
+  - Seletor só mostra IATFs com algo; o mínimo de 12 foi tirado e as vazias foram limpas uma vez (meta.iatfVaziasLimpas_v1).
+  - "+ Criar" pergunta se é IATF ou Monta natural. O botão "+ Matriz" (antes "+ Matriz(es) nesta IATF") serve pros dois.
+  - Opções: "Excluídas desta IATF" e "Excluir esta IATF". Excluir pede confirmação e renumera as IATFs seguintes (a 4ª vira 3ª).
+- Cobertura · PRTs: o painel tem o resultado do lado de cada matriz.
+  - P: muda a IATF de origem pra P e a matriz sai da lista.
+  - V: muda a IATF de origem pra V, marca prtV=true e a matriz continua na lista até ser devolvida pra outra IATF.
+- Cobertura · Monta natural:
+  - Dados: db.montas {id,seasonId,n,data,touro,toque} e db.montaRows {id,seasonId,montaId,n,rgd,category,sire,result}.
+  - Fica no mesmo seletor da IATF. Não usa o estoque de sêmen e não tem "+ Linha".
+  - Colunas: Nº, RGD, Acasalamento (em branco; lista do estoque só como sugestão), Resultado IATF (puxado de iatfStatus), Resultado monta (só P ou V), Categoria.
+  - O resultado da monta é o final da matriz: latestStatus = montaStatus || iatfStatus.
+  - Dashboard tem uma seção própria. A monta também sai no Excel e na impressão, no Excel da estação e na aba "Monta natural" do excel_tudo.py.
+- Cobertura · Matrizes: coluna Nº (ordem de cadastro na estação, fixa) na tela, no Excel e no backup.
