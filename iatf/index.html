@@ -355,7 +355,8 @@ body.authenticated #loginScreen{display:none}
 }
 body.auth-pending::before{content:"Carregando...";position:fixed;inset:0;display:grid;place-items:center;font:600 15px system-ui,sans-serif;color:#5d6a62;background:#f5f7f5;z-index:9999}
 .qa-filtros{grid-template-columns:1fr!important;gap:8px!important}.qa-filtros .quick-add{flex-wrap:wrap!important;overflow:visible!important}.qa-ciclo-op{background:#eff2f0;color:#334139;cursor:pointer}.qa-ciclo-op:has(input:checked){background:#1f6a49;color:#fff}.qa-ciclo-op input{accent-color:#fff}.badge.qa-nova{background:#e3effd;color:#235fa8}
-.quick-add button.btn-prev,button.btn-prev{font-size:12px!important;padding:5px 10px!important;min-height:0!important;align-self:center}.prev-tab th,.prev-tab td{padding:8px 6px!important;white-space:nowrap}.prev-tab td:first-child{white-space:normal}
+.quick-add button.btn-prev,button.btn-prev{font-size:12px!important;padding:5px 10px!important;min-height:0!important;align-self:center}
+button.btn-prev.falta{background:#fde7e5!important;border-color:#e9a59c!important;color:#9b3127!important;font-weight:700}.prev-tab th,.prev-tab td{padding:8px 6px!important;white-space:nowrap}.prev-tab td:first-child{white-space:normal}
 /* ===== CELULAR: sem barra embaixo; barra verde no topo com ☰ (página de quadrados) e a estação em dourado ===== */
 .topo-cel,.menu-cel{display:none}
 @media(max-width:600px){
@@ -2292,7 +2293,7 @@ function renderIatfRows(){
 // Enter desce pra mesma coluna na linha de baixo. A posição é guardada ANTES de confirmar a célula,
 // porque algumas telas (ex: Estoque) redesenham a tabela ao salvar e a célula antiga some.
 function iatfEnter(e,cls){if(e.key!=='Enter')return;e.preventDefault();const i=$$('.'+cls).indexOf(e.target);e.target.blur();const els=$$('.'+cls);const nx=els[i+1];if(i>=0&&nx){nx.focus();if(typeof nx.select==='function')nx.select()}} window.iatfEnter=iatfEnter;
-function updateIatfCell(id,key,val){const r=db.iatf.find(x=>x.id===id);if(!r)return;r[key]=key==='qty'?Number(String(val).replace(',','.'))||0:val;save();if(key==='qty')$$('.iatf-sire').forEach(el=>{const x=db.iatf.find(y=>y.id===el.dataset.id);if(x)pintarTouroIatf(x,el)})} // QTD muda o saldo: repinta os touros da tela window.updateIatfCell=updateIatfCell;
+function updateIatfCell(id,key,val){const r=db.iatf.find(x=>x.id===id);if(!r)return;r[key]=key==='qty'?Number(String(val).replace(',','.'))||0:val;save();if(key==='qty')atualizarBtnPrev();if(key==='qty')$$('.iatf-sire').forEach(el=>{const x=db.iatf.find(y=>y.id===el.dataset.id);if(x)pintarTouroIatf(x,el)})} // QTD muda o saldo: repinta os touros da tela window.updateIatfCell=updateIatfCell;
 function updateIatfSire(el){
   const val=el.value.trim();
   if(val && !sireExists(val)){alert(`O touro "${val}" não existe no Estoque.`);el.value=el.dataset.prev||'';return}
@@ -2304,7 +2305,7 @@ function updateIatfSire(el){
     syncAnimalSire(r.seasonId,r.rgd);
     // touro novo = caneca nova: volta a puxar a do Estoque
     r.caneca='';
-    save();el.dataset.prev=val;
+    save();el.dataset.prev=val;atualizarBtnPrev();
     const cn=el.closest('tr')?.querySelector('.iatf-caneca');if(cn){cn.value=iatfCaneca(r);cn.style.color='#7a857d'}
   }
 } window.updateIatfSire=updateIatfSire;
@@ -2452,6 +2453,8 @@ function previsaoDoses(){
     g[k]=g[k]||{touro:s?s.name:r.firstSire,tem:s?stockBalance(s):0,prev:0,ciclos:{}};g[k].prev++;g[k].ciclos[r.cycle]=(g[k].ciclos[r.cycle]||0)+1});
   return Object.values(g).map(x=>({...x,faltam:x.prev-Math.max(0,x.tem)})).filter(x=>x.faltam>0).sort((a,b)=>b.faltam-a.faltam||a.touro.localeCompare(b.touro,'pt-BR'));
 }
+// botão 🧪 Previsão doses fica vermelho quando algum touro vai faltar (branco quando está tudo ok)
+function atualizarBtnPrev(){const b=document.querySelector('.btn-prev');if(!b)return;const n=previsaoDoses().length;b.classList.toggle('falta',n>0);b.title=n?`${n} touro(s) vão faltar no estoque`:'Previsão Doses x Tem no Estoque'}
 function abrirPrevisaoDoses(){
   const v=previsaoDoses();
   openModal(`<h2>Previsão Doses x Tem no Estoque</h2>
@@ -3281,7 +3284,7 @@ function resumoHTML(q,semPrt){
 }
 function fivResumoHTML(){return resumoHTML(fivResumo(fivDaData()))}
 function iatfCicloRows(){return seasonRows().filter(r=>Number(r.cycle)===Number(iatfCycle))}
-function atualizarResumoIatf(){const el=$('#iatfResumo');if(el)el.innerHTML=resumoHTML(iatfResumo(iatfCicloRows()))}
+function atualizarResumoIatf(){const el=$('#iatfResumo');if(el)el.innerHTML=resumoHTML(iatfResumo(iatfCicloRows()));atualizarBtnPrev()}
 function atualizarResumoFiv(){const el=$('#fivResumo');if(el)el.innerHTML=fivResumoHTML();const b=$('#fivPrtBtn');if(b)b.textContent=`⟳ PRTs (${fivDaData().filter(r=>normResult(r.resultado)==='PRT').length})`}
 function openFivPrt(){
   const list=fivDaData().filter(r=>normResult(r.resultado)==='PRT').sort((a,b)=>(Number(a.n)||0)-(Number(b.n)||0));
