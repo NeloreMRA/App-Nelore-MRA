@@ -173,6 +173,16 @@ td:has(> .cell-input:focus){outline:2px solid #1f7a4d;outline-offset:-2px;backgr
 .dash-h:before{content:"";width:5px;height:20px;border-radius:3px;background:#1f6a49}
 .dash-h.fiv{color:#5c4a10}.dash-h.monta{color:#1f5f52}
 .criar-op{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0 4px}.criar-op button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 10px;font-size:17px;font-weight:800;border-radius:12px}.criar-op button small{font-size:12px;font-weight:500;opacity:.85}.criar-op button.monta{background:#2f7d6d;border-color:#2f7d6d}
+.td-acs{position:relative}.td-acs .iatf-sire{padding-right:22px!important}
+.acs-q{position:absolute;right:3px;top:50%;transform:translateY(-50%);z-index:2;width:16px;height:16px;padding:0;border:1px solid #c9d6cd;border-radius:50%;background:#f3f7f4;color:#5b7a66;font-size:10px;font-weight:800;line-height:14px;text-align:center;cursor:pointer;opacity:.75}
+.acs-q:hover{opacity:1;background:#e3efe7;color:#1f6a49}
+.acs-pop{position:fixed;z-index:80;background:#fff;border:1px solid #d9dfda;border-radius:10px;box-shadow:0 10px 30px #0003;padding:6px;width:330px;max-width:calc(100vw - 16px)}
+.acs-t{font-size:12px;font-weight:800;color:#233129;padding:4px 6px 6px}.acs-t span{font-weight:500;color:#7a857d}
+.acs-pop button{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;padding:7px 6px;border-radius:7px;font-size:13px;cursor:pointer;color:#26332b}
+.acs-pop button:hover{background:#f2f5f3}.acs-pop button.on{background:#e5f5eb}
+.acs-l{font-size:11px;color:#7a857d;font-weight:700}.acs-p{font-weight:800;color:#216440;white-space:nowrap}.acs-p small{font-weight:500;color:#7a857d}
+.acs-pop em{font-style:normal;font-size:10px;color:#c0392b;font-weight:700;margin-left:4px}.acs-vazio{font-size:13px;color:#69746c;padding:6px}
+@media print{.acs-q,.acs-pop{display:none!important}}
 .prt-linha{display:flex;align-items:center;gap:8px;border-bottom:1px solid #edf0ee;padding:4px 2px}.prt-linha .excel-value{flex:1;padding:4px 0}.prt-res{width:auto;min-width:72px;padding:5px 8px;border-radius:8px;border:1px solid #d7ded9;font-weight:800;text-align:center}.prt-res.res-m{background:#fff1dc;color:#875716}.prt-res.res-v{background:#fde7e5;color:#9b3127}.dash-h.fiv:before{background:#b39a3b}
 .dash-split{border:0;border-top:2px dashed #d9cfa6;margin:34px 0 0}
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
@@ -2265,7 +2275,7 @@ function renderIatfRows(){
   ${rowHandleTd('iatf',r.id)}
   <td style="text-align:center;color:#69746c;font-size:10.5px">${r.n||''}</td>
   <td><strong>${esc(r.rgd)}</strong></td>
-  <td><input class="cell-input iatf-sire" list="bullsList" data-id="${r.id}" data-prev="${esc(r.firstSire)}" value="${esc(r.firstSire)}" style="${touroVermelho(r)?corSemSaldo(r.firstSire):''}" title="${touroVermelho(r)?'Sem sêmen no estoque':''}" onfocus="this.select()" onchange="updateIatfSire(this)"></td>
+  <td class="td-acs"><button type="button" class="acs-q no-print" tabindex="-1" title="Opções do Acasalamento e % de prenhez" onmousedown="event.preventDefault()" onclick="abrirOpcoesTouro(event,'${r.id}')">?</button><input class="cell-input iatf-sire" list="bullsList" data-id="${r.id}" data-prev="${esc(r.firstSire)}" value="${esc(r.firstSire)}" style="${touroVermelho(r)?corSemSaldo(r.firstSire):''}" title="${touroVermelho(r)?'Sem sêmen no estoque':''}" onfocus="this.select()" onchange="updateIatfSire(this)"></td>
 <td><input class="cell-input iatf-sire2" data-id="${r.id}" value="${esc(r.secondSire||'')}" placeholder="—" autocomplete="off" onchange="updateIatfCell('${r.id}','secondSire',this.value)"></td>
 <td><input class="cell-input iatf-caneca nav-caneca" type="text" value="${esc(iatfCaneca(r))}" style="${r.caneca?'':'color:#7a857d'}" title="${r.caneca?'Digitado':'Puxado do Estoque (pode digitar por cima)'}" onkeydown="iatfEnter(event,'nav-caneca')" onchange="updateIatfCaneca('${r.id}',this.value,this)"></td>
 <td><input class="cell-input nav-qtd iatf-qty" inputmode="decimal" data-id="${r.id}" value="${r.qty||''}" onkeydown="iatfEnter(event,'nav-qtd')" onchange="updateIatfCell('${r.id}','qty',this.value)"></td>
@@ -2295,6 +2305,33 @@ function updateIatfSire(el){
     const cn=el.closest('tr')?.querySelector('.iatf-caneca');if(cn){cn.value=iatfCaneca(r);cn.style.color='#7a857d'}
   }
 } window.updateIatfSire=updateIatfSire;
+/* "?" na célula do 1º Acasalamento (só na tela, não sai na impressão): mostra as opções de touro que
+   essa matriz tem na planilha Acasalamentos + a % geral de prenhez do touro (mesma do Dashboard). Tocar escolhe. */
+function opcoesAcasal(rgd){
+  const out=[],vistos=new Set();
+  seasonAcasal().filter(a=>norm(a.rgd)===norm(rgd)).forEach(a=>ACASAL_COLS.forEach(([k,l])=>{const t=String(a[k]||'').trim();if(t&&!vistos.has(norm(t))){vistos.add(norm(t));out.push({t,l})}}));
+  return out;
+}
+function fecharOpcoesTouro(){const o=document.getElementById('acsPop');if(o)o.remove()}
+function abrirOpcoesTouro(ev,id){
+  ev.preventDefault();ev.stopPropagation();fecharOpcoesTouro();
+  const r=db.iatf.find(x=>x.id===id);if(!r)return;
+  const st={};bullStats().forEach(b=>st[norm(b.name)]=b);
+  const ops=opcoesAcasal(r.rgd),atual=norm(r.firstSire);
+  const p=document.createElement('div');p.id='acsPop';p.className='acs-pop no-print';
+  p.innerHTML=`<div class="acs-t">${esc(r.rgd)} <span>· opções do Acasalamento</span></div>${ops.length?ops.map(o=>{const b=st[norm(o.t)];return `<button type="button" class="${norm(o.t)===atual?'on':''}" onclick="escolherTouroOp('${r.id}',${esc(JSON.stringify(o.t))})"><span class="acs-l">${esc(o.l)}</span><b>${esc(o.t)}${semSaldo(o.t)?' <em>sem dose</em>':''}</b><span class="acs-p">${b&&b.n?`${pctTxt(b.rate)} <small>${b.p}/${b.n}</small>`:'<small>sem resultado</small>'}</span></button>`}).join(''):'<div class="acs-vazio">Essa matriz não tem touro na planilha Acasalamentos.</div>'}`;
+  document.body.appendChild(p);
+  const bt=ev.currentTarget.getBoundingClientRect(),w=p.offsetWidth,h=p.offsetHeight;
+  let left=Math.min(bt.left,innerWidth-w-8);left=Math.max(8,left);let top=bt.bottom+4;if(top+h>innerHeight-8)top=Math.max(8,bt.top-h-4);
+  p.style.left=left+'px';p.style.top=top+'px';
+} window.abrirOpcoesTouro=abrirOpcoesTouro;
+function escolherTouroOp(id,nome){
+  fecharOpcoesTouro();
+  const el=document.querySelector(`.iatf-sire[data-id="${id}"]`);if(!el)return;
+  el.value=nome;updateIatfSire(el);
+} window.escolherTouroOp=escolherTouroOp;
+document.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('#acsPop'))fecharOpcoesTouro()});
+addEventListener('scroll',fecharOpcoesTouro,true);
 function updateIatfCaneca(id,val,el){
   const r=db.iatf.find(x=>x.id===id);if(!r)return;
   val=String(val||'').trim();
@@ -2528,7 +2565,7 @@ function saveQuickAnimal(){
     const ja=new Set(montaRowsDe(montaAtual).map(r=>r.rgd));
     rgds.forEach(rgd=>{const a=seasonAnimals().find(x=>x.rgd===rgd);if(!a||ja.has(a.rgd))return;
       db.montaRows.push({id:uid('mr'),seasonId:db.meta.activeSeasonId,montaId:montaAtual,rgd:a.rgd,category:a.category,sire:'',result:''});ja.add(a.rgd)});
-    garantirNMonta(db.montaRows);save();closeModal();iatfPage();return;
+    garantirNMonta(db.montaRows);save();closeModal();manterTela(iatfPage);return;
   }
   rgds.forEach(rgd=>{
     const a=seasonAnimals().find(x=>x.rgd===rgd);if(!a)return;
@@ -2536,7 +2573,7 @@ function saveQuickAnimal(){
     db.iatf.push({id:uid('i'),seasonId:db.meta.activeSeasonId,category:a.category,cycle:iatfCycle,rgd:a.rgd,firstSire:a.firstSire||'',secondSire:'',qty:0,result:'',return:''});
     ok++
   });
-  save();closeModal();iatfPage()
+  save();closeModal();manterTela(iatfPage)
 } window.saveQuickAnimal=saveQuickAnimal;
 function iatfExcludedCurrent(){
   const sid=db.meta.activeSeasonId;

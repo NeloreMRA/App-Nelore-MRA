@@ -104,3 +104,4 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
   - O resultado da monta é o final da matriz: latestStatus = montaStatus || iatfStatus.
   - Dashboard tem uma seção própria. A monta também sai no Excel e na impressão, no Excel da estação e na aba "Monta natural" do excel_tudo.py.
 - Cobertura · Matrizes: coluna Nº (ordem de cadastro na estação, fixa) na tela, no Excel e no backup.
+- Cobertura · IATF: o "?" pequeno na célula do 1º Acasalamento (só na tela, não sai na impressão) mostra as opções de touro da matriz na planilha Acasalamentos com a % geral de prenhez do touro (bullStats, igual ao Dashboard). Tocar numa opção escolhe o touro. "+ Matriz" não joga mais a tela pra cima (manterTela).
