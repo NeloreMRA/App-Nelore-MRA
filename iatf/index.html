@@ -307,6 +307,7 @@ body.authenticated #loginScreen{display:none}
   .dcard{overflow-x:auto;min-width:0}.dash-lado,.dash-lado>*{min-width:0}
   .dtable.tab-abas{min-width:0!important;width:100%!important}.dtable.tab-abas .bar .tr,.dtable.tab-abas .rk{display:none}.dtable.tab-abas td,.dtable.tab-abas th{white-space:normal;padding-left:6px!important;padding-right:6px!important}
   /* estoque em cartões */
+  .stk-ord{display:flex;align-items:center;gap:6px;margin:-2px 0 10px;font-size:14px;color:#4a5850}.stk-ord b{color:#1f6a49}.stk-ord button{border:0;background:#e6efe9;color:#1f6a49;border-radius:999px;width:26px;height:26px;font-size:13px;cursor:pointer;margin-left:2px}
   .stk-busca{width:100%;font-size:16px;padding:12px 14px;border:1px solid #d7ded9;border-radius:12px;margin:0 0 10px;outline:none}
   .stk-tot{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;font-size:11px;text-align:center}.stk-tot span{border-radius:10px;padding:6px 2px}.stk-tot b{display:block;font-size:16px}
   .stk-tot .d,.stk-nums .d{background:#e4eefb;color:#235fa8}.stk-tot .i,.stk-nums .i{background:#efe8ff;color:#6743a0}.stk-tot .o,.stk-nums .o{background:#fdf0dc;color:#9a5a12}.stk-tot .s,.stk-nums .s{background:#e3f3e8;color:#1f6a49}
@@ -990,10 +991,11 @@ const ICONES_OP={
   imprimir:['#fdf0dc','#b86e12','<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>'],
   selecionar:['#fbe5e5','#b83a3a','<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 12l2.5 2.5 4.5-5"/>'],
   ligado:['#e3f3e9','#1f7a4d','<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>'],
-  pausado:['#eef0ee','#69746c','<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>']
+  pausado:['#eef0ee','#69746c','<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>'],
+  ordenar:['#e6f2ef','#1f6a5a','<path d="M7 4v16M3 16l4 4 4-4"/><path d="M17 20V4M13 8l4-4 4 4"/>']
 };
 function iconeOp(t){
-  const k=/Modelo/.test(t)?'modelo':t.startsWith('⬆')?'subir':t.startsWith('⬇')?'baixar':t.startsWith('🖨')?'imprimir':t.startsWith('☑')?'selecionar':t.startsWith('✅')?'ligado':t.startsWith('⏸')?'pausado':'';
+  const k=/Modelo/.test(t)?'modelo':t.startsWith('⬆')?'subir':t.startsWith('⬇')?'baixar':t.startsWith('🖨')?'imprimir':t.startsWith('☑')?'selecionar':t.startsWith('✅')?'ligado':t.startsWith('⏸')?'pausado':t.startsWith('↕')?'ordenar':'';
   if(!k)return t;
   const [fundo,cor,d]=ICONES_OP[k],txt=t.replace(/^\S+\s*/,'');
   return `<span class="op-ico" style="background:${fundo};color:${cor}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg></span><span>${txt}</span>`;
@@ -3184,15 +3186,19 @@ function stock(){
   <button class="ghost btn-sec" onclick="listaMovSemen()">📋 Movimentações${(db.semenMov||[]).length?` <span class="bm-n">${(db.semenMov||[]).length}</span>`:''}</button>
   <button class="ghost btn-sec" onclick="addBlankStock()">+ Linha em branco</button>
   </div>
-  <div class="out-actions">${menuOpcoes([['⬆ Subir Excel',"document.getElementById('stockImportFile').click()"],['⬇ Modelo Excel','downloadStockTemplate()'],['⬇ Baixar Excel','exportStock()'],['🖨 Imprimir','openStockPrint()']])}</div></div>
+  <div class="out-actions">${menuOpcoes([...(telaCel()?STK_ORD_CEL.map(([nome,k,d])=>[`↕ ${stockSort.key===k&&(!k||stockSort.dir===d)?'✓ ':''}${nome}`,`stkOrdCel('${k}',${d})`]):[]),['⬆ Subir Excel',"document.getElementById('stockImportFile').click()"],['⬇ Modelo Excel','downloadStockTemplate()'],['⬇ Baixar Excel','exportStock()'],['🖨 Imprimir','openStockPrint()']])}</div></div>
   <div id="stockTable"></div></div>`;renderStock()
 }
 let stockBuscaCel='';
+// Celular: ordenar os touros pelo menu Opções (mesma ordem do PC, que é por coluna)
+const STK_ORD_CEL=[['Touro (A a Z)','name',1],['Maior saldo','saldo',-1],['Menor saldo','saldo',1],['Mais usado na IATF','iatfUsed',-1],['Botijão','tank',1],['Ordem normal','',1]];
+function stkOrdCel(k,d){novaOrdem('stock');stockSort={key:k,dir:d};stock()} window.stkOrdCel=stkOrdCel;
 const telaCel=()=>innerWidth<=600;
 function renderStockCel(root){
   const q=norm(stockBuscaCel),rows=stockRowsFiltered().filter(s=>!q||norm(s.name).includes(q)||norm(s.rgdTouro).includes(q));
   const tot=k=>rows.reduce((a,s)=>a+Number(s[k]||0),0);
   root.innerHTML=`<input class="stk-busca" placeholder="🔎 Buscar touro..." value="${esc(stockBuscaCel)}" autocomplete="off" oninput="stockBuscaCel=this.value;clearTimeout(window.__sbT);window.__sbT=setTimeout(()=>{renderStock();const i=$('.stk-busca');if(i){i.focus();const n=i.value.length;i.setSelectionRange(n,n)}},250)">
+  ${stockSort.key?(()=>{const o=STK_ORD_CEL.find(([,k,d])=>k===stockSort.key&&d===stockSort.dir);return `<div class="stk-ord">Ordem: <b>${esc(o?o[0]:'coluna '+stockSort.key)}</b><button type="button" onclick="stkOrdCel('',1)" title="Voltar à ordem normal">✕</button></div>`})():''}
   <div class="stk-tot"><span class="d">Entrada <b>${tot('initial')}</b></span><span class="o">Saída <b>${tot('saida')}</b></span><span class="i">IATF <b>${tot('iatfUsed')}</b></span><span class="s">Saldo <b>${tot('saldo')}</b></span></div>
   ${rows.map(s=>`<div class="stk-card" onclick="editarTouroCel('${s.id}')"><div class="stk-top"><b>${esc(s.name||'(sem nome)')}</b><span>${[s.tank,s.caneca?'caneca '+s.caneca:''].filter(Boolean).map(esc).join(' · ')}</span></div>
     <div class="stk-nums"><div class="d"><span>Entrada</span><b>${s.initial||0}</b></div><div class="o"><span>Saída</span><b>${s.saida||'–'}</b></div><div class="i"><span>IATF</span><b>${s.iatfUsed}</b></div><div class="s ${s.saldo<=0?'zero':''}"><span>Saldo</span><b>${s.saldo}</b></div></div></div>`).join('')||'<div class="bz-dica">Nenhum touro encontrado.</div>'}`;
