@@ -2332,6 +2332,7 @@ function escolherTouroOp(id,nome){
 } window.escolherTouroOp=escolherTouroOp;
 document.addEventListener('click',e=>{if(!e.target.closest||!e.target.closest('#acsPop'))fecharOpcoesTouro()});
 addEventListener('scroll',fecharOpcoesTouro,true);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('acsPop')){e.stopPropagation();fecharOpcoesTouro()}},true);
 function updateIatfCaneca(id,val,el){
   const r=db.iatf.find(x=>x.id===id);if(!r)return;
   val=String(val||'').trim();
