@@ -1200,7 +1200,7 @@ function pageDashboard(){
 
   return `
     <div class="toolbar no-print" style="justify-content:flex-end;">
-      <button class="secondary" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="secondary" onclick="pdfModo(false);window.print()">🖨️ Imprimir</button><button class="secondary" onclick="pdfModo(true);imprimirOuPdf()">📄 Enviar PDF</button>
       <button class="secondary" onclick="exportSafraCompleta()">⬇️ Exportar safra (Excel)</button>
     </div>
     <h2>📊 Dashboard</h2>
@@ -1414,7 +1414,7 @@ function renderTablePage(cfg){
     <div class="toolbar no-print">
       ${cfg.semLinhaEmBranco ? '' : `<button class="secondary" onclick="addTableRow('${cfg.tableKey}')">+ Nova linha em branco</button>`}
       <button class="secondary" onclick="exportTable('${cfg.tableKey}')">⬇️ Exportar Excel</button>
-      <button class="secondary" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="secondary" onclick="pdfModo(false);window.print()">🖨️ Imprimir</button><button class="secondary" onclick="pdfModo(true);imprimirOuPdf()">📄 Enviar PDF</button>
     </div>
     ${cfg.metricsHtml || ''}
     <div class="panel ${excel?'panel-excel':''}" style="padding:0;">
@@ -2618,7 +2618,7 @@ function pageDieselEstoque(){
 
     <div class="toolbar no-print">
       <button class="secondary" onclick="exportEstoqueDiesel()">⬇️ Exportar Excel</button>
-      <button class="secondary" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="secondary" onclick="pdfModo(false);window.print()">🖨️ Imprimir</button><button class="secondary" onclick="pdfModo(true);imprimirOuPdf()">📄 Enviar PDF</button>
       <button class="secondary" onclick="toggleColunaEstacaoExtrato()">${mostrarEstacao ? 'Esconder coluna Estação' : 'Mostrar coluna Estação'}</button>
     </div>
     <p class="section-title">Extrato do tanque</p>
@@ -2712,7 +2712,7 @@ function pageDieselResumo(){
   const temFiltro = dieselFiltro.de || dieselFiltro.ate || dieselFiltro.estacao;
   return `
     <div class="toolbar no-print" style="justify-content:flex-end;">
-      <button class="secondary" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="secondary" onclick="pdfModo(false);window.print()">🖨️ Imprimir</button><button class="secondary" onclick="pdfModo(true);imprimirOuPdf()">📄 Enviar PDF</button>
       <button class="secondary" onclick="exportResumoDiesel()">⬇️ Exportar Excel</button>
     </div>
     <h2>📈 Resumo Diesel</h2>
@@ -3059,7 +3059,7 @@ function pageVenenosLista(k){
   const chip = (v,t)=>`<button class="ven-chip ${venFiltro.status===v?'on':''}" onclick="venFiltro.status='${v}';render()">${t}</button>`;
   return `
     <div class="toolbar no-print">
-      ${nAfazer ? `<button class="secondary" onclick="venImprimir(venReceitasSafra(venSafraKey()).filter(r=>r.status!=='feita').map(r=>r.id))">🖨️ Imprimir a fazer (${nAfazer})</button>` : ''}
+      ${nAfazer ? `<button class="secondary" onclick="pdfModo(false);venImprimir(venReceitasSafra(venSafraKey()).filter(r=>r.status!=='feita').map(r=>r.id))">🖨️ Imprimir a fazer (${nAfazer})</button><button class="secondary" onclick="pdfModo(true);venImprimir(venReceitasSafra(venSafraKey()).filter(r=>r.status!=='feita').map(r=>r.id))">📄 PDF a fazer</button>` : ''}
       <button class="secondary" onclick="exportVenenos()">⬇️ Exportar Excel</button>
     </div>
     <h2>Venenos</h2>
@@ -3094,7 +3094,7 @@ function pageVenenoReceita(){
   return `
     <div class="toolbar no-print">
       <button class="secondary" onclick="venFechar()">← Voltar pra lista</button>
-      ${r.novo ? '' : `<button class="secondary vc-wpp" onclick="venWhats()">${IC_WPP} Enviar pelo WhatsApp</button><button class="secondary" onclick="venImprimir(['${r.id}'])">🖨️ Imprimir</button>`}
+      ${r.novo ? '' : `<button class="secondary vc-wpp" onclick="venWhats()">${IC_WPP} Enviar pelo WhatsApp</button><button class="secondary" onclick="pdfModo(false);venImprimir(['${r.id}'])">🖨️ Imprimir</button><button class="secondary" onclick="pdfModo(true);venImprimir(['${r.id}'])">📄 Enviar PDF</button>`}
     </div>
     <h2>${r.novo ? 'Nova receita' : 'Receita · ' + esc(r.talhao)}</h2>
     <div class="caption">Safra ${esc(venSafraNome(r.safra))}${feita?` · ✅ Feita em ${fmtData(r.feita.data)}`:''}</div>
@@ -3165,6 +3165,96 @@ function venFolha(r){
     ${r.status==='feita' ? `<div class="vp-obs">✅ Feita em ${fmtData(r.feita.data)} · ${n(venAreaFeita(r))} ha${r.feita.obs?` · ${esc(r.feita.obs)}`:''}</div>` : ''}
   </section>`;
 }
+/* ===== PDF PELO CELULAR ===========================================================
+   "📄 Enviar PDF" (embaixo do Imprimir): monta a MESMA folha da impressão, transforma em PDF aqui no
+   aparelho e abre o compartilhar do celular (WhatsApp etc.); no PC baixa o arquivo. */
+let __pdfModo=false;
+function pdfModo(on){__pdfModo=on!==false}
+const PDF_LIBS=['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+function pdfCarregaLibs(){
+  const um=src=>new Promise((ok,erro)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>erro(new Error('lib'));document.head.appendChild(s)});
+  return (window.html2canvas?Promise.resolve():um(PDF_LIBS[0])).then(()=>window.jspdf?0:um(PDF_LIBS[1]));
+}
+function pdfAviso(html){
+  let f=document.getElementById('pdfAviso');
+  if(!f){f=document.createElement('div');f.id='pdfAviso';f.style.cssText='position:fixed;inset:0;z-index:99999;background:#0007;display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit';document.body.appendChild(f)}
+  f.innerHTML=`<div style="background:#fff;border-radius:16px;padding:22px;width:340px;max-width:100%;box-shadow:0 20px 50px #0005;text-align:center;color:#233129">${html}</div>`;
+  return f;
+}
+function pdfFechar(){const f=document.getElementById('pdfAviso');if(f)f.remove()}
+const pdfNomeArq=t=>String(t||'documento').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\W+/g,'_').replace(/^_+|_+$/g,'').slice(0,80)+'.pdf';
+async function gerarPdf(titulo,docHtml,largura,deitado){
+  __pdfModo=false;largura=largura||900;
+  pdfAviso('<div style="font-size:30px">📄</div><div style="font-weight:800;font-size:17px;margin:6px 0 2px">Gerando o PDF…</div><div style="font-size:13px;color:#69746c">Só um instante</div>');
+  let fr=null;
+  try{
+    await pdfCarregaLibs();
+    fr=document.createElement('iframe');fr.setAttribute('aria-hidden','true');
+    fr.style.cssText=`position:fixed;left:-30000px;top:0;width:${largura}px;height:1200px;border:0;background:#fff`;
+    document.body.appendChild(fr);
+    const d=fr.contentDocument;d.open();d.write(docHtml);d.close();
+    await new Promise(r=>setTimeout(r,250));
+    await Promise.all([...d.images].map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r})));
+    // tabela mais larga que a folha: alarga a área (a folha encolhe um pouco, mas nada fica cortado)
+    const larg=Math.ceil(d.documentElement.scrollWidth);if(larg>largura+4){fr.style.width=larg+'px';await new Promise(r=>setTimeout(r,80))}
+    const W=Math.max(largura,larg),H=Math.ceil(Math.max(d.body.scrollHeight,d.documentElement.scrollHeight));
+    fr.style.height=H+'px';await new Promise(r=>setTimeout(r,50));
+    const {jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'a4',orientation:deitado?'landscape':'portrait',compress:true});
+    const mg=8,cw=(deitado?297:210)-2*mg,ch=(deitado?210:297)-2*mg,pageH=Math.floor(ch/cw*W);
+    // corta a página entre linhas/blocos (nunca no meio de uma linha da tabela)
+    const pts=[...new Set([...d.querySelectorAll('tr,h1,h2,h3,p,li,section,.dcard,.card,.panel,.metric,.fiv-q,.vp-folha,table')].map(e=>Math.round(e.getBoundingClientRect().top)))].sort((a,b)=>a-b);
+    // folha nova obrigatória (ex.: uma receita por folha, igual à impressão)
+    const quebra=[...d.querySelectorAll('section,div,table')].filter(e=>{const c=d.defaultView.getComputedStyle(e);return c.breakAfter==='page'||c.pageBreakAfter==='always'}).map(e=>Math.round(e.getBoundingClientRect().bottom)).filter(v=>v<H-2);
+    let y=0,pg=0;
+    while(y<H-2){
+      let fim=y+pageH;
+      const f=quebra.filter(v=>v>y+2&&v<=fim);if(f.length)fim=Math.min(...f);
+      else if(fim<H){const c=pts.filter(p=>p>y+pageH*0.4&&p<=fim);if(c.length)fim=c[c.length-1]}else fim=H;
+      const h=fim-y;
+      const cv=await window.html2canvas(d.body,{x:0,y,width:W,height:h,windowWidth:W,windowHeight:H,scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false});
+      if(pg++)pdf.addPage();
+      pdf.addImage(cv.toDataURL('image/jpeg',0.9),'JPEG',mg,mg,cw,h*cw/W);
+      y=fim;
+    }
+    const nome=pdfNomeArq(titulo),blob=pdf.output('blob'),arq=new File([blob],nome,{type:'application/pdf'});
+    window.__pdfArq=arq;
+    const podeEnviar=!!(navigator.canShare&&navigator.canShare({files:[arq]}));
+    pdfAviso(`<div style="font-size:30px">✅</div><div style="font-weight:800;font-size:17px;margin:6px 0 4px">PDF pronto</div><div style="font-size:12.5px;color:#69746c;margin-bottom:16px;word-break:break-all">${nome} · ${pg} página(s)</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${podeEnviar?`<button type="button" onclick="pdfEnviar()" style="padding:13px;border:0;border-radius:11px;background:#1fa855;color:#fff;font-weight:800;font-size:16px;cursor:pointer">📤 Enviar (WhatsApp…)</button>`:''}
+        <button type="button" onclick="pdfBaixar()" style="padding:12px;border:1px solid #cfd8d2;border-radius:11px;background:#fff;color:#233129;font-weight:700;font-size:15px;cursor:pointer">⬇ Baixar o PDF</button>
+        <button type="button" onclick="pdfFechar()" style="padding:9px;border:0;background:none;color:#69746c;font-size:14px;cursor:pointer">Fechar</button>
+      </div>`);
+  }catch(e){
+    console.error(e);
+    pdfAviso(`<div style="font-size:30px">⚠️</div><div style="font-weight:800;font-size:16px;margin:6px 0 4px">Não deu pra gerar o PDF</div><div style="font-size:13px;color:#69746c;margin-bottom:14px">Confira a internet e tente de novo.</div><button type="button" onclick="pdfFechar()" style="padding:11px 22px;border:1px solid #cfd8d2;border-radius:11px;background:#fff;font-weight:700;cursor:pointer">Fechar</button>`);
+  }finally{if(fr)fr.remove()}
+}
+function pdfEnviar(){const a=window.__pdfArq;if(!a)return;navigator.share({files:[a],title:a.name.replace(/\.pdf$/,'')}).then(pdfFechar).catch(()=>{})}
+function pdfBaixar(){const a=window.__pdfArq;if(!a)return;const u=URL.createObjectURL(a),l=document.createElement('a');l.href=u;l.download=a.name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);pdfFechar()}
+window.pdfModo=pdfModo;window.pdfEnviar=pdfEnviar;window.pdfBaixar=pdfBaixar;window.pdfFechar=pdfFechar;
+// Agricultura imprime a própria tela (@media print). O PDF copia a tela do jeito da impressão.
+function pdfDaTela(titulo){
+  const css=[...document.querySelectorAll('style')].map(x=>x.textContent).join('\n'),links=[...document.querySelectorAll('link[rel="stylesheet"]')].map(l=>l.outerHTML).join('');
+  let pc='';for(const sh of document.styleSheets){let rs;try{rs=sh.cssRules}catch(e){continue}for(const r of rs){if(r.media&&[...r.media].some(m=>m.trim()==='print'))pc+=[...r.cssRules].map(x=>x.cssText).join('\n')}}
+  const cl=document.body.cloneNode(true);
+  const o=document.body.querySelectorAll('input,select,textarea'),c=cl.querySelectorAll('input,select,textarea');
+  o.forEach((e,i)=>{const x=c[i];if(!x)return;if(e.tagName==='SELECT')[...x.options].forEach((op,j)=>op.toggleAttribute('selected',j===e.selectedIndex));else if(e.type==='checkbox'||e.type==='radio')x.toggleAttribute('checked',e.checked);else if(e.tagName==='TEXTAREA')x.textContent=e.value;else x.setAttribute('value',e.value)});
+  cl.querySelectorAll('script,iframe,#pdfAviso').forEach(e=>e.remove());
+  // receita: no PDF vai só a folha (a regra da impressão que esconde o resto também atrapalha o gerador de PDF)
+  const soReceita=cl.classList.contains('imprimindo-receita');if(soReceita)[...cl.children].forEach(e=>{if(e.id!=='venPrint')e.remove()});
+  // no PDF não vai o quadro "Adicionar registro"; e o que está dentro das células vira texto (fica nítido)
+  cl.querySelectorAll('[id^="addform-"]').forEach(e=>{const p=e.closest('.panel');(p||e).remove()});
+  cl.querySelectorAll('td input:not([type=checkbox]):not([type=radio]), td select, td textarea').forEach(e=>{const sp=document.createElement('span');sp.className='pdf-val';
+    let v=e.tagName==='SELECT'?((e.querySelector('option[selected]')||{}).textContent||''):e.tagName==='TEXTAREA'?e.textContent:(e.getAttribute('value')||'');
+    if(e.type==='date'&&/^\d{4}-\d{2}-\d{2}$/.test(v))v=v.split('-').reverse().join('/');
+    if(v==='—')v='';sp.textContent=v;sp.style.cssText='display:inline-block;padding:2px 3px;white-space:nowrap';e.replaceWith(sp)});
+  const h=document.querySelector('#main h2');
+  const t=titulo||[(h&&h.textContent.trim())||'Agricultura',(typeof S==='function'&&!paginaSemSafra(currentPage)&&S())?S().nome:''].filter(Boolean).join(' - ');
+  return gerarPdf(t,`<!doctype html><html><head><meta charset="utf-8">${links}<style>${css}\n${pc}\nhtml,body{margin:0!important;background:#fff!important;height:auto!important;min-height:0!important;overflow:visible!important}${soReceita?'body.imprimindo-receita > :not(#venPrint){display:revert!important}':''}</style></head><body class="${cl.className}">${cl.innerHTML}</body></html>`,1150,true); // igual à impressão: A4 deitado
+}
+function imprimirOuPdf(){if(__pdfModo)return pdfDaTela();window.print()}
+window.pdfDaTela=pdfDaTela;window.imprimirOuPdf=imprimirOuPdf;
 function venImprimir(ids){
   const lista = ids.map(id=>ven.receitas.find(r=>r.id===id)).filter(Boolean);
   if(!lista.length) return;
@@ -3174,6 +3264,7 @@ function venImprimir(ids){
   document.body.classList.add('imprimindo-receita');
   const fim = ()=>{ document.body.classList.remove('imprimindo-receita'); removeEventListener('afterprint', fim); };
   addEventListener('afterprint', fim);
+  if(__pdfModo){ pdfDaTela(lista.length===1?`Receita ${lista[0].talhao} ${fmtData(lista[0].data)||''}`:`Receitas a fazer - ${venSafraNome(venSafraKey())}`); fim(); return; }
   setTimeout(()=>{ window.print(); setTimeout(fim, 1500); }, 60);
 }
 

@@ -107,3 +107,10 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - Cobertura · IATF: o "?" pequeno na célula do 1º Acasalamento (só na tela, não sai na impressão) mostra as opções de touro da matriz na planilha Acasalamentos com a % geral de prenhez do touro (bullStats, igual ao Dashboard). Tocar numa opção escolhe o touro; ESC ou clicar fora fecha. "+ Matriz" não joga mais a tela pra cima (manterTela).
 - Cobertura · Matrizes: "?" na coluna IATF atual mostra o histórico da matriz na estação: cada IATF (data, touro, doses, resultado), retornos, de qual IATF foi tirada, montas, FIV como doadora e a situação final. Só na tela; ESC ou clicar fora fecha.
 - Cobertura · IATF: o botão 🧪 Previsão doses fica vermelho quando algum touro vai faltar (previsaoDoses() > 0) e branco quando está tudo ok. Ele atualiza ao lançar resultado, trocar o touro ou mudar a Qtd.
+- PDF pelo celular (Cobertura e Agricultura): "📄 Enviar PDF" fica embaixo/do lado de cada Imprimir.
+  - Usa o gerarPdf: html2canvas 1.4.1 + jsPDF 2.5.1 do cdnjs, carregados só quando usa.
+  - Monta a mesma folha da impressão num iframe escondido e corta as páginas entre linhas. Respeita break-after:page (uma receita por folha).
+  - Quando termina, abre "📤 Enviar (WhatsApp…)" pelo navigator.share com o arquivo; sem share (PC), só "⬇ Baixar".
+  - Cobertura: pdfModo(true) faz o printHTML virar PDF; os modais de impressão trocam "Imprimir" por "📄 Gerar PDF".
+  - Agricultura: pdfDaTela copia a tela com as regras @media print aplicadas e sai em A4 deitado, igual à impressão. Tira o "Adicionar registro" e põe os valores das células como texto.
+  - Cuidado: uma regra que esconde todos os filhos do body quebra o html2canvas (ele mede as letras num elemento colocado no body).

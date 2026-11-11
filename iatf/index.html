@@ -843,7 +843,7 @@ function catClass(c){const i=categories().findIndex(x=>x===c);return i<0?'cat-no
 function resClass(r){return r==='P'?'res-p':r==='V'?'res-v':r==='PRT'?'res-m':'res-none'}
 function statusLabel(r){return r==='P'?'Prenha':r==='V'?'Vazia':r==='PRT'?'PRT':'Sem resultado'}
 function title(t,s){$('#pageTitle').textContent=t;$('#pageSub').textContent=s||''}
-function openModal(h){$('#modalBody').innerHTML=h;$('#modal').classList.remove('hidden')}
+function openModal(h){if(__pdfModo)h=h.replace(/<h2>Imprimir/,'<h2>📄 PDF —').replace(/>(Imprimir|Imprimir com todas as IATFs, FIVs e Montas|Só o que está na tela)</g,(m,t)=>t==='Imprimir'?'>📄 Gerar PDF<':'>'+t+' (PDF)<');$('#modalBody').innerHTML=h;$('#modal').classList.remove('hidden')}
 function closeModal(){$('#modal').classList.add('hidden')}
 window.closeModal=closeModal;
 
@@ -1040,7 +1040,7 @@ function zoomTable(delta){
 // Menu "☰ Opções": junta os botões de Excel/Imprimir/Modelo/zoom num só (tela mais limpa).
 // itens = [[texto, js do onclick], ...]; o zoom vai no fim.
 function menuOpcoes(itens,semZoom){
-  return `<div class="menu-op"><button class="ghost" type="button" onclick="toggleMenuOp(this,event)">☰ Opções ▾</button><div class="menu-op-lista">${itens.filter(Boolean).map(([t,js])=>`<button type="button" onclick="fecharMenusOp();${js}">${iconeOp(t)}</button>`).join('')}${semZoom?'':`<div class="menu-op-zoom"><span>Tamanho da tabela</span>${zoomControlsHTML()}</div>`}</div></div>`;
+  return `<div class="menu-op"><button class="ghost" type="button" onclick="toggleMenuOp(this,event)">☰ Opções ▾</button><div class="menu-op-lista">${itens.filter(Boolean).flatMap(([t,js])=>t.startsWith('🖨')?[[t,'pdfModo(false);'+js],['📄 Enviar PDF','pdfModo(true);'+js]]:[[t,js]]).map(([t,js])=>`<button type="button" onclick="fecharMenusOp();${js}">${iconeOp(t)}</button>`).join('')}${semZoom?'':`<div class="menu-op-zoom"><span>Tamanho da tabela</span>${zoomControlsHTML()}</div>`}</div></div>`;
 }
 // ícone desenhado + cor clarinha de cada opção do menu (pela palavra/emoji do começo do texto)
 const ICONES_OP={
@@ -1052,11 +1052,12 @@ const ICONES_OP={
   ligado:['#e3f3e9','#1f7a4d','<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>'],
   pausado:['#eef0ee','#69746c','<circle cx="12" cy="12" r="9"/><path d="M10 9v6M14 9v6"/>'],
   ordenar:['#e6f2ef','#1f6a5a','<path d="M7 4v16M3 16l4 4 4-4"/><path d="M17 20V4M13 8l4-4 4 4"/>'],
+  pdf:['#e8f6ee','#1a8a4c','<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11v6M9 14l3 3 3-3"/>'],
   excluir:['#fbe5e5','#b83a3a','<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>'],
   restaurar:['#eef0ee','#4a5850','<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>']
 };
 function iconeOp(t){
-  const k=/Modelo/.test(t)?'modelo':t.startsWith('⬆')?'subir':t.startsWith('⬇')?'baixar':t.startsWith('🖨')?'imprimir':t.startsWith('☑')?'selecionar':t.startsWith('✅')?'ligado':t.startsWith('⏸')?'pausado':t.startsWith('↕')?'ordenar':t.startsWith('🗑')?'excluir':t.startsWith('↩')?'restaurar':'';
+  const k=/Modelo/.test(t)?'modelo':t.startsWith('⬆')?'subir':t.startsWith('⬇')?'baixar':t.startsWith('🖨')?'imprimir':t.startsWith('☑')?'selecionar':t.startsWith('✅')?'ligado':t.startsWith('⏸')?'pausado':t.startsWith('↕')?'ordenar':t.startsWith('🗑')?'excluir':t.startsWith('📄')?'pdf':t.startsWith('↩')?'restaurar':'';
   if(!k)return t;
   const [fundo,cor,d]=ICONES_OP[k],txt=t.replace(/^\S+\s*/,'');
   return `<span class="op-ico" style="background:${fundo};color:${cor}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg></span><span>${txt}</span>`;
@@ -1820,7 +1821,7 @@ function montaSection(){
 }
 function dashboard(){
   title('Dashboard','Resumo da '+activeSeason().name);
-  setActions(`<button class="ghost" onclick="printDashboard()">🖨 Imprimir página</button>`);
+  setActions(`<button class="ghost" onclick="pdfModo(false);printDashboard()">🖨 Imprimir página</button><button class="ghost" onclick="pdfModo(true);printDashboard()">📄 Enviar PDF</button>`);
   const g=rateOf(seasonRows(),r=>r.result);
   // geral do topo = IATF + FIV somadas (prenhas / IATFs e transferências com resultado)
   const gf=rateOf(seasonFiv().filter(r=>String(r.rgdDoadora||'').trim()),r=>r.resultado);
@@ -4089,9 +4090,79 @@ async function jsonToXlsx(rows,name,sheet){
 window.jsonToXlsx=jsonToXlsx;
 
 /* PRINT */
+/* ===== PDF PELO CELULAR ===========================================================
+   "📄 Enviar PDF" (embaixo do Imprimir): monta a MESMA folha da impressão, transforma em PDF aqui no
+   aparelho e abre o compartilhar do celular (WhatsApp etc.); no PC baixa o arquivo. */
+let __pdfModo=false;
+function pdfModo(on){__pdfModo=on!==false}
+const PDF_LIBS=['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+function pdfCarregaLibs(){
+  const um=src=>new Promise((ok,erro)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>erro(new Error('lib'));document.head.appendChild(s)});
+  return (window.html2canvas?Promise.resolve():um(PDF_LIBS[0])).then(()=>window.jspdf?0:um(PDF_LIBS[1]));
+}
+function pdfAviso(html){
+  let f=document.getElementById('pdfAviso');
+  if(!f){f=document.createElement('div');f.id='pdfAviso';f.style.cssText='position:fixed;inset:0;z-index:99999;background:#0007;display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit';document.body.appendChild(f)}
+  f.innerHTML=`<div style="background:#fff;border-radius:16px;padding:22px;width:340px;max-width:100%;box-shadow:0 20px 50px #0005;text-align:center;color:#233129">${html}</div>`;
+  return f;
+}
+function pdfFechar(){const f=document.getElementById('pdfAviso');if(f)f.remove()}
+const pdfNomeArq=t=>String(t||'documento').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\W+/g,'_').replace(/^_+|_+$/g,'').slice(0,80)+'.pdf';
+async function gerarPdf(titulo,docHtml,largura,deitado){
+  __pdfModo=false;largura=largura||900;
+  pdfAviso('<div style="font-size:30px">📄</div><div style="font-weight:800;font-size:17px;margin:6px 0 2px">Gerando o PDF…</div><div style="font-size:13px;color:#69746c">Só um instante</div>');
+  let fr=null;
+  try{
+    await pdfCarregaLibs();
+    fr=document.createElement('iframe');fr.setAttribute('aria-hidden','true');
+    fr.style.cssText=`position:fixed;left:-30000px;top:0;width:${largura}px;height:1200px;border:0;background:#fff`;
+    document.body.appendChild(fr);
+    const d=fr.contentDocument;d.open();d.write(docHtml);d.close();
+    await new Promise(r=>setTimeout(r,250));
+    await Promise.all([...d.images].map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r})));
+    // tabela mais larga que a folha: alarga a área (a folha encolhe um pouco, mas nada fica cortado)
+    const larg=Math.ceil(d.documentElement.scrollWidth);if(larg>largura+4){fr.style.width=larg+'px';await new Promise(r=>setTimeout(r,80))}
+    const W=Math.max(largura,larg),H=Math.ceil(Math.max(d.body.scrollHeight,d.documentElement.scrollHeight));
+    fr.style.height=H+'px';await new Promise(r=>setTimeout(r,50));
+    const {jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'a4',orientation:deitado?'landscape':'portrait',compress:true});
+    const mg=8,cw=(deitado?297:210)-2*mg,ch=(deitado?210:297)-2*mg,pageH=Math.floor(ch/cw*W);
+    // corta a página entre linhas/blocos (nunca no meio de uma linha da tabela)
+    const pts=[...new Set([...d.querySelectorAll('tr,h1,h2,h3,p,li,section,.dcard,.card,.panel,.metric,.fiv-q,.vp-folha,table')].map(e=>Math.round(e.getBoundingClientRect().top)))].sort((a,b)=>a-b);
+    // folha nova obrigatória (ex.: uma receita por folha, igual à impressão)
+    const quebra=[...d.querySelectorAll('section,div,table')].filter(e=>{const c=d.defaultView.getComputedStyle(e);return c.breakAfter==='page'||c.pageBreakAfter==='always'}).map(e=>Math.round(e.getBoundingClientRect().bottom)).filter(v=>v<H-2);
+    let y=0,pg=0;
+    while(y<H-2){
+      let fim=y+pageH;
+      const f=quebra.filter(v=>v>y+2&&v<=fim);if(f.length)fim=Math.min(...f);
+      else if(fim<H){const c=pts.filter(p=>p>y+pageH*0.4&&p<=fim);if(c.length)fim=c[c.length-1]}else fim=H;
+      const h=fim-y;
+      const cv=await window.html2canvas(d.body,{x:0,y,width:W,height:h,windowWidth:W,windowHeight:H,scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false});
+      if(pg++)pdf.addPage();
+      pdf.addImage(cv.toDataURL('image/jpeg',0.9),'JPEG',mg,mg,cw,h*cw/W);
+      y=fim;
+    }
+    const nome=pdfNomeArq(titulo),blob=pdf.output('blob'),arq=new File([blob],nome,{type:'application/pdf'});
+    window.__pdfArq=arq;
+    const podeEnviar=!!(navigator.canShare&&navigator.canShare({files:[arq]}));
+    pdfAviso(`<div style="font-size:30px">✅</div><div style="font-weight:800;font-size:17px;margin:6px 0 4px">PDF pronto</div><div style="font-size:12.5px;color:#69746c;margin-bottom:16px;word-break:break-all">${nome} · ${pg} página(s)</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${podeEnviar?`<button type="button" onclick="pdfEnviar()" style="padding:13px;border:0;border-radius:11px;background:#1fa855;color:#fff;font-weight:800;font-size:16px;cursor:pointer">📤 Enviar (WhatsApp…)</button>`:''}
+        <button type="button" onclick="pdfBaixar()" style="padding:12px;border:1px solid #cfd8d2;border-radius:11px;background:#fff;color:#233129;font-weight:700;font-size:15px;cursor:pointer">⬇ Baixar o PDF</button>
+        <button type="button" onclick="pdfFechar()" style="padding:9px;border:0;background:none;color:#69746c;font-size:14px;cursor:pointer">Fechar</button>
+      </div>`);
+  }catch(e){
+    console.error(e);
+    pdfAviso(`<div style="font-size:30px">⚠️</div><div style="font-weight:800;font-size:16px;margin:6px 0 4px">Não deu pra gerar o PDF</div><div style="font-size:13px;color:#69746c;margin-bottom:14px">Confira a internet e tente de novo.</div><button type="button" onclick="pdfFechar()" style="padding:11px 22px;border:1px solid #cfd8d2;border-radius:11px;background:#fff;font-weight:700;cursor:pointer">Fechar</button>`);
+  }finally{if(fr)fr.remove()}
+}
+function pdfEnviar(){const a=window.__pdfArq;if(!a)return;navigator.share({files:[a],title:a.name.replace(/\.pdf$/,'')}).then(pdfFechar).catch(()=>{})}
+function pdfBaixar(){const a=window.__pdfArq;if(!a)return;const u=URL.createObjectURL(a),l=document.createElement('a');l.href=u;l.download=a.name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);pdfFechar()}
+window.pdfModo=pdfModo;window.pdfEnviar=pdfEnviar;window.pdfBaixar=pdfBaixar;window.pdfFechar=pdfFechar;
 function printHTML(titleText,body,extraCss=''){
+  const doc=`<!doctype html><html><head><meta charset="utf-8"><title>${esc(titleText)}</title><style>${extraCss}body{font-family:Arial,sans-serif;color:#111;padding:24px}h1{font-size:20px}table{border-collapse:collapse;width:100%;font-size:11px}th,td{border:1px solid #bbb;padding:6px;text-align:left}.card,.chart{border:1px solid #ddd;border-radius:8px;padding:12px;margin:10px 0}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.kpi .value{font-size:20px;font-weight:bold}.sub,.muted{font-size:10px;color:#666}.bar-track{height:8px;background:#eee}.bar-fill{height:100%;background:#555}.rank-row,.inline-stat,.bar-row{display:flex;justify-content:space-between;gap:10px;padding:5px;border-bottom:1px solid #eee}.actions,.quick-add,.toolbar,.filter-row,button,input,select{display:none!important}html,body{height:auto!important;overflow:visible!important;background:#fff}.dash-hero,.dkpi,.dcard,.crow .fl,.dtable .fl{-webkit-print-color-adjust:exact;print-color-adjust:exact}.dcard,.dash-hero{break-inside:avoid}@media print{body{padding:0}}</style></head><body><h1>${esc(titleText)}</h1>${body}</body></html>`;
+  if(__pdfModo)return gerarPdf(titleText,doc,900);
   const w=window.open('','_blank','width=1100,height=800');if(!w)return alert('O navegador bloqueou a janela de impressão.');
-  w.document.open();w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(titleText)}</title><style>${extraCss}body{font-family:Arial,sans-serif;color:#111;padding:24px}h1{font-size:20px}table{border-collapse:collapse;width:100%;font-size:11px}th,td{border:1px solid #bbb;padding:6px;text-align:left}.card,.chart{border:1px solid #ddd;border-radius:8px;padding:12px;margin:10px 0}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.kpi .value{font-size:20px;font-weight:bold}.sub,.muted{font-size:10px;color:#666}.bar-track{height:8px;background:#eee}.bar-fill{height:100%;background:#555}.rank-row,.inline-stat,.bar-row{display:flex;justify-content:space-between;gap:10px;padding:5px;border-bottom:1px solid #eee}.actions,.quick-add,.toolbar,.filter-row,button,input,select{display:none!important}html,body{height:auto!important;overflow:visible!important;background:#fff}.dash-hero,.dkpi,.dcard,.crow .fl,.dtable .fl{-webkit-print-color-adjust:exact;print-color-adjust:exact}.dcard,.dash-hero{break-inside:avoid}@media print{body{padding:0}}</style></head><body><h1>${esc(titleText)}</h1>${body}</body></html>`);w.document.close();setTimeout(()=>{w.focus();w.print()},200)
+  w.document.open();w.document.write(doc);w.document.close();setTimeout(()=>{w.focus();w.print()},200)
 }
 function printIatfRows(rows,comResumo){
   const ciclos=[...new Set(rows.map(r=>Number(r.cycle)))];
