@@ -114,3 +114,4 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
   - Cobertura: pdfModo(true) faz o printHTML virar PDF; os modais de impressão trocam "Imprimir" por "📄 Gerar PDF".
   - Agricultura: pdfDaTela copia a tela com as regras @media print aplicadas e sai em A4 deitado, igual à impressão. Tira o "Adicionar registro" e põe os valores das células como texto.
   - Cuidado: uma regra que esconde todos os filhos do body quebra o html2canvas (ele mede as letras num elemento colocado no body).
+- Agricultura · Venenos: o quadro "Produtos por talhão" fica antes do quadro Produtos. Tem um cartão por talhão só com o que JÁ foi aplicado: ha do cadastro, nº de aplicações feitas e total de cada produto (dose × área aplicada). O a fazer fica só no quadro Produtos. Segue os filtros da tela (talhão e situação).

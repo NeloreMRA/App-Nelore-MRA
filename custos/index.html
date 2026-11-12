@@ -410,6 +410,18 @@ button.ven-nova{width:100%; padding:13px; font-size:16px; font-weight:700; margi
 .ven-salvar .primary{padding:12px 22px; font-size:15px; font-weight:700;}
 .ven-salvar .ghost{margin-left:auto; padding:10px 14px; font-size:13px;}
 .ven-card{position:relative;}
+.vt-wrap{margin-top:18px}
+.vt-sub{font-weight:500;color:#7a857d;font-size:.85em}
+.vt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.vt-card{background:#fff;border:1px solid var(--line,#e3e8e4);border-radius:14px;padding:14px 16px 8px;box-shadow:0 1px 2px #0000000a}
+.vt-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid #eef1ee}
+.vt-top b{font-size:16px;letter-spacing:.02em;color:#1d2a21}
+.vt-top span{font-size:12px;color:#7a857d;white-space:nowrap}
+.vt-p{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0}
+.vt-p+.vt-p{border-top:1px dashed #eef1ee}
+.vt-n{font-size:13.5px;font-weight:600;color:#2b3a30;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vt-q{font-size:15px;font-weight:800;color:#2e4a2a;white-space:nowrap}
+@media print{.vt-card{break-inside:avoid;box-shadow:none}}
 .ven-tit-linha{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
 .ven-tit-linha .section-title{margin-right:auto;}
 .ven-tit-linha button{padding:6px 12px; font-size:13px;}
@@ -3045,6 +3057,30 @@ function venResumoProdutos(lista){
   }));
   return Object.values(m).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
 }
+// Produtos por talhão: só o que JÁ FOI APLICADO (receitas feitas), um cartão por talhão.
+// O "a fazer" continua no quadro Produtos logo embaixo.
+function venPorTalhaoHTML(lista,k){
+  const feitas = lista.filter(r=>r.status==='feita');
+  if(!feitas.length) return '';
+  const cad = {}; (((ven.safras[k]||{}).talhoes)||[]).forEach(t=>{ cad[t.talhao] = Number(t.area||0); });
+  const t = {};
+  feitas.forEach(r=>{
+    const x = t[r.talhao] = t[r.talhao] || {nome:r.talhao, ha:0, n:0, p:{}};
+    x.n++; x.ha = Math.max(x.ha, venNum(r.area));
+    (r.produtos||[]).forEach(p=>{ if(!String(p.produto||'').trim()) return;
+      const kk = venChave(p.produto)+'|'+venUnSaida(p.unid);
+      const q = x.p[kk] = x.p[kk] || {nome:p.produto, un:venUnSaida(p.unid), v:0};
+      q.v += venTotal(p, venAreaFeita(r)); });
+  });
+  const n = v=>fmt(v,1).replace(/,0$/,'');
+  const cards = Object.values(t).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).map(x=>{
+    const ha = cad[x.nome] || x.ha;
+    const ps = Object.values(x.p).sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR'));
+    return `<div class="vt-card"><div class="vt-top"><b>${esc(x.nome)}</b><span>${ha?n(ha)+' ha · ':''}${x.n} aplicaç${x.n===1?'ão feita':'ões feitas'}</span></div>
+      ${ps.map(q=>`<div class="vt-p"><span class="vt-n">${esc(q.nome)}</span><span class="vt-q">${n(q.v)} ${q.un}</span></div>`).join('')||'<div class="vt-p"><span class="vt-n" style="color:#9aa59d">Sem produto</span></div>'}</div>`;
+  }).join('');
+  return `<div class="vt-wrap"><p class="section-title">Produtos por talhão <span class="vt-sub">· aplicado</span></p><div class="vt-grid">${cards}</div></div>`;
+}
 function pageVenenosLista(k){
   const todas = venReceitasSafra(k);
   const talhoes = [...new Set(todas.map(r=>r.talhao))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
@@ -3078,6 +3114,7 @@ function pageVenenosLista(k){
     ${afazer.length ? `<div class="ven-tit-linha"><p class="section-title">🟡 A fazer (${afazer.length})</p>${afazer.length>1 && !venSel ? `<button type="button" class="secondary vc-wpp no-print" onclick="venSelIniciar()">${IC_WPP} Selecionar pra enviar</button>` : ''}</div><div class="ven-lista">${afazer.map(venCard).join('')}</div>` : ''}
     ${venSel ? `<div class="ven-sel-barra no-print"><span class="vsb-txt">${venSel.size ? `${venSel.size} marcada${venSel.size>1?'s':''}` : 'Toque nas receitas pra marcar'}</span><button type="button" class="secondary" onclick="venSelSair()">Cancelar</button><button type="button" class="primary" onclick="venSelEnviar()" ${venSel.size?'':'disabled'}>${IC_WPP.replace('#25D366','#fff')} Enviar no WhatsApp</button></div>` : ''}
     ${feitas.length ? `<p class="section-title" style="margin-top:18px">✅ Feitas (${feitas.length})</p><div class="ven-lista">${feitas.map(venCard).join('')}</div>` : ''}
+    ${venPorTalhaoHTML(f,k)}
     ${resumo.length ? `<div class="panel" style="margin-top:18px"><p class="section-title">Produtos${venFiltro.talhao?` · ${esc(venFiltro.talhao)}`:''}</p>
       <div class="table-wrap"><table class="simples ven-resumo"><thead><tr><th>Produto</th><th class="num">Já aplicado</th><th class="num">A fazer</th><th class="num">Total</th></tr></thead>
       <tbody>${resumo.map(p=>`<tr><td>${esc(p.nome)}</td><td class="num">${p.feito?fmt(p.feito,1).replace(/,0$/,'')+' '+p.un:'—'}</td><td class="num">${p.afazer?fmt(p.afazer,1).replace(/,0$/,'')+' '+p.un:'—'}</td><td class="num"><b>${fmt(p.feito+p.afazer,1).replace(/,0$/,'')} ${p.un}</b></td></tr>`).join('')}</tbody></table></div></div>` : ''}
