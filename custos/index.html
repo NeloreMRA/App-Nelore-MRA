@@ -401,6 +401,13 @@ button.ven-nova{width:100%; padding:13px; font-size:16px; font-weight:700; margi
 .ven-resumo{min-width:0!important; width:100%;}
 .ven-resumo th, .ven-resumo td{padding:8px 12px!important;}
 .ven-resumo td.num, .ven-resumo th.num{text-align:right;}
+.ven-resumo tr.pf-l{cursor:pointer}
+.ven-resumo tr.pf-l td:first-child::before{content:'▸';display:inline-block;color:#9aa59d;margin-right:8px;transition:transform .15s}
+.ven-resumo tr.pf-l.ab td:first-child::before{transform:rotate(90deg)}
+.ven-resumo tr.pf-l.ab td{font-weight:700}
+.ven-resumo tr.pf-sub td{background:#f8faf8;font-size:12.5px;color:#4a5850;padding-top:5px!important;padding-bottom:5px!important}
+.ven-resumo tr.pf-sub td:first-child{padding-left:30px!important}
+@media print{.ven-resumo tr.pf-l td:first-child::before{content:none}}
 .ve-cab{display:grid; grid-template-columns:2.4fr .8fr 1fr 1fr 2.2fr 36px; gap:8px; font-size:11.5px; font-weight:700; color:var(--ink-soft); padding:0 0 6px; border-bottom:1px solid var(--line); margin-bottom:6px;}
 .ve-prod{display:grid; grid-template-columns:2.4fr .8fr 1fr 1fr 2.2fr 36px; gap:8px; align-items:center; padding:5px 0; border-bottom:1px dashed var(--line);}
 .ve-prod label{display:none;}
@@ -883,7 +890,7 @@ let tableRegistry = {};
 let openFilterPanel = null;
 
 // =================== NAVEGAÇÃO ===================
-function setPage(p){ if(!paginaPermitida(p)) p = primeiraPaginaPermitida(); currentPage = p; document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.page===p)); render(); }
+function setPage(p){ if(!paginaPermitida(p)) p = primeiraPaginaPermitida(); currentPage = p; venProdAbertos = []; /* Produtos dos Venenos sempre começam fechados */ document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.page===p)); render(); }
 document.querySelectorAll('.navbtn').forEach(b=>b.addEventListener('click', ()=>setPage(b.dataset.page)));
 
 function refreshSafraSelector(){
@@ -3081,6 +3088,17 @@ function venPorTalhaoHTML(lista,k){
   }).join('');
   return `<div class="vt-wrap"><p class="section-title">Produtos por talhão <span class="vt-sub">· aplicado</span></p><div class="vt-grid">${cards}</div></div>`;
 }
+// Quadro Produtos: tocar no produto abre quanto foi em cada talhão (tocar de novo fecha)
+let venProdAbertos = [];
+function venProdAbre(k){ const i = venProdAbertos.indexOf(k); if(i>-1) venProdAbertos.splice(i,1); else venProdAbertos.push(k); render(); }
+window.venProdAbre=venProdAbre;
+function venProdPorTalhao(lista,kk){
+  const t = {};
+  lista.forEach(r=>(r.produtos||[]).forEach(p=>{ if(venChave(p.produto)+'|'+venUnSaida(p.unid)!==kk) return;
+    const x = t[r.talhao] = t[r.talhao] || {f:0,a:0};
+    if(r.status==='feita') x.f += venTotal(p, venAreaFeita(r)); else x.a += venTotal(p, r.area); }));
+  return Object.entries(t).sort((a,b)=>(b[1].f+b[1].a)-(a[1].f+a[1].a) || a[0].localeCompare(b[0],'pt-BR'));
+}
 function pageVenenosLista(k){
   const todas = venReceitasSafra(k);
   const talhoes = [...new Set(todas.map(r=>r.talhao))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
@@ -3117,7 +3135,9 @@ function pageVenenosLista(k){
     ${venPorTalhaoHTML(f,k)}
     ${resumo.length ? `<div class="panel" style="margin-top:18px"><p class="section-title">Produtos${venFiltro.talhao?` · ${esc(venFiltro.talhao)}`:''}</p>
       <div class="table-wrap"><table class="simples ven-resumo"><thead><tr><th>Produto</th><th class="num">Já aplicado</th><th class="num">A fazer</th><th class="num">Total</th></tr></thead>
-      <tbody>${resumo.map(p=>`<tr><td>${esc(p.nome)}</td><td class="num">${p.feito?fmt(p.feito,1).replace(/,0$/,'')+' '+p.un:'—'}</td><td class="num">${p.afazer?fmt(p.afazer,1).replace(/,0$/,'')+' '+p.un:'—'}</td><td class="num"><b>${fmt(p.feito+p.afazer,1).replace(/,0$/,'')} ${p.un}</b></td></tr>`).join('')}</tbody></table></div></div>` : ''}
+      <tbody>${resumo.map(p=>{ const kk = venChave(p.nome)+'|'+p.un, ab = venProdAbertos.includes(kk);
+        return `<tr class="pf-l ${ab?'ab':''}" onclick="venProdAbre('${esc(kk).replace(/'/g,"\\'")}')"><td>${esc(p.nome)}</td><td class="num">${p.feito?fmt(p.feito,1).replace(/,0$/,'')+' '+p.un:'—'}</td><td class="num">${p.afazer?fmt(p.afazer,1).replace(/,0$/,'')+' '+p.un:'—'}</td><td class="num"><b>${fmt(p.feito+p.afazer,1).replace(/,0$/,'')} ${p.un}</b></td></tr>`
+          + (ab ? venProdPorTalhao(f,kk).map(([t,v])=>`<tr class="pf-sub"><td>${esc(t)}</td><td class="num">${v.f?fmt(v.f,1).replace(/,0$/,''):'—'}</td><td class="num">${v.a?fmt(v.a,1).replace(/,0$/,''):'—'}</td><td class="num">${fmt(v.f+v.a,1).replace(/,0$/,'')}</td></tr>`).join('') : ''); }).join('')}</tbody></table></div></div>` : ''}
   `;
 }
 function pageVenenoReceita(){
