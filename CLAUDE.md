@@ -118,7 +118,12 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - Agricultura · Venenos · quadro Produtos: igual era, só que tocar no produto abre quanto foi em cada talhão (Já aplicado, A fazer, Total) e tocar de novo fecha. Sempre começa fechado (venProdAbertos zera no setPage). O dono NÃO quis busca, período, botões de talhão nem total: manter clean.
 - Caderneta · aba 💰 Vendas:
   - Dados: lancamentos com aba='vendas' {data, mes, valorCab (R$ POR CABEÇA), comprador, animais:[{rgd,marca}], obs}. Vendas antigas com 'valor' contam como por cabeça (o dono confirmou). Total = valorCab × cabeças.
-  - Marca editável dentro da venda e pode ficar em branco ("(sem marca)"). A data aparece sem dia da semana.
+  - Marca OBRIGATÓRIA (o dono decidiu).
+    - Enter sem marca não entra; salvar com marca vazia não deixa e marca de vermelho.
+    - Botões MRA, JM, CR + as já usadas + "+ Outra" (digita uma marca nova, que vira botão).
+    - A marca pode ser editada dentro da venda.
+  - Filtro ▾ das colunas Animais e Por marca lista cada RGD / cada marca separado (valoresCol).
+  - A data aparece sem dia da semana.
   - Lança pelo formulário (+ Lançar no celular, + Nova venda no PC). Digita "RGD - Marca" + Enter.
     - Botões de marca rápidos.
     - Colar várias linhas também funciona.
