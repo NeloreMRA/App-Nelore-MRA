@@ -158,7 +158,7 @@ textarea.input{min-height:96px;resize:vertical}
 .pz-sel{width:100%;border:1px solid #d7ded9;border-radius:8px;padding:6px 8px;font-size:14.5px;font-weight:800;outline:none}
 .pz-sel.P{background:#e3f3e8;color:#1f6a49;border-color:#b9dcc6}.pz-sel.V{background:#fbeeec;color:#a33627;border-color:#ecc3bd}.pz-sel.T{background:#fdf0dc;color:#9a5a12;border-color:#efd3a6}
 .reg.vdc{display:block;padding:12px 14px}
-.vdc-top{display:flex;align-items:baseline;gap:8px}.vdc-tot{font-size:17px;font-weight:800;color:var(--verde-esc)}.vdc-dt{margin-left:auto;font-size:12.5px;color:var(--muito-suave)}.vdc-x{align-self:center;border:0;background:none;color:#a7b1aa;font-size:11px;width:20px;height:20px;line-height:20px;padding:0;border-radius:5px}.vdc-x:hover{background:#fbeeec;color:#a33627}
+.vdc-top{display:flex;align-items:baseline;gap:8px}.vdc-tot{font-size:17px;font-weight:800;color:var(--verde-esc)}.vdc-dt{margin-left:auto;font-size:12.5px;color:var(--muito-suave);position:relative;top:7px}.vdc-x{align-self:center;border:0;background:none;color:#a7b1aa;font-size:11px;width:20px;height:20px;line-height:20px;padding:0;border-radius:5px}.vdc-x:hover{background:#fbeeec;color:#a33627}
 .vdc-sub{font-size:12.5px;color:var(--suave);margin:1px 0 6px}
 .vdc-ls{border-top:1px solid var(--linha);padding-top:5px}.vdc-l{display:flex;align-items:center;gap:10px;padding:3px 0;font-size:14.5px}.vdc-l b{flex:1;font-weight:700}
 .vdc-mk{display:inline-block;background:#e8f3ec;color:var(--verde);border-radius:5px;padding:2px 8px;font-size:12px;font-weight:800;line-height:1.4}
@@ -449,8 +449,8 @@ function desenhar(){
       <td class="quebra">${vdAnimaisHTML(i)}</td><td class="c"><b>${(i.animais||[]).length}</b></td><td class="n">${brl(vdCab(i))}</td><td class="n"><b>${brl(vdTotal(i))}</b></td><td class="quebra">${vdMarcasHTML(i)}</td><td class="quebra">${esc(i.obs||'')}</td><td class="c">${i._pend?'<span class="pend">⏳</span>':''}${del(i)}</td></tr>`).join('');
     $('#lista').innerHTML=v.map(i=>{const n=(i.animais||[]).length;
       // cartão do celular: total + data, cab × valor + comprador, um RGD por linha com a marca, e a divisão por marca
-      return `<div class="reg vdc" onclick="abrirForm('${i.id}')"><div class="vdc-top"><b class="vdc-tot">${brl0(vdTotal(i))}</b><span class="vdc-dt"></span>${i._pend?'<span class="pend">⏳</span>':''}${podeEditar(i)?`<button class="vdc-x" title="Excluir" onclick="event.stopPropagation();apagar('${i.id}')">✕</button>`:''}</div>
-        <div class="vdc-sub">${fmtData(i.data)} · ${n} cab × ${brl0(vdCab(i))}${i.comprador?' · '+esc(i.comprador):''}</div>
+      return `<div class="reg vdc" onclick="abrirForm('${i.id}')"><div class="vdc-top"><b class="vdc-tot">${brl0(vdTotal(i))}</b><span class="vdc-dt">${fmtData(i.data)}</span>${i._pend?'<span class="pend">⏳</span>':''}${podeEditar(i)?`<button class="vdc-x" title="Excluir" onclick="event.stopPropagation();apagar('${i.id}')">✕</button>`:''}</div>
+        <div class="vdc-sub">${n} cab × ${brl0(vdCab(i))}${i.comprador?' · '+esc(i.comprador):''}</div>
         <div class="vdc-ls">${(i.animais||[]).map(a=>`<div class="vdc-l"><b>${esc(a.rgd)}</b><span class="vdc-mk">${esc(a.marca||'—')}</span></div>`).join('')}</div>
         <div class="vdc-mar">${vdPorMarca(i).map(x=>`<span><span class="vdc-mk">${esc(x.marca)}</span> ${x.n} · ${brl0(x.valor)}</span>`).join('')}</div>${i.obs?`<div class="vdc-obs">${esc(i.obs)}</div>`:''}</div>`}).join('');
   }else if(aba==='nasc'){
