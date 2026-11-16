@@ -681,12 +681,15 @@ function verFotoId(id){if(miniFotos[id])verFoto(miniFotos[id])}
 
 /* ---------- Excel das vendas: escolhe quais vendas; uma linha por animal ---------- */
 function vdEscolherExcel(v){return escolherExcel(v,i=>`<b>${fmtData(i.data)}</b> · ${(i.animais||[]).length} cab · ${brl0(vdTotal(i))}${i.comprador?' · '+esc(i.comprador):''}`,'vdBaixarExcel')}
-function nsEscolherExcel(v){return escolherExcel(v,i=>`<b>${fmtData(i.data)}</b> · ${esc(i.rgdMae||'—')}${i.sexo?' · '+i.sexo:''}${i.receptora?' · Rec. '+esc(i.receptora):''}`,'nsBaixarExcel')}
-function escolherExcel(v,linha,baixar){
+function nsEscolherExcel(){
+  const ms={};todos.forEach(i=>{const k=String(i.data||'').slice(0,7);if(/^\d{4}-\d{2}$/.test(k))ms[k]=(ms[k]||0)+1});
+  const ls=Object.keys(ms).sort().map(k=>({id:k,n:ms[k]}));if(!ls.length){toast('Nada pra exportar.');return}
+  escolherExcel(ls,x=>`<b>${nomeMes(x.id)}</b> · ${x.n} nascimento${x.n>1?'s':''}`,'nsBaixarExcel',x=>!mes||x.id===mes)}
+function escolherExcel(v,linha,baixar,marc=()=>true){
   const m=document.createElement('div');m.className='modal';m.id='form';m.onclick=e=>{if(e.target===m)m.remove()};
   m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>Baixar Excel</h2><button class="x" onclick="fecharForm()" aria-label="Fechar">×</button></div>
-    <div class="folha-corpo"><div class="vdx-bts"><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=true)">Marcar todas</button><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=false)">Desmarcar</button></div>
-    <div class="vdx-lista">${v.slice().reverse().map(i=>`<label class="vdx-it"><input type="checkbox" class="vdx-cb" value="${i.id}" checked><span>${linha(i)}</span></label>`).join('')}</div></div>
+    <div class="folha-corpo"><div class="vdx-bts"><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=true)">Marcar ${baixar==='nsBaixarExcel'?'todos':'todas'}</button><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=false)">Desmarcar</button></div>
+    <div class="vdx-lista">${v.slice().reverse().map(i=>`<label class="vdx-it"><input type="checkbox" class="vdx-cb" value="${i.id}"${marc(i)?' checked':''}><span>${linha(i)}</span></label>`).join('')}</div></div>
     <div class="folha-pe"><span class="esq"></span><button class="btn btn-ghost" onclick="fecharForm()">Cancelar</button><button class="btn btn-primary" onclick="${baixar}()">⬇ Baixar Excel</button></div></div>`;
   document.body.appendChild(m);
 }
@@ -695,8 +698,9 @@ function vdExcelJS(){return window.ExcelJS?Promise.resolve():new Promise((ok,err
 // Nascimentos: mesmo formato do Excel das vendas (sem "lançado por"), resumo machos/fêmeas embaixo
 async function nsBaixarExcel(){
   const ids=new Set([...document.querySelectorAll('.vdx-cb')].filter(c=>c.checked).map(c=>c.value));
-  if(!ids.size){toast('Marque pelo menos um nascimento.');return}
-  const v=visiveis().slice().reverse().filter(i=>ids.has(i.id));
+  if(!ids.size){toast('Marque pelo menos um mês.');return}
+  const v=todos.filter(i=>ids.has(String(i.data||'').slice(0,7))).sort((a,b)=>String(a.data).localeCompare(String(b.data))||String(a.criadoEmLocal||'').localeCompare(String(b.criadoEmLocal||'')));
+  const ms=[...ids].sort();
   try{await vdExcelJS()}catch(e){toast('Sem internet para gerar o Excel.');return}
   const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Nascimentos');
   const VERDE='FF1F5F43',CLARO='FFE8F3EC',borda={style:'thin',color:{argb:'FFD5DDD8'}},bordas={top:borda,left:borda,bottom:borda,right:borda};
@@ -715,7 +719,7 @@ async function nsBaixarExcel(){
   lin.forEach(([a,b])=>{const r=ws.addRow([a,'',b]);ws.mergeCells(r.number,1,r.number,2);r.getCell(1).border=bordas;r.getCell(3).border=bordas;r.getCell(3).alignment={horizontal:'center'}});
   const g=ws.addRow(['TOTAL','',v.length]);ws.mergeCells(g.number,1,g.number,2);[1,3].forEach(k=>{const c=g.getCell(k);c.font={bold:true};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:CLARO}};c.border=bordas});g.getCell(3).alignment={horizontal:'center'};
   const buf=await wb.xlsx.writeBuffer();const url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
-  const el=document.createElement('a');el.href=url;el.download=`caderneta_nascimentos_${mes||'todos'}.xlsx`;document.body.appendChild(el);el.click();el.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+  const el=document.createElement('a');el.href=url;el.download=`caderneta_nascimentos_${ms.length===1?ms[0]:ms[0]+'_a_'+ms[ms.length-1]}.xlsx`;document.body.appendChild(el);el.click();el.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
   fecharForm();
 }
 async function vdBaixarExcel(){
@@ -748,11 +752,12 @@ async function vdBaixarExcel(){
 }
 /* ---------- Excel (planilha simples) ---------- */
 function exportarMes(){
+  if(aba==='nasc')return nsEscolherExcel();
   if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
   const v=visiveis().slice().reverse();if(!v.length){toast('Nada pra exportar.');return}
   let ws;
   if(aba==='vendas')return vdEscolherExcel(v);
-  if(aba==='nasc')return nsEscolherExcel(v);
+  if(aba==='nasc')return nsEscolherExcel();
   if(aba==='nasc'){
     ws=XLSX.utils.json_to_sheet(v.map(i=>({RGD_MAE:i.rgdMae||'',N_RECEPTORA:i.receptora||'',SEXO:i.sexo||'',DATA_NASCIMENTO:fmtData(i.data),PESO_KG:numBR(i.peso)??'',PELAGEM:i.pelagem||'',OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''})));
     ws['!cols']=[{wch:14},{wch:14},{wch:6},{wch:16},{wch:9},{wch:16},{wch:30},{wch:18}];

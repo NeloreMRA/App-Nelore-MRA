@@ -113,6 +113,9 @@ td.csel{background:#dcebe2!important;box-shadow:inset 0 0 0 1px #72a386}
 .modal{position:fixed;inset:0;background:#0009;display:flex;align-items:center;justify-content:center;padding:20px;z-index:30}
 .folha{background:#fff;width:min(560px,100%);max-height:92vh;display:flex;flex-direction:column;border-radius:16px;overflow:hidden}
 .folha-cab{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--linha)}.folha-cab h2{margin:0;font-size:17px}
+.xlm-bts{display:flex;gap:8px;margin-bottom:10px}.xlm-bts .btn{padding:7px 12px;font-size:13px}
+.xlm-lista{border:1px solid var(--linha);border-radius:10px;max-height:52vh;overflow:auto}
+.xlm-it{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--linha);font-size:14px;cursor:pointer}.xlm-it:last-child{border-bottom:0}.xlm-it input{width:18px;height:18px}
 .folha-cab .x{margin-left:auto;border:0;background:#f1f4f2;width:34px;height:34px;border-radius:50%;font-size:18px}
 .folha-corpo{padding:16px 18px;overflow:auto}
 .folha-pe{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--linha);background:#fafbfa}.folha-pe .esq{margin-right:auto}
@@ -493,7 +496,7 @@ function salvarLinha(id){
 function abrirMenu(ev){
   ev.stopPropagation();const old=$('.menu');if(old){old.remove();return}
   const m=document.createElement('div');m.className='menu';
-  m.innerHTML=`<button onclick="exportar()">⬇ Excel do mês</button><button onclick="window.print()">🖨 Imprimir</button>`;
+  m.innerHTML=`<button onclick="exportar()">⬇ Excel</button><button onclick="window.print()">🖨 Imprimir</button>`;
   document.body.appendChild(m);setTimeout(()=>document.addEventListener('click',()=>m.remove(),{once:true}),0);
 }
 
@@ -530,10 +533,21 @@ function evolucaoHtml(){
 
 /* ---------- Excel (mesmo formato do Excel de vendas da Caderneta: cabeçalho verde, bordas, linha TOTAL) ---------- */
 function excelJS(){return window.ExcelJS?Promise.resolve():new Promise((ok,erro)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';sc.onload=ok;sc.onerror=erro;document.head.appendChild(sc)})}
-async function exportar(){
-  const ls=linhasDo(mes);if(!ls.length){toast('Nada pra exportar neste mês.');return}
+function exportar(){
+  const ms=mesesComDados();if(!ms.length){toast('Nada pra exportar.');return}
+  const m=document.createElement('div');m.className='modal';m.id='xlMeses';m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>Baixar Excel</h2><button class="x" onclick="document.getElementById('xlMeses').remove()" aria-label="Fechar">×</button></div>
+    <div class="folha-corpo"><div class="xlm-bts"><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.xlm-cb').forEach(c=>c.checked=true)">Marcar todos</button><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.xlm-cb').forEach(c=>c.checked=false)">Desmarcar</button></div>
+    <div class="xlm-lista">${ms.slice().reverse().map(x=>`<label class="xlm-it"><input type="checkbox" class="xlm-cb" value="${x}"${x===mes?' checked':''}><span><b>${nomeMes(x)}</b></span></label>`).join('')}</div></div>
+    <div class="folha-pe"><span class="esq"></span><button class="btn btn-ghost" onclick="document.getElementById('xlMeses').remove()">Cancelar</button><button class="btn btn-primary" onclick="baixarExcelMeses()">⬇ Baixar Excel</button></div></div>`;
+  document.body.appendChild(m);
+}
+async function baixarExcelMeses(){
+  const ms=[...document.querySelectorAll('.xlm-cb')].filter(c=>c.checked).map(c=>c.value).sort();
+  if(!ms.length){toast('Marque pelo menos um mês.');return}
   try{await excelJS()}catch(e){toast('Sem internet pra gerar o Excel agora.');return}
-  const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Estoque '+mes);
+  const wb=new ExcelJS.Workbook();
+  ms.forEach(mes=>{const ls=linhasDo(mes);const ws=wb.addWorksheet(nomeMes(mes).replace(/[\\/*?:\[\]]/g,'-').slice(0,31));
   const VERDE='FF1F5F43',CLARO='FFE8F3EC',borda={style:'thin',color:{argb:'FFD5DDD8'}},bordas={top:borda,left:borda,bottom:borda,right:borda};
   ws.columns=[{width:26},{width:11},{width:10},{width:10},{width:10},{width:10},{width:10},{width:36}];
   const h=ws.addRow(['Classificação','Inicial','Entrada','Saída','Morte','Abate','Total','Observação']);h.height=20;
@@ -542,8 +556,10 @@ async function exportar(){
   ls.forEach(l=>{const vs=[num(l.inicial),num(l.entrada),num(l.saida),num(l.morte),num(l.abate),total(l)];vs.forEach((x,k)=>sm[k]+=x);
     const r=ws.addRow([l.classificacao||'',...vs,l.obs||'']);r.eachCell({includeEmpty:true},(c,k)=>{c.border=bordas;if(k>1&&k<8)c.alignment={horizontal:'center'}});r.getCell(7).font={bold:true}});
   const g=ws.addRow(['TOTAL',...sm,'']);g.eachCell({includeEmpty:true},(c,k)=>{c.font={bold:true};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:CLARO}};c.border=bordas;if(k>1&&k<8)c.alignment={horizontal:'center'}});
+  });
   const buf=await wb.xlsx.writeBuffer();const url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
-  const el=document.createElement('a');el.href=url;el.download=`estoque_gado_${mes}.xlsx`;document.body.appendChild(el);el.click();el.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+  const el=document.createElement('a');el.href=url;el.download=`estoque_gado_${ms.length===1?ms[0]:ms[0]+'_a_'+ms[ms.length-1]}.xlsx`;document.body.appendChild(el);el.click();el.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+  const x=document.getElementById('xlMeses');if(x)x.remove();
 }
 if('serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js').catch(()=>{});
 </script>
