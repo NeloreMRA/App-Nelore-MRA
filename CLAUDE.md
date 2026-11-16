@@ -117,12 +117,12 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - Agricultura · Venenos: o quadro "Produtos por talhão" fica antes do quadro Produtos. Tem um cartão por talhão só com o que JÁ foi aplicado: ha do cadastro, nº de aplicações feitas e total de cada produto (dose × área aplicada). O a fazer fica só no quadro Produtos. Segue os filtros da tela (talhão e situação).
 - Agricultura · Venenos · quadro Produtos: igual era, só que tocar no produto abre quanto foi em cada talhão (Já aplicado, A fazer, Total) e tocar de novo fecha. Sempre começa fechado (venProdAbertos zera no setPage). O dono NÃO quis busca, período, botões de talhão nem total: manter clean.
 - Caderneta · aba 💰 Vendas:
-  - Dados: lancamentos com aba='vendas' {data, mes, valor (R$ total), comprador, animais:[{rgd,marca}], obs}.
+  - Dados: lancamentos com aba='vendas' {data, mes, valorCab (R$ POR CABEÇA), comprador, animais:[{rgd,marca}], obs}. Vendas antigas com 'valor' contam como por cabeça (o dono confirmou). Total = valorCab × cabeças.
+  - Marca editável dentro da venda e pode ficar em branco ("(sem marca)"). A data aparece sem dia da semana.
   - Lança pelo formulário (+ Lançar no celular, + Nova venda no PC). Digita "RGD - Marca" + Enter.
-    - Sem marca, repete a do animal anterior.
     - Botões de marca rápidos.
     - Colar várias linhas também funciona.
-  - Valor por marca = valor ÷ cabeças × cabeças da marca. Resumo do mês em cima: total, cabeças, média e por marca.
+  - Valor por marca = valorCab × cabeças da marca. Resumo do mês em cima: total, cabeças, média e por marca.
   - Na tabela, os animais ficam um embaixo do outro.
   - Excel com 2 abas (Vendas e Animais vendidos). A impressão tem título.
   - Marcas e compradores ficam guardados em config/listas (marcasVenda, compradores).
