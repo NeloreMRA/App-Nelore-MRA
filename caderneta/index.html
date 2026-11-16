@@ -680,16 +680,44 @@ function verFoto(src){const z=document.createElement('div');z.className='zoom';z
 function verFotoId(id){if(miniFotos[id])verFoto(miniFotos[id])}
 
 /* ---------- Excel das vendas: escolhe quais vendas; uma linha por animal ---------- */
-function vdEscolherExcel(v){
+function vdEscolherExcel(v){return escolherExcel(v,i=>`<b>${fmtData(i.data)}</b> · ${(i.animais||[]).length} cab · ${brl0(vdTotal(i))}${i.comprador?' · '+esc(i.comprador):''}`,'vdBaixarExcel')}
+function nsEscolherExcel(v){return escolherExcel(v,i=>`<b>${fmtData(i.data)}</b> · ${esc(i.rgdMae||'—')}${i.sexo?' · '+i.sexo:''}${i.receptora?' · Rec. '+esc(i.receptora):''}`,'nsBaixarExcel')}
+function escolherExcel(v,linha,baixar){
   const m=document.createElement('div');m.className='modal';m.id='form';m.onclick=e=>{if(e.target===m)m.remove()};
   m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>Baixar Excel</h2><button class="x" onclick="fecharForm()" aria-label="Fechar">×</button></div>
     <div class="folha-corpo"><div class="vdx-bts"><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=true)">Marcar todas</button><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=false)">Desmarcar</button></div>
-    <div class="vdx-lista">${v.slice().reverse().map(i=>`<label class="vdx-it"><input type="checkbox" class="vdx-cb" value="${i.id}" checked><span><b>${fmtData(i.data)}</b> · ${(i.animais||[]).length} cab · ${brl0(vdTotal(i))}${i.comprador?' · '+esc(i.comprador):''}</span></label>`).join('')}</div></div>
-    <div class="folha-pe"><span class="esq"></span><button class="btn btn-ghost" onclick="fecharForm()">Cancelar</button><button class="btn btn-primary" onclick="vdBaixarExcel()">⬇ Baixar Excel</button></div></div>`;
+    <div class="vdx-lista">${v.slice().reverse().map(i=>`<label class="vdx-it"><input type="checkbox" class="vdx-cb" value="${i.id}" checked><span>${linha(i)}</span></label>`).join('')}</div></div>
+    <div class="folha-pe"><span class="esq"></span><button class="btn btn-ghost" onclick="fecharForm()">Cancelar</button><button class="btn btn-primary" onclick="${baixar}()">⬇ Baixar Excel</button></div></div>`;
   document.body.appendChild(m);
 }
 // ExcelJS só carrega quando baixa o Excel das vendas (planilha com R$ e resumo por comprador)
 function vdExcelJS(){return window.ExcelJS?Promise.resolve():new Promise((ok,erro)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';sc.onload=ok;sc.onerror=erro;document.head.appendChild(sc)})}
+// Nascimentos: mesmo formato do Excel das vendas (sem "lançado por"), resumo machos/fêmeas embaixo
+async function nsBaixarExcel(){
+  const ids=new Set([...document.querySelectorAll('.vdx-cb')].filter(c=>c.checked).map(c=>c.value));
+  if(!ids.size){toast('Marque pelo menos um nascimento.');return}
+  const v=visiveis().slice().reverse().filter(i=>ids.has(i.id));
+  try{await vdExcelJS()}catch(e){toast('Sem internet para gerar o Excel.');return}
+  const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Nascimentos');
+  const VERDE='FF1F5F43',CLARO='FFE8F3EC',borda={style:'thin',color:{argb:'FFD5DDD8'}},bordas={top:borda,left:borda,bottom:borda,right:borda};
+  const cab=c=>{c.font={bold:true,color:{argb:'FFFFFFFF'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:VERDE}};c.border=bordas;c.alignment={vertical:'middle',horizontal:c.alignment&&c.alignment.horizontal}};
+  ws.columns=[{width:15},{width:14},{width:10},{width:14},{width:11},{width:16},{width:34}];
+  const CENTRO=[2,3,4,5];
+  const h=ws.addRow(['RGD da mãe','Nº receptora','Sexo','Data nasc.','Peso (kg)','Pelagem','Observação']);h.height=20;
+  h.eachCell((c,k)=>{if(CENTRO.includes(k))c.alignment={horizontal:'center'};cab(c)});
+  v.forEach(i=>{const [y,m,d]=String(i.data||'').split('-').map(Number);const pe=numBR(i.peso);
+    const r=ws.addRow([i.rgdMae||'',i.receptora||'',i.sexo||'',y?new Date(Date.UTC(y,m-1,d)):'',pe??'',i.pelagem||'',i.obs||'']);
+    r.getCell(4).numFmt='dd/mm/yyyy';r.eachCell({includeEmpty:true},(c,k)=>{c.border=bordas;if(CENTRO.includes(k))c.alignment={horizontal:'center'}})});
+  const mc=v.filter(i=>i.sexo==='M').length,fc=v.filter(i=>i.sexo==='F').length;
+  ws.addRow([]);ws.addRow([]);
+  const t=ws.addRow(['Resumo','','Cabeças']);ws.mergeCells(t.number,1,t.number,2);[1,3].forEach(k=>cab(t.getCell(k)));t.getCell(3).alignment={horizontal:'center'};
+  const lin=[['Machos',mc],['Fêmeas',fc]];if(v.length-mc-fc)lin.push(['Sem sexo',v.length-mc-fc]);
+  lin.forEach(([a,b])=>{const r=ws.addRow([a,'',b]);ws.mergeCells(r.number,1,r.number,2);r.getCell(1).border=bordas;r.getCell(3).border=bordas;r.getCell(3).alignment={horizontal:'center'}});
+  const g=ws.addRow(['TOTAL','',v.length]);ws.mergeCells(g.number,1,g.number,2);[1,3].forEach(k=>{const c=g.getCell(k);c.font={bold:true};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:CLARO}};c.border=bordas});g.getCell(3).alignment={horizontal:'center'};
+  const buf=await wb.xlsx.writeBuffer();const url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  const el=document.createElement('a');el.href=url;el.download=`caderneta_nascimentos_${mes||'todos'}.xlsx`;document.body.appendChild(el);el.click();el.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+  fecharForm();
+}
 async function vdBaixarExcel(){
   const ids=new Set([...document.querySelectorAll('.vdx-cb')].filter(c=>c.checked).map(c=>c.value));
   if(!ids.size){toast('Marque pelo menos uma venda.');return}
@@ -724,6 +752,7 @@ function exportarMes(){
   const v=visiveis().slice().reverse();if(!v.length){toast('Nada pra exportar.');return}
   let ws;
   if(aba==='vendas')return vdEscolherExcel(v);
+  if(aba==='nasc')return nsEscolherExcel(v);
   if(aba==='nasc'){
     ws=XLSX.utils.json_to_sheet(v.map(i=>({RGD_MAE:i.rgdMae||'',N_RECEPTORA:i.receptora||'',SEXO:i.sexo||'',DATA_NASCIMENTO:fmtData(i.data),PESO_KG:numBR(i.peso)??'',PELAGEM:i.pelagem||'',OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''})));
     ws['!cols']=[{wch:14},{wch:14},{wch:6},{wch:16},{wch:9},{wch:16},{wch:30},{wch:18}];
