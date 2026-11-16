@@ -129,7 +129,8 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
     - Colar várias linhas também funciona.
   - Valor por marca = valorCab × cabeças da marca. Resumo do mês em cima: total, cabeças, média e por marca.
   - Na tabela, os animais ficam um embaixo do outro.
-  - Excel com 2 abas (Vendas e Animais vendidos). A impressão tem título.
+  - Excel: abre uma janela pra escolher quais vendas baixar (todas marcadas). Uma aba só, UMA LINHA POR ANIMAL (5 cab = 5 linhas): DATA_VENDA, COMPRADOR, RGD, MARCA, VALOR_DO_ANIMAL, CABECAS_NA_VENDA, VALOR_TOTAL_DA_VENDA, OBSERVACAO, LANCADO_POR. A impressão tem título e mostra todos os animais.
+  - Lista (PC e celular) mostra até 7 animais por venda e "+ ver mais (N)". RGD e marca editáveis no formulário (RGD vazio ou repetido é recusado).
   - Marcas e compradores ficam guardados em config/listas (marcasVenda, compradores).
   - Backup: aba "Caderneta Vendas" no excel_tudo.py (uma linha por animal).
   - Ideias pra V2: valor por animal, recebido/a receber, peso/@, aviso de RGD já vendido, ligar no Contábil.
