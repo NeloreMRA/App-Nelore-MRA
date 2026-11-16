@@ -169,6 +169,9 @@ textarea.input{min-height:96px;resize:vertical}
 .vd-lista{border:1px solid var(--borda);border-radius:10px;margin-top:10px;overflow:hidden}
 .vd-it{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--linha);font-size:15px}
 .vd-it .vd-n{color:var(--muito-suave);font-size:12px;width:18px;text-align:right}.vd-it .vd-mk{margin-left:auto;font-weight:700;color:var(--verde);font-size:13.5px}
+.vd-mk-in.falta{border-color:#d9534f!important;background:#fdeceb}
+.vd-marcas .pill.outra{border-style:dashed;color:var(--verde-esc);background:#f6faf7}
+.vd-outra{display:flex;gap:8px;margin-top:8px}.vd-outra .input{flex:1;min-width:0}.vd-outra .btn{padding:10px 18px}
 .vd-mk-in{margin-left:auto;width:78px;border:1px solid #d7ded9;border-radius:8px;padding:5px 8px;font-weight:700;color:var(--verde);font-size:14px;text-align:center;background:#fff;outline:none}.vd-mk-in:focus{border-color:#72a386}
 .vd-it button{border:0;background:#f1f4f2;width:26px;height:26px;border-radius:50%;font-size:15px;line-height:1}
 .vd-vazio{padding:12px;color:var(--muito-suave);font-size:13.5px}
@@ -377,9 +380,10 @@ try{const f=JSON.parse(localStorage.getItem(FILTRO_KEY)||'{}');Object.assign(fil
 const guardarFiltros=()=>{try{localStorage.setItem(FILTRO_KEY,JSON.stringify({filtros:filtrosCol,ordem:ordemCol}))}catch(e){}};
 const valCampo=(i,k)=>k==='valorCab'?vdCab(i):k==='total'?vdTotal(i):k==='cab'?(i.animais||[]).length:k==='animaisTxt'?vdAnimaisTxt(i):k==='marcasTxt'?vdMarcasTxt(i):k==='data'?(i.data||''):k==='por'?(i.criadoPorNome||''):k==='peso'?(numBR(i.peso)??''):k==='obs'&&aba==='geral'?obsGeral(i):(i[k]||'');
 const txtCampo=(i,k)=>{const v=valCampo(i,k);return v===''?'(vazio)':k==='valorCab'||k==='total'?brl(v):k==='data'?fmtData(v):k==='peso'?String(v).replace('.',','):String(v)};
+const valoresCol=(i,k)=>k==='animaisTxt'?(i.animais||[]).map(a=>a.rgd).filter(Boolean):k==='marcasTxt'?vdPorMarca(i).map(x=>x.marca):[txtCampo(i,k)];
 const temFiltroCol=()=>Object.values(filtrosCol[aba]).some(Boolean);
 function filtradas(exceto){const f=filtrosCol[aba],pzq=aba==='prenhez'?chaveRgd($('#pzRgd').value):'',q=aba==='prenhez'?'':$('#busca').value.trim().toLowerCase();
-  return itens.filter(i=>(!pzq||i.k.includes(pzq))&&(!q||textoBusca(i).toLowerCase().includes(q))&&Object.entries(f).every(([k,vs])=>k===exceto||!vs||vs.includes(txtCampo(i,k))))}
+  return itens.filter(i=>(!pzq||i.k.includes(pzq))&&(!q||textoBusca(i).toLowerCase().includes(q))&&Object.entries(f).every(([k,vs])=>k===exceto||!vs||valoresCol(i,k).some(x=>vs.includes(x))))}
 function visiveis(){
   const o=ordemCol[aba];
   return filtradas().sort((a,b)=>{
@@ -390,7 +394,7 @@ function fecharFiltro(){const p=$('.fpainel');if(p)p.remove()}
 document.addEventListener('click',fecharFiltro);
 function abrirFiltro(ev,k){
   ev.stopPropagation();const aberto=$('.fpainel');if(aberto&&aberto.dataset.k===k){fecharFiltro();return}fecharFiltro();
-  const vals=[...new Set(filtradas(k).map(i=>txtCampo(i,k)))].sort((a,b)=>k==='data'?a.split('/').reverse().join('').localeCompare(b.split('/').reverse().join('')):a.localeCompare(b,'pt-BR',{numeric:true}));
+  const vals=[...new Set(filtradas(k).flatMap(i=>valoresCol(i,k)))].sort((a,b)=>k==='data'?a.split('/').reverse().join('').localeCompare(b.split('/').reverse().join('')):a.localeCompare(b,'pt-BR',{numeric:true}));
   const ativo=filtrosCol[aba][k];
   const p=document.createElement('div');p.className='fpainel';p.dataset.k=k;p.onclick=e=>e.stopPropagation();
   p.innerHTML=`<div class="fp-ord"><button class="btn btn-ghost" onclick="ordenarCol('${k}',1)">A→Z ▲</button><button class="btn btn-ghost" onclick="ordenarCol('${k}',-1)">Z→A ▼</button></div>
@@ -531,22 +535,27 @@ function vdLer(t){
   return rgd?{rgd,marca}:null;
 }
 function vdAddAnimal(){
-  const el=$('#fAnimal');if(!el)return;const a=vdLer(el.value);if(!a){el.focus();return}
+  const el=$('#fAnimal');if(!el)return;const a=vdLer(el.value);if(!a){el.focus();return false}
+  if(!a.marca){toast('Falta a marca: toque num botão de marca (ou "+ Outra").');el.focus();return false}
   if(vdForm.some(x=>x.rgd===a.rgd)){toast(a.rgd+' já está nessa venda.');el.select();return}
-  vdForm.push(a);el.value='';vdDesenharForm();el.focus();
+  vdForm.push(a);el.value='';vdDesenharForm();el.focus();return true;
 }
+// "+ Outra": digita uma marca nova (vira botão nas próximas vendas)
+function vdOutra(){const b=$('#vdOutraBox');if(!b)return;b.classList.remove('hidden');const i=$('#vdOutraIn');i.value='';i.focus()}
+function vdOutraOk(){const i=$('#vdOutraIn');const m=String(i&&i.value||'').trim().toUpperCase();if(!m){i&&i.focus();return}
+  if(!marcasVd.includes(m))marcasVd.push(m);$('#vdOutraBox').classList.add('hidden');vdDesenharForm();vdMarcaChip(m)}
 // colou várias linhas (ex.: do WhatsApp ou Excel): cada linha vira um animal
-function vdColarEv(e){const t=(e.clipboardData||window.clipboardData).getData('text')||'';const ls=t.split(/[\r\n;]+/).map(x=>x.trim()).filter(Boolean);if(ls.length<2)return;e.preventDefault();const el=e.target;ls.forEach(l=>{el.value=l;vdAddAnimal()})}
+function vdColarEv(e){const t=(e.clipboardData||window.clipboardData).getData('text')||'';const ls=t.split(/[\r\n;]+/).map(x=>x.trim()).filter(Boolean);if(ls.length<2)return;e.preventDefault();const el=e.target,sem=[];ls.forEach(l=>{el.value=l;if(!vdAddAnimal())sem.push(l)});el.value='';if(sem.length)toast(`${sem.length} linha(s) sem marca não entraram: ${sem.join(', ')}`)}
 function vdColar(el){const ls=String(el.value).split(/[\n;]+/).map(x=>x.trim()).filter(Boolean);if(ls.length<2)return;el.value='';ls.forEach(l=>{el.value=l;vdAddAnimal()})}
 function vdTira(k){vdForm.splice(k,1);vdDesenharForm()}
-function vdMarcaChip(m){const el=$('#fAnimal');if(!el)return;const t=el.value.replace(/\s*-\s*[^-]*$/,'').trim();el.value=(t?t+' - ':'')+m;if(t)vdAddAnimal();else el.focus()}
+function vdMarcaChip(m){const el=$('#fAnimal');if(!el)return;const t=el.value.replace(/\s*-\s*[^-]*$/,'').trim();if(!t){toast('Digite o RGD primeiro e depois toque na marca.');el.focus();return}el.value=t+' - '+m;vdAddAnimal()}
 function vdDesenharForm(){
   const l=$('#vdLista');if(!l)return;
   const valor=numBR(($('#fValor')||{}).value),n=vdForm.length,base={valorCab:valor||0,animais:vdForm};
   l.innerHTML=(n?vdForm.map((a,k)=>`<div class="vd-it"><span class="vd-n">${k+1}</span><b>${esc(a.rgd)}</b>${vdSoVer?`<span class="vd-mk">${esc(a.marca||'—')}</span>`:`<input class="vd-mk-in" list="dlMarcas" value="${esc(a.marca||'')}" placeholder="marca" autocapitalize="characters" onchange="vdForm[${k}].marca=this.value.trim().toUpperCase();vdDesenharForm()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">`}${vdSoVer?'':`<button type="button" onclick="vdTira(${k})" aria-label="Tirar">×</button>`}</div>`).join(''):'<div class="vd-vazio">Nenhum animal ainda.</div>')
     +(n?`<div class="vd-tot"><span><b>${n}</b> cabeça${n===1?'':'s'}${valor?` × ${brl(valor)} = <b>${brl(valor*n)}</b>`:''}</span>${valor?`<div class="vd-div">${vdPorMarca(base).map(x=>`<span><b>${esc(x.marca)}</b> ${x.n} cab · ${brl(x.valor)}</span>`).join('')}</div>`:''}</div>`:'');
   const dl=$('#dlMarcas');if(dl)dl.innerHTML=[...new Set([...marcasVd,'MRA','JM','CR'])].map(x=>`<option value="${esc(x)}">`).join('');
-  const mk=$('#vdMarcas');if(mk){const ls=[...new Set([...vdForm.map(a=>a.marca).filter(Boolean).reverse(),...marcasVd,'MRA','JM','CR'])].slice(0,8);mk.innerHTML=ls.map(x=>`<button type="button" class="pill" onclick="vdMarcaChip('${esc(x)}')">${esc(x)}</button>`).join('')}
+  const mk=$('#vdMarcas');if(mk){const ls=[...new Set(['MRA','JM','CR',...marcasVd,...vdForm.map(a=>a.marca).filter(Boolean)])];mk.innerHTML=ls.map(x=>`<button type="button" class="pill" onclick="vdMarcaChip('${esc(x)}')">${esc(x)}</button>`).join('')+`<button type="button" class="pill outra" onclick="vdOutra()">+ Outra</button>`}
 }
 function vdGuardarListas(d){const ms=[...new Set(d.animais.map(a=>a.marca).filter(Boolean))].filter(x=>!marcasVd.includes(x)),up={};
   if(ms.length)up.marcasVenda=firebase.firestore.FieldValue.arrayUnion(...ms);if(d.comprador&&!compradores.includes(d.comprador))up.compradores=firebase.firestore.FieldValue.arrayUnion(d.comprador);
@@ -565,9 +574,10 @@ function abrirForm(id,base){
     corpo=`<div class="duas"><div class="field"><label>Data da venda *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):hoje()}"></div>
       <div class="field"><label>Valor por cabeça (R$) *</label><input id="fValor" ${ro} class="input" inputmode="decimal" placeholder="Ex: 3.000" value="${i&&vdCab(i)?esc(String(vdCab(i)).replace('.',',')):''}" oninput="vdDesenharForm()"></div></div>
       <div class="field"><label>Comprador</label><input id="fComp" ${ro} class="input" list="dlComp" value="${v('comprador')}" placeholder="(se quiser)"></div>
-      <div class="field"><label>Animais — digite <b>RGD - Marca</b> e aperte Enter (marca pode ficar em branco)</label>
+      <div class="field"><label>Animais — digite o <b>RGD</b> e toque na <b>marca</b> (ou digite RGD - Marca e Enter)</label>
         ${so?'':`<input id="fAnimal" class="input" placeholder="Ex: MRA 11000 - MRA" autocapitalize="characters" autocomplete="off" enterkeyhint="enter" onkeydown="if(event.key==='Enter'){event.preventDefault();vdAddAnimal()}" onpaste="vdColarEv(event)">
-        <div class="vd-marcas" id="vdMarcas"></div>`}
+        <div class="vd-marcas" id="vdMarcas"></div>
+        <div class="vd-outra hidden" id="vdOutraBox"><input id="vdOutraIn" class="input" placeholder="Nome da marca" autocapitalize="characters" autocomplete="off" enterkeyhint="done" onkeydown="if(event.key==='Enter'){event.preventDefault();vdOutraOk()}"><button type="button" class="btn btn-primary" onclick="vdOutraOk()">OK</button></div>`}
         <div class="vd-lista" id="vdLista"></div></div>
       <div class="field" style="margin-bottom:0"><label>Observação</label><input id="fObsV" ${ro} class="input" value="${v('obs')}"></div>`;
   }else if(aba==='nasc'){
@@ -602,6 +612,8 @@ function salvar(id,outro){
     const pend=$('#fAnimal')&&$('#fAnimal').value.trim();if(pend)vdAddAnimal();
     const valor=numBR($('#fValor').value);if(valor===null||valor<=0){toast('Informe o valor por cabeça.');$('#fValor').focus();return}
     if(!vdForm.length){toast('Coloque pelo menos um animal.');$('#fAnimal').focus();return}
+    const semM=vdForm.map((a,k)=>a.marca?-1:k).filter(k=>k>-1);
+    if(semM.length){document.querySelectorAll('.vd-mk-in').forEach((x,k)=>x.classList.toggle('falta',semM.includes(k)));toast('Tem animal sem marca. Preencha a marca em vermelho.');const x=document.querySelectorAll('.vd-mk-in')[semM[0]];if(x)x.focus();return}
     dados={data,mes:data.slice(0,7),valorCab:valor,...(id?{valor:firebase.firestore.FieldValue.delete()}:{}),comprador:$('#fComp').value.trim(),animais:vdForm.map(a=>({rgd:a.rgd,marca:a.marca})),obs:$('#fObsV').value.trim()};
     vdGuardarListas(dados);
   }else if(aba==='nasc'){
