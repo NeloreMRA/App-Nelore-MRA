@@ -134,3 +134,4 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
   - Backup: aba "Caderneta Vendas" no excel_tudo.py (uma linha por animal).
   - Ideias pra V2: valor por animal, recebido/a receber, peso/@, aviso de RGD já vendido, ligar no Contábil.
   - Celular: cada venda é um cartão (total + data, "cab × valor · comprador", um RGD por linha com a marca em etiqueta verde RETANGULAR (cantos de 5px, igual o PC; NÃO redonda), e no fim a divisão por marca). Sem valor repetido em cada animal: o dono pediu clean.
+  - Excluir venda no celular: X pequeno do lado da data (não lixeira), sempre com confirmação.
