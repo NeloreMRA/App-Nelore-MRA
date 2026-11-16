@@ -169,6 +169,7 @@ textarea.input{min-height:96px;resize:vertical}
 .vd-lista{border:1px solid var(--borda);border-radius:10px;margin-top:10px;overflow:hidden}
 .vd-it{display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--linha);font-size:15px}
 .vd-it .vd-n{color:var(--muito-suave);font-size:12px;width:18px;text-align:right}.vd-it .vd-mk{margin-left:auto;font-weight:700;color:var(--verde);font-size:13.5px}
+.vd-mk-in{margin-left:auto;width:78px;border:1px solid #d7ded9;border-radius:8px;padding:5px 8px;font-weight:700;color:var(--verde);font-size:14px;text-align:center;background:#fff;outline:none}.vd-mk-in:focus{border-color:#72a386}
 .vd-it button{border:0;background:#f1f4f2;width:26px;height:26px;border-radius:50%;font-size:15px;line-height:1}
 .vd-vazio{padding:12px;color:var(--muito-suave);font-size:13.5px}
 .vd-tot{background:#f6faf7;padding:9px 10px;font-size:13.5px;color:var(--suave)}.vd-tot b{color:var(--texto)}
@@ -246,7 +247,7 @@ textarea.input{min-height:96px;resize:vertical}
   </section>
 </div>
 <button class="fab" onclick="abrirForm()">+ Lançar</button>
-<datalist id="dlPelagem"></datalist><datalist id="dlComp"></datalist>
+<datalist id="dlPelagem"></datalist><datalist id="dlComp"></datalist><datalist id="dlMarcas"></datalist>
 <datalist id="dlObs"><option value="Natimorto"><option value="Morte"><option value="Gêmeos"></datalist>
 <input id="rArq" type="file" accept="image/*" multiple class="hidden" onchange="fotosRapido(this.files);this.value=''">
 
@@ -331,7 +332,7 @@ function montarMeses(){
 const COLS={
   nasc:[['RGD Mãe',13,'','rgdMae'],['N° Receptora',11,'','receptora'],['Sexo',7,'c','sexo'],['Data Nasc.',12,'','data'],['Peso (kg)',9,'n','peso'],['Pelagem',13,'','pelagem'],['Observação',20,'','obs'],['Por',10,'','por'],['',5]],
   geral:[['Data Lançamento',12,'','data'],['RGD',11,'','rgd'],['Situação',11,'','situacao'],['Observação',34,'','obs'],['Fotos',16],['Por',11,'','por'],['',5]],
-  vendas:[['Data',10,'','data'],['Comprador',13,'','comprador'],['Animais (RGD · marca)',25,'','animaisTxt'],['Cab.',6,'c','cab'],['Valor (R$)',11,'n','valor'],['Por marca',17,'','marcasTxt'],['Observação',13,'','obs'],['',5]]
+  vendas:[['Data',10,'','data'],['Comprador',13,'','comprador'],['Animais (RGD · marca)',25,'','animaisTxt'],['Cab.',5,'c','cab'],['Valor/cab (R$)',10,'n','valorCab'],['Valor total (R$)',11,'n','total'],['Por marca',15,'','marcasTxt'],['Observação',11,'','obs'],['',4]]
 };
 const LARG_KEY=()=>'app-nelore-mra-caderneta-larguras-'+aba;
 function montarTabela(){
@@ -374,8 +375,8 @@ const FILTRO_KEY='app-nelore-mra-caderneta-filtros';
 const filtrosCol={nasc:{},geral:{},prenhez:{},vendas:{}},ordemCol={nasc:null,geral:null,prenhez:null,vendas:null};
 try{const f=JSON.parse(localStorage.getItem(FILTRO_KEY)||'{}');Object.assign(filtrosCol,f.filtros||{});Object.assign(ordemCol,f.ordem||{})}catch(e){}
 const guardarFiltros=()=>{try{localStorage.setItem(FILTRO_KEY,JSON.stringify({filtros:filtrosCol,ordem:ordemCol}))}catch(e){}};
-const valCampo=(i,k)=>k==='valor'?(Number(i.valor)||0):k==='cab'?(i.animais||[]).length:k==='animaisTxt'?vdAnimaisTxt(i):k==='marcasTxt'?vdMarcasTxt(i):k==='data'?(i.data||''):k==='por'?(i.criadoPorNome||''):k==='peso'?(numBR(i.peso)??''):k==='obs'&&aba==='geral'?obsGeral(i):(i[k]||'');
-const txtCampo=(i,k)=>{const v=valCampo(i,k);return v===''?'(vazio)':k==='valor'?brl(v):k==='data'?fmtData(v):k==='peso'?String(v).replace('.',','):String(v)};
+const valCampo=(i,k)=>k==='valorCab'?vdCab(i):k==='total'?vdTotal(i):k==='cab'?(i.animais||[]).length:k==='animaisTxt'?vdAnimaisTxt(i):k==='marcasTxt'?vdMarcasTxt(i):k==='data'?(i.data||''):k==='por'?(i.criadoPorNome||''):k==='peso'?(numBR(i.peso)??''):k==='obs'&&aba==='geral'?obsGeral(i):(i[k]||'');
+const txtCampo=(i,k)=>{const v=valCampo(i,k);return v===''?'(vazio)':k==='valorCab'||k==='total'?brl(v):k==='data'?fmtData(v):k==='peso'?String(v).replace('.',','):String(v)};
 const temFiltroCol=()=>Object.values(filtrosCol[aba]).some(Boolean);
 function filtradas(exceto){const f=filtrosCol[aba],pzq=aba==='prenhez'?chaveRgd($('#pzRgd').value):'',q=aba==='prenhez'?'':$('#busca').value.trim().toLowerCase();
   return itens.filter(i=>(!pzq||i.k.includes(pzq))&&(!q||textoBusca(i).toLowerCase().includes(q))&&Object.entries(f).every(([k,vs])=>k===exceto||!vs||vs.includes(txtCampo(i,k))))}
@@ -433,11 +434,11 @@ function desenhar(){
   const del=i=>podeEditar(i)?`<button class="xdel" title="Excluir" onclick="event.stopPropagation();apagar('${i.id}')">🗑</button>`:'';
   const por=i=>i._pend?'<span class="pend">⏳ a enviar</span>':esc(i.criadoPorNome||'');
   if(aba==='vendas'){
-    $('#corpoD').innerHTML=v.map(i=>`<tr onclick="abrirForm('${i.id}')"><td>${fmtData(i.data)} <span class="por">${diaSem(i.data)}</span></td><td>${esc(i.comprador||'')}</td>
-      <td class="quebra">${vdAnimaisHTML(i)}</td><td class="c"><b>${(i.animais||[]).length}</b></td><td class="n"><b>${brl(i.valor)}</b></td><td class="quebra">${vdMarcasHTML(i)}</td><td class="quebra">${esc(i.obs||'')}</td><td class="c">${i._pend?'<span class="pend">⏳</span>':''}${del(i)}</td></tr>`).join('');
+    $('#corpoD').innerHTML=v.map(i=>`<tr onclick="abrirForm('${i.id}')"><td>${fmtData(i.data)}</td><td>${esc(i.comprador||'')}</td>
+      <td class="quebra">${vdAnimaisHTML(i)}</td><td class="c"><b>${(i.animais||[]).length}</b></td><td class="n">${brl(vdCab(i))}</td><td class="n"><b>${brl(vdTotal(i))}</b></td><td class="quebra">${vdMarcasHTML(i)}</td><td class="quebra">${esc(i.obs||'')}</td><td class="c">${i._pend?'<span class="pend">⏳</span>':''}${del(i)}</td></tr>`).join('');
     $('#lista').innerHTML=v.map(i=>{const n=(i.animais||[]).length;
-      return `<div class="reg" onclick="abrirForm('${i.id}')"><div class="corpo"><div class="l1"><b>${brl(i.valor)}</b> · ${n} cab.${i.comprador?' · '+esc(i.comprador):''}</div>
-        <div class="l2 vd-l2">${fmtData(i.data).slice(0,5)} ${diaSem(i.data)} · ${vdMarcasHTML(i,true)}</div>${i.obs?`<div class="l2">${esc(i.obs)}</div>`:''}</div>
+      return `<div class="reg" onclick="abrirForm('${i.id}')"><div class="corpo"><div class="l1"><b>${brl(vdTotal(i))}</b> · ${n} cab × ${brl0(vdCab(i))}${i.comprador?' · '+esc(i.comprador):''}</div>
+        <div class="l2 vd-l2">${fmtData(i.data).slice(0,5)} · ${vdMarcasHTML(i,true)}</div>${i.obs?`<div class="l2">${esc(i.obs)}</div>`:''}</div>
         <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${del(i)}</div></div>`}).join('');
   }else if(aba==='nasc'){
     $('#corpoD').innerHTML=v.map(i=>`<tr onclick="abrirForm('${i.id}')"><td>${esc(i.rgdMae||'')}</td><td>${esc(i.receptora||'')}</td>
@@ -500,13 +501,14 @@ function lancarRapido(){
 }
 
 /* ---------- VENDAS ----------
-   Cada venda: {aba:'vendas', data, mes, valor (R$ total), comprador, animais:[{rgd,marca}], obs}.
-   Valor por marca = valor ÷ cabeças × cabeças da marca (mesmo preço por cabeça). */
+   Cada venda: {aba:'vendas', data, mes, valorCab (R$ POR CABEÇA), comprador, animais:[{rgd,marca}], obs}.
+   Valor total = valorCab × cabeças. Por marca = valorCab × cabeças da marca. (Vendas antigas tinham "valor": vale como por cabeça.) */
 let vdForm=[],vdSoVer=false,marcasVd=[],compradores=[];
 const brl=v=>'R$ '+(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const brl0=v=>'R$ '+(Number(v)||0).toLocaleString('pt-BR',{maximumFractionDigits:0});
-const vdPorCab=i=>{const n=(i.animais||[]).length;return n?Math.round((Number(i.valor)||0)/n*100)/100:0};
-function vdPorMarca(i){const m={};(i.animais||[]).forEach(a=>{const k=a.marca||'(sem marca)';m[k]=(m[k]||0)+1});const pc=(Number(i.valor)||0)/Math.max(1,(i.animais||[]).length);
+const vdCab=i=>Number(i.valorCab??i.valor)||0;
+const vdTotal=i=>Math.round(vdCab(i)*(i.animais||[]).length*100)/100;
+function vdPorMarca(i){const m={};(i.animais||[]).forEach(a=>{const k=a.marca||'(sem marca)';m[k]=(m[k]||0)+1});const pc=vdCab(i);
   return Object.entries(m).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pt-BR')).map(([k,n])=>({marca:k,n,valor:pc*n}))}
 const vdAnimaisTxt=i=>(i.animais||[]).map(a=>a.rgd+(a.marca?' - '+a.marca:'')).join('; ');
 const vdMarcasTxt=i=>vdPorMarca(i).map(x=>`${x.marca} ${x.n} cab ${brl(x.valor)}`).join(' | ');
@@ -514,7 +516,7 @@ const vdAnimaisHTML=i=>(i.animais||[]).map(a=>`<span class="vd-an">${esc(a.rgd)}
 const vdMarcasHTML=(i,curto)=>vdPorMarca(i).map(x=>`<span class="vd-mc"><b>${esc(x.marca)}</b> ${x.n}${curto?'':' cab'} · ${curto?brl0(x.valor):brl(x.valor)}</span>`).join(curto?' ':'');
 function vdResumoHTML(v){
   if(!v.length)return '';
-  const tot=v.reduce((a,i)=>a+(Number(i.valor)||0),0),cab=v.reduce((a,i)=>a+(i.animais||[]).length,0),m={};
+  const tot=v.reduce((a,i)=>a+vdTotal(i),0),cab=v.reduce((a,i)=>a+(i.animais||[]).length,0),m={};
   v.forEach(i=>vdPorMarca(i).forEach(x=>{const y=m[x.marca]=m[x.marca]||{n:0,valor:0};y.n+=x.n;y.valor+=x.valor}));
   return `<div class="vd-res"><div class="vd-k"><span>Total vendido</span><b>${brl0(tot)}</b></div><div class="vd-k"><span>Cabeças</span><b>${cab}</b></div><div class="vd-k"><span>Média por cabeça</span><b>${brl0(cab?tot/cab:0)}</b></div>
     ${Object.entries(m).sort((a,b)=>b[1].valor-a[1].valor).map(([k,y])=>`<div class="vd-k marca"><span>${esc(k)} · ${y.n} cab</span><b>${brl0(y.valor)}</b></div>`).join('')}</div>`;
@@ -526,7 +528,6 @@ function vdLer(t){
   const pd=t.split(/\s*-\s*/),ul=pd[pd.length-1];
   if(pd.length>1&&/^[A-Z][A-Z0-9]{0,5}$/.test(ul)&&/\d/.test(pd.slice(0,-1).join('-'))){marca=ul;rgd=pd.slice(0,-1).join('-').trim()}
   else{const ps=t.split(' ');const ult=ps[ps.length-1];if(ps.length>2&&marcasVd.concat(['MRA','JM','CR','JR','JM4']).includes(ult)){marca=ult;rgd=ps.slice(0,-1).join(' ')}}
-  if(!marca&&vdForm.length)marca=vdForm[vdForm.length-1].marca||'';
   return rgd?{rgd,marca}:null;
 }
 function vdAddAnimal(){
@@ -541,9 +542,10 @@ function vdTira(k){vdForm.splice(k,1);vdDesenharForm()}
 function vdMarcaChip(m){const el=$('#fAnimal');if(!el)return;const t=el.value.replace(/\s*-\s*[^-]*$/,'').trim();el.value=(t?t+' - ':'')+m;if(t)vdAddAnimal();else el.focus()}
 function vdDesenharForm(){
   const l=$('#vdLista');if(!l)return;
-  const valor=numBR(($('#fValor')||{}).value),n=vdForm.length,base={valor:valor||0,animais:vdForm};
-  l.innerHTML=(n?vdForm.map((a,k)=>`<div class="vd-it"><span class="vd-n">${k+1}</span><b>${esc(a.rgd)}</b><span class="vd-mk">${esc(a.marca||'sem marca')}</span>${vdSoVer?'':`<button type="button" onclick="vdTira(${k})" aria-label="Tirar">×</button>`}</div>`).join(''):'<div class="vd-vazio">Nenhum animal ainda.</div>')
-    +(n?`<div class="vd-tot"><span><b>${n}</b> cabeça${n===1?'':'s'}${valor?` · ${brl(valor/n)} por cabeça`:''}</span>${valor?`<div class="vd-div">${vdPorMarca(base).map(x=>`<span><b>${esc(x.marca)}</b> ${x.n} cab · ${brl(x.valor)}</span>`).join('')}</div>`:''}</div>`:'');
+  const valor=numBR(($('#fValor')||{}).value),n=vdForm.length,base={valorCab:valor||0,animais:vdForm};
+  l.innerHTML=(n?vdForm.map((a,k)=>`<div class="vd-it"><span class="vd-n">${k+1}</span><b>${esc(a.rgd)}</b>${vdSoVer?`<span class="vd-mk">${esc(a.marca||'—')}</span>`:`<input class="vd-mk-in" list="dlMarcas" value="${esc(a.marca||'')}" placeholder="marca" autocapitalize="characters" onchange="vdForm[${k}].marca=this.value.trim().toUpperCase();vdDesenharForm()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">`}${vdSoVer?'':`<button type="button" onclick="vdTira(${k})" aria-label="Tirar">×</button>`}</div>`).join(''):'<div class="vd-vazio">Nenhum animal ainda.</div>')
+    +(n?`<div class="vd-tot"><span><b>${n}</b> cabeça${n===1?'':'s'}${valor?` × ${brl(valor)} = <b>${brl(valor*n)}</b>`:''}</span>${valor?`<div class="vd-div">${vdPorMarca(base).map(x=>`<span><b>${esc(x.marca)}</b> ${x.n} cab · ${brl(x.valor)}</span>`).join('')}</div>`:''}</div>`:'');
+  const dl=$('#dlMarcas');if(dl)dl.innerHTML=[...new Set([...marcasVd,'MRA','JM','CR'])].map(x=>`<option value="${esc(x)}">`).join('');
   const mk=$('#vdMarcas');if(mk){const ls=[...new Set([...vdForm.map(a=>a.marca).filter(Boolean).reverse(),...marcasVd,'MRA','JM','CR'])].slice(0,8);mk.innerHTML=ls.map(x=>`<button type="button" class="pill" onclick="vdMarcaChip('${esc(x)}')">${esc(x)}</button>`).join('')}
 }
 function vdGuardarListas(d){const ms=[...new Set(d.animais.map(a=>a.marca).filter(Boolean))].filter(x=>!marcasVd.includes(x)),up={};
@@ -561,9 +563,9 @@ function abrirForm(id,base){
   if(aba==='vendas'){
     vdForm=(i?(i.animais||[]):[]).map(a=>({...a}));
     corpo=`<div class="duas"><div class="field"><label>Data da venda *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):hoje()}"></div>
-      <div class="field"><label>Valor total (R$) *</label><input id="fValor" ${ro} class="input" inputmode="decimal" placeholder="Ex: 30.000" value="${i&&i.valor?esc(String(i.valor).replace('.',',')):''}" oninput="vdDesenharForm()"></div></div>
+      <div class="field"><label>Valor por cabeça (R$) *</label><input id="fValor" ${ro} class="input" inputmode="decimal" placeholder="Ex: 3.000" value="${i&&vdCab(i)?esc(String(vdCab(i)).replace('.',',')):''}" oninput="vdDesenharForm()"></div></div>
       <div class="field"><label>Comprador</label><input id="fComp" ${ro} class="input" list="dlComp" value="${v('comprador')}" placeholder="(se quiser)"></div>
-      <div class="field"><label>Animais — digite <b>RGD - Marca</b> e aperte Enter</label>
+      <div class="field"><label>Animais — digite <b>RGD - Marca</b> e aperte Enter (marca pode ficar em branco)</label>
         ${so?'':`<input id="fAnimal" class="input" placeholder="Ex: MRA 11000 - MRA" autocapitalize="characters" autocomplete="off" enterkeyhint="enter" onkeydown="if(event.key==='Enter'){event.preventDefault();vdAddAnimal()}" onpaste="vdColarEv(event)">
         <div class="vd-marcas" id="vdMarcas"></div>`}
         <div class="vd-lista" id="vdLista"></div></div>
@@ -598,9 +600,9 @@ function salvar(id,outro){
   let dados;
   if(aba==='vendas'){
     const pend=$('#fAnimal')&&$('#fAnimal').value.trim();if(pend)vdAddAnimal();
-    const valor=numBR($('#fValor').value);if(valor===null||valor<=0){toast('Informe o valor da venda.');$('#fValor').focus();return}
+    const valor=numBR($('#fValor').value);if(valor===null||valor<=0){toast('Informe o valor por cabeça.');$('#fValor').focus();return}
     if(!vdForm.length){toast('Coloque pelo menos um animal.');$('#fAnimal').focus();return}
-    dados={data,mes:data.slice(0,7),valor,comprador:$('#fComp').value.trim(),animais:vdForm.map(a=>({rgd:a.rgd,marca:a.marca})),obs:$('#fObsV').value.trim()};
+    dados={data,mes:data.slice(0,7),valorCab:valor,...(id?{valor:firebase.firestore.FieldValue.delete()}:{}),comprador:$('#fComp').value.trim(),animais:vdForm.map(a=>({rgd:a.rgd,marca:a.marca})),obs:$('#fObsV').value.trim()};
     vdGuardarListas(dados);
   }else if(aba==='nasc'){
     dados={data,mes:data.slice(0,7),rgdMae:$('#fMae').value.trim().toUpperCase(),receptora:$('#fRec').value.trim().toUpperCase(),sexo:sexoForm,peso:$('#fPeso').value.trim(),pelagem:$('#fPel').value.trim(),obs:$('#fObs').value.trim()};
@@ -648,9 +650,9 @@ function exportarMes(){
   if(aba==='vendas'){
     // aba 1: uma linha por venda; aba 2: uma linha por animal (com o valor de cada um)
     const wb=XLSX.utils.book_new();
-    const w1=XLSX.utils.json_to_sheet(v.map(i=>({DATA_VENDA:fmtData(i.data),COMPRADOR:i.comprador||'',CABECAS:(i.animais||[]).length,VALOR_TOTAL:Number(i.valor)||0,VALOR_POR_CABECA:vdPorCab(i),ANIMAIS:vdAnimaisTxt(i),POR_MARCA:vdMarcasTxt(i),OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''})));
+    const w1=XLSX.utils.json_to_sheet(v.map(i=>({DATA_VENDA:fmtData(i.data),COMPRADOR:i.comprador||'',CABECAS:(i.animais||[]).length,VALOR_POR_CABECA:vdCab(i),VALOR_TOTAL:vdTotal(i),ANIMAIS:vdAnimaisTxt(i),POR_MARCA:vdMarcasTxt(i),OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''})));
     w1['!cols']=[{wch:12},{wch:20},{wch:9},{wch:13},{wch:16},{wch:50},{wch:40},{wch:30},{wch:16}];
-    const w2=XLSX.utils.json_to_sheet(v.flatMap(i=>(i.animais||[]).map(a=>({DATA_VENDA:fmtData(i.data),RGD:a.rgd,MARCA:a.marca||'',VALOR:vdPorCab(i),COMPRADOR:i.comprador||''}))));
+    const w2=XLSX.utils.json_to_sheet(v.flatMap(i=>(i.animais||[]).map(a=>({DATA_VENDA:fmtData(i.data),RGD:a.rgd,MARCA:a.marca||'',VALOR:vdCab(i),COMPRADOR:i.comprador||''}))));
     w2['!cols']=[{wch:12},{wch:14},{wch:10},{wch:12},{wch:20}];
     XLSX.utils.book_append_sheet(wb,w1,'Vendas');XLSX.utils.book_append_sheet(wb,w2,'Animais vendidos');
     XLSX.writeFile(wb,`caderneta_vendas_${mes||'todos'}.xlsx`);return;
