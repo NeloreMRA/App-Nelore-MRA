@@ -133,3 +133,4 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
   - Marcas e compradores ficam guardados em config/listas (marcasVenda, compradores).
   - Backup: aba "Caderneta Vendas" no excel_tudo.py (uma linha por animal).
   - Ideias pra V2: valor por animal, recebido/a receber, peso/@, aviso de RGD já vendido, ligar no Contábil.
+  - Celular: cada venda é um cartão (total + data, "cab × valor · comprador", um RGD por linha com a marca em etiqueta verde arredondada, e no fim a divisão por marca). Sem valor repetido em cada animal: o dono pediu clean.
