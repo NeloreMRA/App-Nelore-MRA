@@ -160,6 +160,13 @@ textarea.input{min-height:96px;resize:vertical}
 .reg.vdc{display:block;padding:12px 14px}
 .vdc-top{display:flex;align-items:baseline;gap:8px}.vdc-tot{font-size:17px;font-weight:800;color:var(--verde-esc)}.vdc-dt{margin-left:auto;font-size:12.5px;color:var(--muito-suave);position:relative;top:7px}.vdc-x{align-self:center;border:0;background:none;color:#a7b1aa;font-size:11px;width:20px;height:20px;line-height:20px;padding:0;border-radius:5px}.vdc-x:hover{background:#fbeeec;color:#a33627}
 .vdc-sub{font-size:12.5px;color:var(--suave);margin:1px 0 6px}
+.vd-oculto{display:none!important}
+.vd-mais{display:block;border:0;background:none;color:var(--verde);font-weight:800;font-size:13px;padding:5px 0 0;cursor:pointer}
+.vd-rgd-in{flex:1;min-width:0;border:1px solid transparent;border-radius:8px;padding:5px 8px;font-weight:800;font-size:15px;background:none;outline:none}.vd-rgd-in:hover{border-color:#e3e8e4}.vd-rgd-in:focus{border-color:#72a386;background:#fff}
+.vdx-bts{display:flex;gap:8px;margin-bottom:10px}.vdx-bts .btn{padding:7px 12px;font-size:13px}
+.vdx-lista{border:1px solid var(--borda);border-radius:10px;max-height:52vh;overflow:auto}
+.vdx-it{display:flex;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--linha);font-size:14px;cursor:pointer}.vdx-it:last-child{border-bottom:0}.vdx-it input{width:18px;height:18px}
+@media print{.vd-oculto{display:revert!important}.vdc-l.vd-oculto{display:flex!important}.vd-mais{display:none!important}}
 .vdc-ls{border-top:1px solid var(--linha);padding-top:5px}.vdc-l{display:flex;align-items:center;gap:10px;padding:3px 0;font-size:14.5px}.vdc-l b{flex:1;font-weight:700}
 .vdc-mk{display:inline-block;background:#e8f3ec;color:var(--verde);border-radius:5px;padding:2px 8px;font-size:12px;font-weight:800;line-height:1.4}
 .vdc-mar{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:12.5px;color:var(--suave);padding-top:7px;margin-top:4px;border-top:1px solid var(--linha)}
@@ -451,7 +458,7 @@ function desenhar(){
       // cartão do celular: total + data, cab × valor + comprador, um RGD por linha com a marca, e a divisão por marca
       return `<div class="reg vdc" onclick="abrirForm('${i.id}')"><div class="vdc-top"><b class="vdc-tot">${brl0(vdTotal(i))}</b><span class="vdc-dt">${fmtData(i.data)}</span>${i._pend?'<span class="pend">⏳</span>':''}${podeEditar(i)?`<button class="vdc-x" title="Excluir" onclick="event.stopPropagation();apagar('${i.id}')">✕</button>`:''}</div>
         <div class="vdc-sub">${n} cab × ${brl0(vdCab(i))}${i.comprador?' · '+esc(i.comprador):''}</div>
-        <div class="vdc-ls">${(i.animais||[]).map(a=>`<div class="vdc-l"><b>${esc(a.rgd)}</b><span class="vdc-mk">${esc(a.marca||'—')}</span></div>`).join('')}</div>
+        <div class="vdc-ls">${(i.animais||[]).map((a,k)=>`<div class="vdc-l${vdOculto(i,k)}"><b>${esc(a.rgd)}</b><span class="vdc-mk">${esc(a.marca||'—')}</span></div>`).join('')}${vdMaisBtn(i)}</div>
         <div class="vdc-mar">${vdPorMarca(i).map(x=>`<span><span class="vdc-mk">${esc(x.marca)}</span> ${x.n} · ${brl0(x.valor)}</span>`).join('')}</div>${i.obs?`<div class="vdc-obs">${esc(i.obs)}</div>`:''}</div>`}).join('');
   }else if(aba==='nasc'){
     $('#corpoD').innerHTML=v.map(i=>`<tr onclick="abrirForm('${i.id}')"><td>${esc(i.rgdMae||'')}</td><td>${esc(i.receptora||'')}</td>
@@ -525,7 +532,12 @@ function vdPorMarca(i){const m={};(i.animais||[]).forEach(a=>{const k=a.marca||'
   return Object.entries(m).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pt-BR')).map(([k,n])=>({marca:k,n,valor:pc*n}))}
 const vdAnimaisTxt=i=>(i.animais||[]).map(a=>a.rgd+(a.marca?' - '+a.marca:'')).join('; ');
 const vdMarcasTxt=i=>vdPorMarca(i).map(x=>`${x.marca} ${x.n} cab ${brl(x.valor)}`).join(' | ');
-const vdAnimaisHTML=i=>(i.animais||[]).map(a=>`<span class="vd-an">${esc(a.rgd)}${a.marca?` <i>${esc(a.marca)}</i>`:''}</span>`).join(' ');
+const VD_LIM=7,vdAbertas=new Set();
+function vdVerMais(id){vdAbertas.has(id)?vdAbertas.delete(id):vdAbertas.add(id);desenhar()}
+// esconde do 8º animal em diante até tocar em "+ ver mais" (na impressão sai tudo)
+const vdOculto=(i,k)=>k>=VD_LIM&&!vdAbertas.has(i.id)?' vd-oculto':'';
+const vdMaisBtn=i=>{const n=(i.animais||[]).length;if(n<=VD_LIM)return '';const ab=vdAbertas.has(i.id);return `<button type="button" class="vd-mais" onclick="event.stopPropagation();vdVerMais('${i.id}')">${ab?'− ver menos':`+ ver mais (${n-VD_LIM})`}</button>`};
+const vdAnimaisHTML=i=>(i.animais||[]).map((a,k)=>`<span class="vd-an${vdOculto(i,k)}">${esc(a.rgd)}${a.marca?` <i>${esc(a.marca)}</i>`:''}</span>`).join(' ')+vdMaisBtn(i);
 const vdMarcasHTML=(i,curto)=>vdPorMarca(i).map(x=>`<span class="vd-mc"><b>${esc(x.marca)}</b> ${x.n}${curto?'':' cab'} · ${curto?brl0(x.valor):brl(x.valor)}</span>`).join(curto?' ':'');
 function vdResumoHTML(v){
   if(!v.length)return '';
@@ -556,12 +568,16 @@ function vdOutraOk(){const i=$('#vdOutraIn');const m=String(i&&i.value||'').trim
 // colou várias linhas (ex.: do WhatsApp ou Excel): cada linha vira um animal
 function vdColarEv(e){const t=(e.clipboardData||window.clipboardData).getData('text')||'';const ls=t.split(/[\r\n;]+/).map(x=>x.trim()).filter(Boolean);if(ls.length<2)return;e.preventDefault();const el=e.target,sem=[];ls.forEach(l=>{el.value=l;if(!vdAddAnimal())sem.push(l)});el.value='';if(sem.length)toast(`${sem.length} linha(s) sem marca não entraram: ${sem.join(', ')}`)}
 function vdColar(el){const ls=String(el.value).split(/[\n;]+/).map(x=>x.trim()).filter(Boolean);if(ls.length<2)return;el.value='';ls.forEach(l=>{el.value=l;vdAddAnimal()})}
+function vdTrocaRgd(k,el){const v=String(el.value||'').trim().toUpperCase().replace(/\s+/g,' ');
+  if(!v){toast('O RGD não pode ficar vazio.');el.value=vdForm[k].rgd;return}
+  if(vdForm.some((x,j)=>j!==k&&x.rgd===v)){toast(v+' já está nessa venda.');el.value=vdForm[k].rgd;return}
+  vdForm[k].rgd=v;vdDesenharForm()}
 function vdTira(k){vdForm.splice(k,1);vdDesenharForm()}
 function vdMarcaChip(m){const el=$('#fAnimal');if(!el)return;const t=el.value.replace(/\s*-\s*[^-]*$/,'').trim();if(!t){toast('Digite o RGD primeiro e depois toque na marca.');el.focus();return}el.value=t+' - '+m;vdAddAnimal()}
 function vdDesenharForm(){
   const l=$('#vdLista');if(!l)return;
   const valor=numBR(($('#fValor')||{}).value),n=vdForm.length,base={valorCab:valor||0,animais:vdForm};
-  l.innerHTML=(n?vdForm.map((a,k)=>`<div class="vd-it"><span class="vd-n">${k+1}</span><b>${esc(a.rgd)}</b>${vdSoVer?`<span class="vd-mk">${esc(a.marca||'—')}</span>`:`<input class="vd-mk-in" list="dlMarcas" value="${esc(a.marca||'')}" placeholder="marca" autocapitalize="characters" onchange="vdForm[${k}].marca=this.value.trim().toUpperCase();vdDesenharForm()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">`}${vdSoVer?'':`<button type="button" onclick="vdTira(${k})" aria-label="Tirar">×</button>`}</div>`).join(''):'<div class="vd-vazio">Nenhum animal ainda.</div>')
+  l.innerHTML=(n?vdForm.map((a,k)=>`<div class="vd-it"><span class="vd-n">${k+1}</span>${vdSoVer?`<b>${esc(a.rgd)}</b>`:`<input class="vd-rgd-in" value="${esc(a.rgd)}" autocapitalize="characters" autocomplete="off" onchange="vdTrocaRgd(${k},this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">`}${vdSoVer?`<span class="vd-mk">${esc(a.marca||'—')}</span>`:`<input class="vd-mk-in" list="dlMarcas" value="${esc(a.marca||'')}" placeholder="marca" autocapitalize="characters" onchange="vdForm[${k}].marca=this.value.trim().toUpperCase();vdDesenharForm()" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">`}${vdSoVer?'':`<button type="button" onclick="vdTira(${k})" aria-label="Tirar">×</button>`}</div>`).join(''):'<div class="vd-vazio">Nenhum animal ainda.</div>')
     +(n?`<div class="vd-tot"><span><b>${n}</b> cabeça${n===1?'':'s'}${valor?` × ${brl(valor)} = <b>${brl(valor*n)}</b>`:''}</span>${valor?`<div class="vd-div">${vdPorMarca(base).map(x=>`<span><b>${esc(x.marca)}</b> ${x.n} cab · ${brl(x.valor)}</span>`).join('')}</div>`:''}</div>`:'');
   const dl=$('#dlMarcas');if(dl)dl.innerHTML=[...new Set([...marcasVd,'MRA','JM','CR'])].map(x=>`<option value="${esc(x)}">`).join('');
   const mk=$('#vdMarcas');if(mk){const ls=[...new Set(['MRA','JM','CR',...marcasVd,...vdForm.map(a=>a.marca).filter(Boolean)])];mk.innerHTML=ls.map(x=>`<button type="button" class="pill" onclick="vdMarcaChip('${esc(x)}')">${esc(x)}</button>`).join('')+`<button type="button" class="pill outra" onclick="vdOutra()">+ Outra</button>`}
@@ -663,21 +679,31 @@ function tirarFoto(k){const f=fotosForm[k];if(f.id)removidas.push(f.id);fotosFor
 function verFoto(src){const z=document.createElement('div');z.className='zoom';z.onclick=()=>z.remove();z.innerHTML=`<img src="${src}">`;document.body.appendChild(z)}
 function verFotoId(id){if(miniFotos[id])verFoto(miniFotos[id])}
 
+/* ---------- Excel das vendas: escolhe quais vendas; uma linha por animal ---------- */
+function vdEscolherExcel(v){
+  const m=document.createElement('div');m.className='modal';m.id='form';m.onclick=e=>{if(e.target===m)m.remove()};
+  m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>Baixar Excel</h2><button class="x" onclick="fecharForm()" aria-label="Fechar">×</button></div>
+    <div class="folha-corpo"><div class="vdx-bts"><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=true)">Marcar todas</button><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=false)">Desmarcar</button></div>
+    <div class="vdx-lista">${v.slice().reverse().map(i=>`<label class="vdx-it"><input type="checkbox" class="vdx-cb" value="${i.id}" checked><span><b>${fmtData(i.data)}</b> · ${(i.animais||[]).length} cab · ${brl0(vdTotal(i))}${i.comprador?' · '+esc(i.comprador):''}</span></label>`).join('')}</div></div>
+    <div class="folha-pe"><span class="esq"></span><button class="btn btn-ghost" onclick="fecharForm()">Cancelar</button><button class="btn btn-primary" onclick="vdBaixarExcel()">⬇ Baixar Excel</button></div></div>`;
+  document.body.appendChild(m);
+}
+function vdBaixarExcel(){
+  const ids=new Set([...document.querySelectorAll('.vdx-cb')].filter(c=>c.checked).map(c=>c.value));
+  if(!ids.size){toast('Marque pelo menos uma venda.');return}
+  const v=visiveis().slice().reverse().filter(i=>ids.has(i.id));
+  // uma linha por animal: 5 cabeças vendidas = 5 linhas. VALOR_DO_ANIMAL somado dá o total.
+  const ws=XLSX.utils.json_to_sheet(v.flatMap(i=>(i.animais||[]).map(a=>({DATA_VENDA:fmtData(i.data),COMPRADOR:i.comprador||'',RGD:a.rgd,MARCA:a.marca||'',VALOR_DO_ANIMAL:vdCab(i),CABECAS_NA_VENDA:(i.animais||[]).length,VALOR_TOTAL_DA_VENDA:vdTotal(i),OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''}))));
+  ws['!cols']=[{wch:12},{wch:22},{wch:14},{wch:9},{wch:16},{wch:17},{wch:20},{wch:30},{wch:16}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Vendas');XLSX.writeFile(wb,`caderneta_vendas_${mes||'todos'}.xlsx`);
+  fecharForm();
+}
 /* ---------- Excel (planilha simples) ---------- */
 function exportarMes(){
   if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
   const v=visiveis().slice().reverse();if(!v.length){toast('Nada pra exportar.');return}
   let ws;
-  if(aba==='vendas'){
-    // aba 1: uma linha por venda; aba 2: uma linha por animal (com o valor de cada um)
-    const wb=XLSX.utils.book_new();
-    const w1=XLSX.utils.json_to_sheet(v.map(i=>({DATA_VENDA:fmtData(i.data),COMPRADOR:i.comprador||'',CABECAS:(i.animais||[]).length,VALOR_POR_CABECA:vdCab(i),VALOR_TOTAL:vdTotal(i),ANIMAIS:vdAnimaisTxt(i),POR_MARCA:vdMarcasTxt(i),OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''})));
-    w1['!cols']=[{wch:12},{wch:20},{wch:9},{wch:13},{wch:16},{wch:50},{wch:40},{wch:30},{wch:16}];
-    const w2=XLSX.utils.json_to_sheet(v.flatMap(i=>(i.animais||[]).map(a=>({DATA_VENDA:fmtData(i.data),RGD:a.rgd,MARCA:a.marca||'',VALOR:vdCab(i),COMPRADOR:i.comprador||''}))));
-    w2['!cols']=[{wch:12},{wch:14},{wch:10},{wch:12},{wch:20}];
-    XLSX.utils.book_append_sheet(wb,w1,'Vendas');XLSX.utils.book_append_sheet(wb,w2,'Animais vendidos');
-    XLSX.writeFile(wb,`caderneta_vendas_${mes||'todos'}.xlsx`);return;
-  }
+  if(aba==='vendas')return vdEscolherExcel(v);
   if(aba==='nasc'){
     ws=XLSX.utils.json_to_sheet(v.map(i=>({RGD_MAE:i.rgdMae||'',N_RECEPTORA:i.receptora||'',SEXO:i.sexo||'',DATA_NASCIMENTO:fmtData(i.data),PESO_KG:numBR(i.peso)??'',PELAGEM:i.pelagem||'',OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''})));
     ws['!cols']=[{wch:14},{wch:14},{wch:6},{wch:16},{wch:9},{wch:16},{wch:30},{wch:18}];
