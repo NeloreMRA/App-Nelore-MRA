@@ -681,7 +681,7 @@ function verFoto(src){const z=document.createElement('div');z.className='zoom';z
 function verFotoId(id){if(miniFotos[id])verFoto(miniFotos[id])}
 
 /* ---------- Excel das vendas: escolhe quais vendas; uma linha por animal ---------- */
-function vdEscolherExcel(v,pdf){return escolherExcel(v,i=>`<b>${fmtData(i.data)}</b> · ${(i.animais||[]).length} cab · ${brl0(vdTotal(i))}${i.comprador?' · '+esc(i.comprador):''}`,'vdBaixarExcel',()=>true,pdf)}
+function vdEscolherExcel(v,pdf){return escolherExcel(v,i=>`<b>${fmtData(i.data)}</b> · ${(i.animais||[]).length} cab · ${brl0(vdTotal(i))}${i.comprador?' · '+esc(i.comprador):''}`,'vdBaixarExcel',()=>false,pdf)}
 function nsEscolherExcel(pdf){
   const ms={};todos.forEach(i=>{const k=String(i.data||'').slice(0,7);if(/^\d{4}-\d{2}$/.test(k))ms[k]=(ms[k]||0)+1});
   const ls=Object.keys(ms).sort().map(k=>({id:k,n:ms[k]}));if(!ls.length){toast('Nada pra exportar.');return}
