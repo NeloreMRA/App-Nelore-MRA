@@ -687,20 +687,103 @@ function nsEscolherExcel(){
   escolherExcel(ls,x=>`<b>${nomeMes(x.id)}</b> · ${x.n} nascimento${x.n>1?'s':''}`,'nsBaixarExcel',x=>!mes||x.id===mes)}
 function escolherExcel(v,linha,baixar,marc=()=>true){
   const m=document.createElement('div');m.className='modal';m.id='form';m.onclick=e=>{if(e.target===m)m.remove()};
-  m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>Baixar Excel</h2><button class="x" onclick="fecharForm()" aria-label="Fechar">×</button></div>
+  m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>Baixar Excel ou PDF</h2><button class="x" onclick="fecharForm()" aria-label="Fechar">×</button></div>
     <div class="folha-corpo"><div class="vdx-bts"><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=true)">Marcar ${baixar==='nsBaixarExcel'?'todos':'todas'}</button><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=false)">Desmarcar</button></div>
     <div class="vdx-lista">${v.slice().reverse().map(i=>`<label class="vdx-it"><input type="checkbox" class="vdx-cb" value="${i.id}"${marc(i)?' checked':''}><span>${linha(i)}</span></label>`).join('')}</div></div>
-    <div class="folha-pe"><span class="esq"></span><button class="btn btn-ghost" onclick="fecharForm()">Cancelar</button><button class="btn btn-primary" onclick="${baixar}()">⬇ Baixar Excel</button></div></div>`;
+    <div class="folha-pe"><span class="esq"></span><button class="btn btn-ghost" onclick="fecharForm()">Cancelar</button><button class="btn btn-ghost" onclick="${baixar}(true)">📄 PDF</button><button class="btn btn-primary" onclick="${baixar}()">⬇ Excel</button></div></div>`;
   document.body.appendChild(m);
 }
+/* ---------- PDF das vendas e nascimentos: mesmo visual do Excel ---------- */
+const pdfEsc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function pdfTab(cab,linhas,centro=[],direita=[]){const al=k=>centro.includes(k)?' class="c"':direita.includes(k)?' class="d"':'';
+  return `<table><thead><tr>${cab.map((h,k)=>`<th${al(k)}>${pdfEsc(h)}</th>`).join('')}</tr></thead><tbody>${linhas.map(l=>`<tr>${l.map((x,k)=>`<td${al(k)}>${pdfEsc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
+function pdfResumo(titulo,col,linhas,total,reais){const f=x=>reais?brl(x):x;
+  return `<table class="res"><thead><tr><th>${pdfEsc(titulo)}</th><th class="d">${pdfEsc(col)}</th></tr></thead><tbody>${linhas.map(([a,b])=>`<tr><td>${pdfEsc(a)}</td><td class="d">${pdfEsc(f(b))}</td></tr>`).join('')}<tr class="tot"><td>TOTAL</td><td class="d">${pdfEsc(f(total))}</td></tr></tbody></table>`}
+const pdfDoc=(titulo,sub,corpo)=>`<!doctype html><html><head><meta charset="utf-8"><style>
+  html{background:#fff}body{margin:0;padding:18px 20px;font-family:Calibri,Carlito,Arial,sans-serif;color:#1d2a22;background:#fff;font-size:13px}
+  h1{font-size:19px;margin:0 0 2px;color:#1f5f43}.sub{font-size:12.5px;color:#5d6a62;margin-bottom:12px}
+  table{border-collapse:collapse;width:100%;margin-bottom:22px}
+  th{background:#1f5f43;color:#fff;font-weight:700;text-align:left;padding:6px 8px;border:1px solid #d5ddd8}
+  td{padding:5px 8px;border:1px solid #d5ddd8;vertical-align:top}
+  .c{text-align:center}.d{text-align:right;white-space:nowrap}
+  table.res{width:60%;margin-left:auto;margin-right:0}
+  tr.tot td{background:#e8f3ec;font-weight:700}
+</style></head><body><h1>${pdfEsc(titulo)}</h1><div class="sub">${pdfEsc(sub||'')}${sub?' · ':''}Gerado em ${new Date().toLocaleDateString('pt-BR')}</div>${corpo}</body></html>`;
+const PDF_LIBS=['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js','https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+function pdfCarregaLibs(){
+  const um=src=>new Promise((ok,erro)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>erro(new Error('lib'));document.head.appendChild(s)});
+  return (window.html2canvas?Promise.resolve():um(PDF_LIBS[0])).then(()=>window.jspdf?0:um(PDF_LIBS[1]));
+}
+function pdfAviso(html){
+  let f=document.getElementById('pdfAviso');
+  if(!f){f=document.createElement('div');f.id='pdfAviso';f.style.cssText='position:fixed;inset:0;z-index:99999;background:#0007;display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit';document.body.appendChild(f)}
+  f.innerHTML=`<div style="background:#fff;border-radius:16px;padding:22px;width:340px;max-width:100%;box-shadow:0 20px 50px #0005;text-align:center;color:#233129">${html}</div>`;
+  return f;
+}
+function pdfFechar(){const f=document.getElementById('pdfAviso');if(f)f.remove()}
+const pdfNomeArq=t=>String(t||'documento').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\W+/g,'_').replace(/^_+|_+$/g,'').slice(0,80)+'.pdf';
+async function gerarPdf(titulo,docHtml,largura,deitado){
+  largura=largura||900;
+  pdfAviso('<div style="font-size:30px">📄</div><div style="font-weight:800;font-size:17px;margin:6px 0 2px">Gerando o PDF…</div><div style="font-size:13px;color:#69746c">Só um instante</div>');
+  let fr=null;
+  try{
+    await pdfCarregaLibs();
+    fr=document.createElement('iframe');fr.setAttribute('aria-hidden','true');
+    fr.style.cssText=`position:fixed;left:-30000px;top:0;width:${largura}px;height:1200px;border:0;background:#fff`;
+    document.body.appendChild(fr);
+    const d=fr.contentDocument;d.open();d.write(docHtml);d.close();
+    await new Promise(r=>setTimeout(r,250));
+    await Promise.all([...d.images].map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r})));
+    // tabela mais larga que a folha: alarga a área (a folha encolhe um pouco, mas nada fica cortado)
+    const larg=Math.ceil(d.documentElement.scrollWidth);if(larg>largura+4){fr.style.width=larg+'px';await new Promise(r=>setTimeout(r,80))}
+    const W=Math.max(largura,larg),H=Math.ceil(Math.max(d.body.scrollHeight,d.documentElement.scrollHeight));
+    fr.style.height=H+'px';await new Promise(r=>setTimeout(r,50));
+    const {jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'a4',orientation:deitado?'landscape':'portrait',compress:true});
+    const mg=8,cw=(deitado?297:210)-2*mg,ch=(deitado?210:297)-2*mg,pageH=Math.floor(ch/cw*W);
+    // corta a página entre linhas/blocos (nunca no meio de uma linha da tabela)
+    const pts=[...new Set([...d.querySelectorAll('tr,h1,h2,h3,p,li,section,.dcard,.card,.panel,.metric,.fiv-q,.vp-folha,table')].map(e=>Math.round(e.getBoundingClientRect().top)))].sort((a,b)=>a-b);
+    // folha nova obrigatória (ex.: uma receita por folha, igual à impressão)
+    const quebra=[...d.querySelectorAll('section,div,table')].filter(e=>{const c=d.defaultView.getComputedStyle(e);return c.breakAfter==='page'||c.pageBreakAfter==='always'}).map(e=>Math.round(e.getBoundingClientRect().bottom)).filter(v=>v<H-2);
+    let y=0,pg=0;
+    while(y<H-2){
+      let fim=y+pageH;
+      const f=quebra.filter(v=>v>y+2&&v<=fim);if(f.length)fim=Math.min(...f);
+      else if(fim<H){const c=pts.filter(p=>p>y+pageH*0.4&&p<=fim);if(c.length)fim=c[c.length-1]}else fim=H;
+      const h=fim-y;
+      const cv=await window.html2canvas(d.body,{x:0,y,width:W,height:h,windowWidth:W,windowHeight:H,scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false});
+      if(pg++)pdf.addPage();
+      pdf.addImage(cv.toDataURL('image/jpeg',0.9),'JPEG',mg,mg,cw,h*cw/W);
+      y=fim;
+    }
+    const nome=pdfNomeArq(titulo),blob=pdf.output('blob'),arq=new File([blob],nome,{type:'application/pdf'});
+    window.__pdfArq=arq;
+    const podeEnviar=!!(navigator.canShare&&navigator.canShare({files:[arq]}));
+    pdfAviso(`<div style="font-size:30px">✅</div><div style="font-weight:800;font-size:17px;margin:6px 0 4px">PDF pronto</div><div style="font-size:12.5px;color:#69746c;margin-bottom:16px;word-break:break-all">${nome} · ${pg} página(s)</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${podeEnviar?`<button type="button" onclick="pdfEnviar()" style="padding:13px;border:0;border-radius:11px;background:#1fa855;color:#fff;font-weight:800;font-size:16px;cursor:pointer">📤 Enviar (WhatsApp…)</button>`:''}
+        <button type="button" onclick="pdfBaixar()" style="padding:12px;border:1px solid #cfd8d2;border-radius:11px;background:#fff;color:#233129;font-weight:700;font-size:15px;cursor:pointer">⬇ Baixar o PDF</button>
+        <button type="button" onclick="pdfFechar()" style="padding:9px;border:0;background:none;color:#69746c;font-size:14px;cursor:pointer">Fechar</button>
+      </div>`);
+  }catch(e){
+    console.error(e);
+    pdfAviso(`<div style="font-size:30px">⚠️</div><div style="font-weight:800;font-size:16px;margin:6px 0 4px">Não deu pra gerar o PDF</div><div style="font-size:13px;color:#69746c;margin-bottom:14px">Confira a internet e tente de novo.</div><button type="button" onclick="pdfFechar()" style="padding:11px 22px;border:1px solid #cfd8d2;border-radius:11px;background:#fff;font-weight:700;cursor:pointer">Fechar</button>`);
+  }finally{if(fr)fr.remove()}
+}
+function pdfEnviar(){const a=window.__pdfArq;if(!a)return;navigator.share({files:[a],title:a.name.replace(/\.pdf$/,'')}).then(pdfFechar).catch(()=>{})}
+function pdfBaixar(){const a=window.__pdfArq;if(!a)return;const u=URL.createObjectURL(a),l=document.createElement('a');l.href=u;l.download=a.name;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);pdfFechar()}
 // ExcelJS só carrega quando baixa o Excel das vendas (planilha com R$ e resumo por comprador)
 function vdExcelJS(){return window.ExcelJS?Promise.resolve():new Promise((ok,erro)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';sc.onload=ok;sc.onerror=erro;document.head.appendChild(sc)})}
 // Nascimentos: mesmo formato do Excel das vendas (sem "lançado por"), resumo machos/fêmeas embaixo
-async function nsBaixarExcel(){
+async function nsBaixarExcel(pdf){
   const ids=new Set([...document.querySelectorAll('.vdx-cb')].filter(c=>c.checked).map(c=>c.value));
   if(!ids.size){toast('Marque pelo menos um mês.');return}
   const v=todos.filter(i=>ids.has(String(i.data||'').slice(0,7))).sort((a,b)=>String(a.data).localeCompare(String(b.data))||String(a.criadoEmLocal||'').localeCompare(String(b.criadoEmLocal||'')));
   const ms=[...ids].sort();
+  if(pdf){const mc=v.filter(i=>i.sexo==='M').length,fc=v.filter(i=>i.sexo==='F').length,lin=[['Machos',mc],['Fêmeas',fc]];if(v.length-mc-fc)lin.push(['Sem sexo',v.length-mc-fc]);
+    const per=ms.length===1?nomeMes(ms[0]):nomeMes(ms[0])+' a '+nomeMes(ms[ms.length-1]);
+    fecharForm();return gerarPdf('Nascimentos '+per,pdfDoc('Nascimentos',per,
+      pdfTab(['RGD da mãe','Nº receptora','Sexo','Data nasc.','Peso (kg)','Pelagem','Observação'],v.map(i=>{const pe=numBR(i.peso);return [i.rgdMae||'',i.receptora||'',i.sexo||'',fmtData(i.data),pe==null?'':String(pe).replace('.',','),i.pelagem||'',i.obs||'']}),[1,2,3,4])
+      +pdfResumo('Resumo','Cabeças',lin.map(([a,b])=>[a,b]),v.length,false)))}
   try{await vdExcelJS()}catch(e){toast('Sem internet para gerar o Excel.');return}
   const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Nascimentos');
   const VERDE='FF1F5F43',CLARO='FFE8F3EC',borda={style:'thin',color:{argb:'FFD5DDD8'}},bordas={top:borda,left:borda,bottom:borda,right:borda};
@@ -722,10 +805,15 @@ async function nsBaixarExcel(){
   const el=document.createElement('a');el.href=url;el.download=`caderneta_nascimentos_${ms.length===1?ms[0]:ms[0]+'_a_'+ms[ms.length-1]}.xlsx`;document.body.appendChild(el);el.click();el.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
   fecharForm();
 }
-async function vdBaixarExcel(){
+async function vdBaixarExcel(pdf){
   const ids=new Set([...document.querySelectorAll('.vdx-cb')].filter(c=>c.checked).map(c=>c.value));
   if(!ids.size){toast('Marque pelo menos uma venda.');return}
   const v=visiveis().slice().reverse().filter(i=>ids.has(i.id));
+  if(pdf){const pc={},pm={};v.forEach(i=>{const k=i.comprador||'(sem comprador)';pc[k]=(pc[k]||0)+vdTotal(i);vdPorMarca(i).forEach(x=>{const m=x.marca||'(sem marca)';pm[m]=(pm[m]||0)+x.valor})});
+    const tot=v.reduce((a,i)=>a+vdTotal(i),0),per=mes?nomeMes(mes):'';
+    fecharForm();return gerarPdf('Vendas '+(per||'todas'),pdfDoc('Vendas',per,
+      pdfTab(['Data','Comprador','RGD','Marca','Valor (R$)','Observação'],v.flatMap(i=>(i.animais||[]).map(a=>[fmtData(i.data),i.comprador||'',a.rgd,a.marca||'',brl(vdCab(i)),i.obs||''])),[0,3],[4])
+      +pdfResumo('Resumo por comprador','Total venda',Object.entries(pc),tot,true)+pdfResumo('Resumo por marca','Total venda',Object.entries(pm),tot,true)))}
   try{await vdExcelJS()}catch(e){toast('Sem internet para gerar o Excel.');return}
   const wb=new ExcelJS.Workbook(),ws=wb.addWorksheet('Vendas');
   const VERDE='FF1F5F43',CLARO='FFE8F3EC',BRL='"R$" #,##0.00',borda={style:'thin',color:{argb:'FFD5DDD8'}},bordas={top:borda,left:borda,bottom:borda,right:borda};
