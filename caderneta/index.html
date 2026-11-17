@@ -253,7 +253,7 @@ textarea.input{min-height:96px;resize:vertical}
       <div class="campo"><label id="rotMes">Mês</label><select id="selMes" onchange="mes=this.value;desenhar()"></select></div>
       <div class="busca"><input id="busca" placeholder="Buscar..." oninput="desenhar()"></div>
       <span id="avisoF"></span>
-      <div class="acoes-f so-desk"><button class="btn btn-ghost" onclick="exportarMes()">⬇ Excel</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div>
+      <div class="acoes-f so-desk"><button class="btn btn-ghost" onclick="exportarMes()">⬇ Excel</button><button class="btn btn-ghost" id="btnPdfCad" onclick="exportarMes(true)">📄 PDF</button><button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button></div>
     </div>
     <div class="tit-imp" id="titImp" style="display:none"></div>
     <div id="vdResumo"></div>
@@ -433,6 +433,7 @@ const obsHtml=o=>o?(OBS_LISTA.some(x=>String(o).toLowerCase().startsWith(x.toLow
 function minisHtml(i){return (i.fotos||[]).map(f=>miniFotos[f]?`<img src="${miniFotos[f]}" alt="" onclick="event.stopPropagation();verFotoId('${f}')">`:'<span>📷</span>').join('')}
 function carregarMinis(v){v.forEach(i=>(i.fotos||[]).forEach(f=>{if(!(f in miniFotos)){miniFotos[f]='';colFotos.doc(f).get().then(d=>{if(d.exists){miniFotos[f]=d.data().dados;desenhar()}}).catch(()=>{})}}))}
 function desenhar(){
+  {const b=$('#btnPdfCad');if(b)b.style.display=aba==='vendas'||aba==='nasc'?'':'none'}
   if(aba==='prenhez')return desenharPz();
   guardarFiltros();
   itens=todos.filter(i=>i.aba===aba&&(!mes||i.mes===mes));
@@ -482,7 +483,7 @@ function desenhar(){
 function abrirMenu(ev){
   ev.stopPropagation();const old=$('.menu');if(old){old.remove();return}
   const m=document.createElement('div');m.className='menu';
-  m.innerHTML=aba==='prenhez'?`<button onclick="exportarPz()">⬇ Excel</button><button onclick="window.print()">🖨 Imprimir</button>`:`<button onclick="exportarMes()">⬇ Excel do mês</button><button onclick="window.print()">🖨 Imprimir</button>`;
+  m.innerHTML=aba==='prenhez'?`<button onclick="exportarPz()">⬇ Excel</button><button onclick="window.print()">🖨 Imprimir</button>`:`<button onclick="exportarMes()">⬇ Excel</button>${aba==='vendas'||aba==='nasc'?'<button onclick="exportarMes(true)">📄 PDF</button>':''}<button onclick="window.print()">🖨 Imprimir</button>`;
   document.body.appendChild(m);setTimeout(()=>document.addEventListener('click',()=>m.remove(),{once:true}),0);
 }
 
@@ -680,17 +681,17 @@ function verFoto(src){const z=document.createElement('div');z.className='zoom';z
 function verFotoId(id){if(miniFotos[id])verFoto(miniFotos[id])}
 
 /* ---------- Excel das vendas: escolhe quais vendas; uma linha por animal ---------- */
-function vdEscolherExcel(v){return escolherExcel(v,i=>`<b>${fmtData(i.data)}</b> · ${(i.animais||[]).length} cab · ${brl0(vdTotal(i))}${i.comprador?' · '+esc(i.comprador):''}`,'vdBaixarExcel')}
-function nsEscolherExcel(){
+function vdEscolherExcel(v,pdf){return escolherExcel(v,i=>`<b>${fmtData(i.data)}</b> · ${(i.animais||[]).length} cab · ${brl0(vdTotal(i))}${i.comprador?' · '+esc(i.comprador):''}`,'vdBaixarExcel',()=>true,pdf)}
+function nsEscolherExcel(pdf){
   const ms={};todos.forEach(i=>{const k=String(i.data||'').slice(0,7);if(/^\d{4}-\d{2}$/.test(k))ms[k]=(ms[k]||0)+1});
   const ls=Object.keys(ms).sort().map(k=>({id:k,n:ms[k]}));if(!ls.length){toast('Nada pra exportar.');return}
-  escolherExcel(ls,x=>`<b>${nomeMes(x.id)}</b> · ${x.n} nascimento${x.n>1?'s':''}`,'nsBaixarExcel',x=>!mes||x.id===mes)}
-function escolherExcel(v,linha,baixar,marc=()=>true){
+  escolherExcel(ls,x=>`<b>${nomeMes(x.id)}</b> · ${x.n} nascimento${x.n>1?'s':''}`,'nsBaixarExcel',x=>!mes||x.id===mes,pdf)}
+function escolherExcel(v,linha,baixar,marc=()=>true,pdf=false){
   const m=document.createElement('div');m.className='modal';m.id='form';m.onclick=e=>{if(e.target===m)m.remove()};
-  m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>Baixar Excel ou PDF</h2><button class="x" onclick="fecharForm()" aria-label="Fechar">×</button></div>
+  m.innerHTML=`<div class="folha"><div class="folha-cab"><h2>${pdf?'Gerar PDF':'Baixar Excel'}</h2><button class="x" onclick="fecharForm()" aria-label="Fechar">×</button></div>
     <div class="folha-corpo"><div class="vdx-bts"><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=true)">Marcar ${baixar==='nsBaixarExcel'?'todos':'todas'}</button><button type="button" class="btn btn-ghost" onclick="document.querySelectorAll('.vdx-cb').forEach(c=>c.checked=false)">Desmarcar</button></div>
     <div class="vdx-lista">${v.slice().reverse().map(i=>`<label class="vdx-it"><input type="checkbox" class="vdx-cb" value="${i.id}"${marc(i)?' checked':''}><span>${linha(i)}</span></label>`).join('')}</div></div>
-    <div class="folha-pe"><span class="esq"></span><button class="btn btn-ghost" onclick="fecharForm()">Cancelar</button><button class="btn btn-ghost" onclick="${baixar}(true)">📄 PDF</button><button class="btn btn-primary" onclick="${baixar}()">⬇ Excel</button></div></div>`;
+    <div class="folha-pe"><span class="esq"></span><button class="btn btn-ghost" onclick="fecharForm()">Cancelar</button><button class="btn btn-primary" onclick="${baixar}(${pdf?'true':''})">${pdf?'📄 Gerar PDF':'⬇ Baixar Excel'}</button></div></div>`;
   document.body.appendChild(m);
 }
 /* ---------- PDF das vendas e nascimentos: mesmo visual do Excel ---------- */
@@ -839,13 +840,12 @@ async function vdBaixarExcel(pdf){
   fecharForm();
 }
 /* ---------- Excel (planilha simples) ---------- */
-function exportarMes(){
-  if(aba==='nasc')return nsEscolherExcel();
+function exportarMes(pdf){
+  if(aba==='nasc')return nsEscolherExcel(pdf);
   if(typeof XLSX==='undefined'){toast('Sem internet pra gerar o Excel agora.');return}
   const v=visiveis().slice().reverse();if(!v.length){toast('Nada pra exportar.');return}
   let ws;
-  if(aba==='vendas')return vdEscolherExcel(v);
-  if(aba==='nasc')return nsEscolherExcel();
+  if(aba==='vendas')return vdEscolherExcel(v,pdf);
   if(aba==='nasc'){
     ws=XLSX.utils.json_to_sheet(v.map(i=>({RGD_MAE:i.rgdMae||'',N_RECEPTORA:i.receptora||'',SEXO:i.sexo||'',DATA_NASCIMENTO:fmtData(i.data),PESO_KG:numBR(i.peso)??'',PELAGEM:i.pelagem||'',OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''})));
     ws['!cols']=[{wch:14},{wch:14},{wch:6},{wch:16},{wch:9},{wch:16},{wch:30},{wch:18}];
