@@ -1737,6 +1737,7 @@ else if(el.tagName==='INPUT' && el.type==='number'){
       if(tr.children[ci].dataset.num!==undefined) tr.children[ci].dataset.num = Number(v)||0;
     }
   });
+  if(cfg.aoEditar) cfg.aoEditar(row, tr);
   if(cfg.onRowChange) cfg.onRowChange(row); else scheduleSave();
   if(cfg.totais) atualizarTotaisTabela(tableKey);
   atualizarBarraExcel();
@@ -1781,7 +1782,7 @@ function renderAddForm(cfg){
   return `
     <div class="panel">
       <p class="section-title">${cfg.formTitle || 'Adicionar registro'}</p>
-      <div class="grid cols-3" id="addform-${cfg.tableKey}">${fields}</div>
+      <div class="grid cols-3" id="addform-${cfg.tableKey}"${cfg.formOnInput?` oninput="${cfg.formOnInput}"`:''}>${fields}</div>
       <button class="primary" style="margin-top:14px;" onclick="submitAddForm('${cfg.tableKey}')" type="button">${cfg.formButton || 'Adicionar'}</button>
     </div>
   `;
@@ -1922,10 +1923,26 @@ function buildAdiantamentosCfg(s){
       {key:'data', label:'Data', type:'date'},
       {key:'motorista', label:'Motorista', type:'select', optionsFn:()=>s.motoristas},
       {key:'servico', label:'Serviço', type:'text'},
+      {key:'litros', label:'Litros', type:'number', unit:'L'},
+      {key:'precoL', label:'Valor do diesel', type:'number', unit:'R$/L'},
       {key:'valor', label:'Valor', type:'number', unit:'R$'},
     ],
-    newRow: ()=>({data:'', motorista:s.motoristas[0]||'', servico:'', valor:0}),
+    newRow: ()=>({data:'', motorista:s.motoristas[0]||'', servico:'', litros:'', precoL:'', valor:0}),
+    // Diesel: Litros × Valor do diesel = Valor (sozinho). Sem litros (borracharia, solda...) digita o Valor direto.
+    prepareRow: adtoCalc, aoEditar: adtoCalc, formOnInput: 'adtoFormCalc()',
   };
+}
+function adtoCalc(row, tr){
+  if(!tr){ if(!Number(row.litros)) row.litros = ''; if(!Number(row.precoL)) row.precoL = ''; } // form: sem litros fica em branco (não "0")
+  const l = Number(row.litros)||0, p = Number(row.precoL)||0;
+  if(!(l>0 && p>0)) return;
+  row.valor = Math.round(l*p*100)/100;
+  const el = tr && tr.querySelector('[data-field="valor"]'); if(el && document.activeElement!==el) el.value = row.valor;
+}
+function adtoFormCalc(){
+  const w = document.getElementById('addform-adiantamentos'); if(!w) return;
+  const g = k=>Number((w.querySelector(`[name="${k}"]`)||{}).value)||0, l = g('litros'), p = g('precoL');
+  if(l>0 && p>0) w.querySelector('[name="valor"]').value = Math.round(l*p*100)/100;
 }
 function buildVendasCfg(s){
   return {
