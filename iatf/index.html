@@ -304,6 +304,7 @@ body.authenticated #loginScreen{display:none}
   /* botões de cima numa linha só (arrasta pro lado se não couber) */
   .quick-add{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;max-width:100%;padding-bottom:2px}.quick-add::-webkit-scrollbar{display:none}
   .quick-add>*{flex:0 0 auto}
+  .quick-add.fiv-qa{flex-wrap:wrap!important;overflow:visible}.quick-add.fiv-qa>.fiv-resumo{flex:1 1 100%} /* FIV: quadrinhos descem pra linha de baixo, igual IATF */
   .toolbar button,.toolbar select,.quick-add button{padding:10px 13px!important;font-size:14px!important}
   header h1{font-size:22px}
   /* janelas ficam presas no topo (o teclado não empurra a tela) */
@@ -3252,7 +3253,7 @@ function fivPage(){
   </div>
   ${atual===null?`<div class="notice">Nenhuma FIV nesta estação. Clique em <strong>+ Criar FIV</strong> e escolha a data.</div>`:`
   <div class="toolbar">
-    <div class="quick-add"><button class="primary" onclick="addBlankFiv()">+ Linha em branco</button><button class="ghost" onclick="openFivEntryModal()">+ Cadastrar em tela</button><button class="ghost" id="fivPrtBtn" onclick="openFivPrt()">⟳ PRTs</button><div id="fivResumo" class="fiv-resumo inline"></div></div>
+    <div class="quick-add fiv-qa"><button class="primary" onclick="addBlankFiv()">+ Linha em branco</button><button class="ghost" onclick="openFivEntryModal()">+ Cadastrar em tela</button><button class="ghost" id="fivPrtBtn" onclick="openFivPrt()">⟳ PRTs</button><div id="fivResumo" class="fiv-resumo inline"></div></div>
     <button class="mini" style="color:#a33627;border-color:#e7bbb5" onclick="excluirFivVazia()">Excluir esta FIV</button>
   </div>
   <div id="fivTable"></div>`}
