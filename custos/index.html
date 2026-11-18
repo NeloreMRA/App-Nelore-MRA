@@ -1737,7 +1737,7 @@ else if(el.tagName==='INPUT' && el.type==='number'){
       if(tr.children[ci].dataset.num!==undefined) tr.children[ci].dataset.num = Number(v)||0;
     }
   });
-  if(cfg.aoEditar) cfg.aoEditar(row, tr);
+  if(cfg.aoEditar) cfg.aoEditar(row, tr, field);
   if(cfg.onRowChange) cfg.onRowChange(row); else scheduleSave();
   if(cfg.totais) atualizarTotaisTabela(tableKey);
   atualizarBarraExcel();
@@ -1929,20 +1929,26 @@ function buildAdiantamentosCfg(s){
     ],
     newRow: ()=>({data:'', motorista:s.motoristas[0]||'', servico:'', litros:'', precoL:'', valor:0}),
     // Diesel: Litros × Valor do diesel = Valor (sozinho). Sem litros (borracharia, solda...) digita o Valor direto.
-    prepareRow: adtoCalc, aoEditar: adtoCalc, formOnInput: 'adtoFormCalc()',
+    prepareRow: adtoCalc, aoEditar: adtoCalc, formOnInput: 'adtoFormCalc(event)',
   };
 }
-function adtoCalc(row, tr){
+function adtoCalc(row, tr, field){
   if(!tr){ if(!Number(row.litros)) row.litros = ''; if(!Number(row.precoL)) row.precoL = ''; } // form: sem litros fica em branco (não "0")
   const l = Number(row.litros)||0, p = Number(row.precoL)||0;
-  if(!(l>0 && p>0)) return;
+  const el = tr && tr.querySelector('[data-field="valor"]');
+  if(!(l>0 && p>0)){ // apagou litros ou preço: o Valor apaga junto (não fica o número velho)
+    if(tr && el && (field==='litros' || field==='precoL')){ row.valor = 0; el.value = ''; }
+    return;
+  }
   row.valor = Math.round(l*p*100)/100;
-  const el = tr && tr.querySelector('[data-field="valor"]'); if(el && document.activeElement!==el) el.value = row.valor;
+  if(el && document.activeElement!==el) el.value = row.valor;
 }
-function adtoFormCalc(){
+function adtoFormCalc(e){
   const w = document.getElementById('addform-adiantamentos'); if(!w) return;
   const g = k=>Number((w.querySelector(`[name="${k}"]`)||{}).value)||0, l = g('litros'), p = g('precoL');
-  if(l>0 && p>0) w.querySelector('[name="valor"]').value = Math.round(l*p*100)/100;
+  const v = w.querySelector('[name="valor"]'), campo = e && e.target && e.target.name;
+  if(l>0 && p>0) v.value = Math.round(l*p*100)/100;
+  else if(campo==='litros' || campo==='precoL') v.value = ''; // apagou litros ou preço: o Valor apaga junto
 }
 function buildVendasCfg(s){
   return {
