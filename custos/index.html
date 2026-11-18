@@ -2901,7 +2901,10 @@ function venSelEnviar(){
   window.open('https://wa.me/?text=' + encodeURIComponent(lista.map(venTextoWhats).join('\n\n━━━━━━━━━━\n\n')), '_blank');
   venSel = null; render();
 }
-function venAbrir(id){ const r = ven.receitas.find(x=>x.id===id); if(!r) return; venEdit = JSON.parse(JSON.stringify(r)); render(); window.scrollTo(0,0); }
+function venAbrir(id){ const r = ven.receitas.find(x=>x.id===id); if(!r) return; venEdit = JSON.parse(JSON.stringify(r));
+  // já feita: o campo Área mostra a área que foi aplicada (a da "feita"); ao salvar, as duas ficam iguais
+  if(venEdit.status==='feita' && venEdit.feita && venEdit.feita.area!==undefined && venEdit.feita.area!=='') venEdit.area = venEdit.feita.area;
+  render(); window.scrollTo(0,0); }
 function venFechar(){
   if(venEdit && venEdit.mexeu && !confirm('Sair sem salvar as mudanças desta receita?')) return;
   venEdit = null; render(); window.scrollTo(0,0);
@@ -2929,6 +2932,7 @@ function venSalvar(imprimir){
   if(r.produtos.some(p=>!String(p.produto||'').trim())){ alert('Tem dose sem o nome do produto.'); return; }
   r.produtos.forEach(p=>{ p.produto = String(p.produto).trim(); p.dose = venNum(p.dose); });
   ['area','tanque','vazao'].forEach(k=>{ r[k] = String(r[k]??'').trim()==='' ? '' : venNum(r[k]); });
+  if(r.status==='feita' && r.feita) r.feita.area = r.area; // mudou a área de uma já feita: muda direto, sem desfazer
   const salvo = JSON.parse(JSON.stringify(r));
   venGravar(r).then(()=>{ if(imprimir) venImprimir([salvo.id]); }).catch(()=>{});
   venEdit = null; render(); window.scrollTo(0,0);
