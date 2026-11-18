@@ -91,6 +91,7 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - Venenos: botão "Selecionar pra enviar" ao lado de "A fazer" → começa sem nenhuma marcada, toca nas receitas que quer e manda tudo numa mensagem só no WhatsApp.
 - Venenos — mudar a área de uma aplicação JÁ FEITA (18/11/2026): ao abrir, o campo Área mostra a área aplicada (a da "feita"); ao salvar, `feita.area` acompanha a área nova (muda direto, sem desfazer).
 - Adiantamentos (18/11/2026): colunas **Litros** e **Valor do diesel (R$/L)** antes do Valor. Com os dois preenchidos, Valor = Litros × Valor do diesel (sozinho, no formulário e na tabela). Sem litros (borracharia, solda, dinheiro) digita o Valor direto. Apagou litros ou preço → o Valor apaga junto. Excel/impressão/backup usam as colunas da tabela (já entram).
+- Cobertura — Criar IATF pergunta "Quer puxar as matrizes do Acasalamento?" (18/11/2026): lista de datas do Acasalamento, PADRÃO = "Não puxar" (escolhe na mão, como antes). Escolhendo uma data: cria a IATF com as matrizes dela (1º acasalamento = coluna 1º IATF, categoria junto); matriz que não está em Matrizes é cadastrada lá.
 - Cobertura · Estoque (celular): ordenar os touros pelo menu Opções (Touro A a Z, Maior/Menor saldo, Mais usado na IATF, Botijão, Ordem normal); aparece "Ordem: …  ✕" em cima dos cartões.
 - Cobertura · IATF:
   - Seletor só mostra IATFs com algo; o mínimo de 12 foi tirado e as vazias foram limpas uma vez (meta.iatfVaziasLimpas_v1).
