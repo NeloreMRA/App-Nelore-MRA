@@ -120,7 +120,7 @@ const APPS=[
    telas:[['dashboard','Dashboard'],['colheita','Colheita'],['adiantamentos','Adiantamentos'],['vendas','Silos e Vendas'],['venenos','Venenos'],['cadastros','Cadastros'],['safras','Safra'],['diesel-controle','Controle Diesel'],['diesel-estoque','Estoque Diesel'],['diesel-resumo','Resumo Diesel']]},
   {id:'caderneta',nome:'Caderneta',desc:'Nascimentos e lançamentos do dia a dia. Funciona sem internet.',ico:'📒',cor:'#7a52c7',fundo:'#efe8ff',interno:'caderneta/index.html'},
   {id:'estoque',nome:'Estoque Gado',desc:'Estoque do rebanho por mês, com dashboard.',ico:'🐂',cor:'#1b9e8f',fundo:'#e3f4f4',interno:'estoque/index.html'},
-  {id:'contabil',nome:'Contábil MRA',desc:'Balancete e contas da fazenda.',ico:'📊',cor:'#2a78d6',fundo:'#e7f0ff',interno:'contabil/index.html',
+  {id:'contabil',nome:'Contábil MRA',desc:'Balancete e contas da fazenda.',ico:'📊',cor:'#2a78d6',fundo:'#e7f0ff',interno:'contabil/index.html',manut:true,
    telas:[['upload','Upload de arquivo'],['cadastro','Cadastro de grupos'],['dre','Movimentações (DRE)'],['busca','Busca'],['sem-centro','Sem centro']]},
 ];
 
@@ -177,11 +177,12 @@ function telaInicio(){
   const meus=APPS.filter(a=>podeApp(a.id));
   $('#conteudo').innerHTML=`<h2>Escolha o app</h2>${meus.length?`<div class="apps">${meus.map(a=>`
     <button class="app" style="--cor:${a.cor};--fundo-ico:${a.fundo}" onclick="abrirApp('${a.id}')">
-      <div class="ico">${a.ico}</div><div class="n">${esc(a.nome)}</div><div class="d">${esc(a.desc)}</div>
+      <div class="ico">${a.ico}</div><div class="n">${esc(a.nome)}</div><div class="d">${esc(a.desc)}</div>${a.manut?'<span class="tag">🔧 Em manutenção</span>':''}
     </button>`).join('')}</div>`:`<div class="vazio">Nenhum app liberado pra você ainda. Fale com o administrador.</div>`}`;
 }
 function abrirApp(id){
   const a=APPS.find(x=>x.id===id);if(!a||!podeApp(id))return;
+  if(a.manut&&!ehAdmin){alert(a.nome+' está em manutenção. Logo fica pronto.');return} // em manutenção: só o admin entra
   location.href=a.interno;
 } window.abrirApp=abrirApp;
 
