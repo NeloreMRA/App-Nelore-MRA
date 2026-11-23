@@ -93,7 +93,7 @@ Site estático (GitHub Pages) + Firebase próprio (`app-nelore-mra`: Authenticat
 - Adiantamentos (18/11/2026): colunas **Litros** e **Valor do diesel (R$/L)** antes do Valor. Com os dois preenchidos, Valor = Litros × Valor do diesel (sozinho, no formulário e na tabela). Sem litros (borracharia, solda, dinheiro) digita o Valor direto. Apagou litros ou preço → o Valor apaga junto. Excel/impressão/backup usam as colunas da tabela (já entram).
 - Cobertura — Criar IATF pergunta "Quer puxar as matrizes do Acasalamento?" (18/11/2026): lista de datas do Acasalamento, PADRÃO = "Não puxar" (escolhe na mão, como antes). Escolhendo uma data: cria a IATF com as matrizes dela (1º acasalamento = coluna 1º IATF, categoria junto); matriz que não está em Matrizes é cadastrada lá.
 - Contábil MRA em manutenção (23/11/2026): cartão do início com a etiqueta "🔧 Em manutenção"; quem não é admin não entra (aviso). O admin entra normal pra continuar montando. Pra tirar: apagar `manut:true` do Contábil na lista APPS do index.html.
-- **Menu da esquerda no PC (23/11/2026):** dono testou a barra fina (só ícones) e NÃO gostou → voltou o menu antigo (barra completa). Não mexer de novo sem pedido.
+- **Menu da esquerda no PC (23/11/2026):** dono testou a barra fina (só ícones) e NÃO gostou → voltou a barra completa, mas MAIS FINA: 200px (era 250) na Cobertura (`.app` grid) e na Agricultura (`aside`). Não mexer de novo sem pedido.
 - Cobertura · Estoque (celular): ordenar os touros pelo menu Opções (Touro A a Z, Maior/Menor saldo, Mais usado na IATF, Botijão, Ordem normal); aparece "Ordem: …  ✕" em cima dos cartões.
 - Cobertura · IATF:
   - Seletor só mostra IATFs com algo; o mínimo de 12 foi tirado e as vazias foram limpas uma vez (meta.iatfVaziasLimpas_v1).
