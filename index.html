@@ -299,7 +299,7 @@ async function salvarTelas(uid){
 // (Os dados não são apagados: eles ficam no Firebase.)
 // No iPhone (app na tela inicial) o aparelho também guarda os arquivos por até 10 min: por isso
 // aqui baixa de novo cada tela direto do servidor (cache:'reload') antes de recarregar.
-const ARQUIVOS_APP=['./','index.html','sw.js','barra-app.js','barra-fina.js','teclado.js','iatf/index.html','caderneta/index.html','estoque/index.html','custos/index.html','contabil/index.html'];
+const ARQUIVOS_APP=['./','index.html','sw.js','barra-app.js','teclado.js','iatf/index.html','caderneta/index.html','estoque/index.html','custos/index.html','contabil/index.html'];
 async function atualizarApp(b){
   if(b){b.disabled=true;b.textContent='Atualizando...'}
   try{
