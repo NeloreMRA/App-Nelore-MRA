@@ -25,7 +25,10 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
 .atual{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11.5px;opacity:.9}
 .atual button{border:0;border-radius:10px;background:#ffffff22;color:#fff;font-weight:700;font-size:13px;padding:8px 11px;cursor:pointer}
 .wrap{max-width:1240px;margin:0 auto;padding:14px 14px calc(30px + env(safe-area-inset-bottom))}
-.fazs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.fazs{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:12px;background:#e4e9e5;border-radius:14px;padding:5px}
+.fz{border:0;border-radius:11px;padding:12px 10px;font-family:inherit;font-weight:800;font-size:15.5px;line-height:1.2;color:var(--suave);background:none;cursor:pointer}
+.fz.on{background:#fff;color:var(--verde);box-shadow:0 1px 4px #0002}
+@media(min-width:960px){.agora-card .grade{grid-template-columns:repeat(6,1fr)}}
 .faz{background:#fff;border:2px solid var(--borda);border-radius:16px;padding:12px 14px;text-align:left;cursor:pointer;font-family:inherit;color:inherit}
 .faz.on{border-color:var(--verde2);box-shadow:0 0 0 3px #1f6a4922}
 .faz .n{font-weight:800;font-size:14.5px;display:flex;align-items:center;gap:6px}.faz .n i{font-style:normal;font-size:11px;font-weight:700;color:var(--verde2);background:#e6f2ea;border-radius:99px;padding:2px 8px}
@@ -37,6 +40,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
 .card>h3 .dir{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:600;color:var(--muito-suave)}
 .nota{font-size:12px;color:var(--suave);margin:8px 0 0;line-height:1.45}
 .cols{display:grid;grid-template-columns:minmax(0,1fr);gap:0;align-items:start}.cols>div{min-width:0}
+@media(min-width:960px){.cols.par{align-items:stretch}.cols.par>div{display:flex;flex-direction:column}.cols.par>div>.card{flex:1}.cols.par .ia{grid-template-columns:1fr 1fr}}
 @media(min-width:960px){.cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.cols>div{min-width:0}}
 /* aviso */
 .aviso{border-radius:16px;padding:13px 15px;margin-bottom:12px;display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.45}
@@ -76,8 +80,8 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
 .gch .agora-l{position:absolute;top:0;height:120px;border-left:2px dashed #17211c55}
 .leg{display:flex;gap:12px;font-size:11.5px;color:var(--suave);margin-top:9px;flex-wrap:wrap}.leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
 /* mapa */
-.mapa-bts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.mapa-bts button{border:1px solid var(--borda);background:#fff;border-radius:99px;padding:7px 12px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;color:var(--texto)}
+.mapa-bts{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:8px}.mapa-bts::-webkit-scrollbar{display:none}
+.mapa-bts button{flex:none;border:1px solid var(--borda);background:#fff;border-radius:99px;padding:5px 9px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;color:var(--texto);white-space:nowrap}
 .mapa-bts button.on{background:var(--verde);border-color:var(--verde);color:#fff}
 .mapa{position:relative;height:420px;border-radius:14px;overflow:hidden;background:#dfe6e1}
 .mapa iframe{border:0;width:100%;height:100%;display:block;position:absolute;inset:0;z-index:1}
@@ -239,41 +243,19 @@ function desenhar(){
   if(!dados.paraiso)return;
   const atu=dados[fazAtual].em,min=Math.round((Date.now()-atu)/60e3);
   $('#quando').textContent=min<1?'atualizado agora':min<60?`atualizado há ${min} min`:`atualizado ${new Date(atu).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
-  $('#fazs').innerHTML=FAZ.map(f=>{const d=dados[f.id];if(!d||!d.p)return '';const c=d.p.current,dl=d.p.daily,i=dl.time.indexOf(HOJE());
-    return `<button class="faz ${f.id===fazAtual?'on':''}" onclick="escolher('${f.id}')"><div class="n">${esc(f.nome)} <i>vendo</i></div>
-      <div class="l"><span class="ic">${icone(c.weather_code,c.is_day)}</span><span class="t">${n0(c.temperature_2m)}°</span></div>
-      <small>🌧 Hoje: <b>${mmTxt(dl.precipitation_sum[i])}</b> · ${n0(dl.precipitation_probability_max[i])}%<br>💧 Umidade ${n0(c.relative_humidity_2m)}% · 💨 ${n0(c.wind_speed_10m)} km/h ${rumo(c.wind_direction_10m)}</small></button>`}).join('');
+  // em cima: só os botões das fazendas (o "Agora" grande vem logo abaixo, sem repetir informação)
+  $('#fazs').innerHTML=FAZ.map(f=>`<button class="fz ${f.id===fazAtual?'on':''}" onclick="escolher('${f.id}')">${esc(f.nome)}</button>`).join('');
   const f=FAZ.find(x=>x.id===fazAtual),d=dados[fazAtual];$('#titFaz').textContent=f.nome;
-  try{$('#conteudo').innerHTML=tela(f,d);distribuir();}catch(e){console.error(e);$('#conteudo').innerHTML=`<div class="vazio">Erro ao montar a tela.<br><small>${esc(e.message)}</small></div>`}
+  try{$('#conteudo').innerHTML=tela(f,d);}catch(e){console.error(e);$('#conteudo').innerHTML=`<div class="vazio">Erro ao montar a tela.<br><small>${esc(e.message)}</small></div>`}
   mostrarMapa();
 }
-function distribuir(){
-  const a=$('#colA'),b=$('#colB'),pool=$('#pool');if(!a||!b)return;
-  const cards=[...(pool?pool.children:[]),...a.children,...b.children].sort((x,y)=>(+x.dataset.o||0)-(+y.dataset.o||0));
-  cards.forEach((c,k)=>{if(!c.dataset.o)c.dataset.o=k});
-  const duas=innerWidth>=960;b.classList.toggle('hidden',!duas);
-  if(!duas){cards.forEach(c=>a.appendChild(c));if(pool)pool.remove();return}
-  // mede cada quadro na largura da coluna e testa todas as divisões (mantendo a ordem) pra deixar as duas colunas da mesma altura
-  cards.forEach(c=>a.appendChild(c));const h=cards.map(c=>c.offsetHeight+12),n=cards.length;let melhor=0,menor=1e9;
-  for(let m=0;m<(1<<n);m++){let ha=0,hb=0;for(let k=0;k<n;k++){if(m>>k&1)hb+=h[k];else ha+=h[k]}const v=Math.max(ha,hb);if(v<menor-0.5){menor=v;melhor=m}}
-  cards.forEach((c,k)=>(melhor>>k&1?b:a).appendChild(c));if(pool)pool.remove();
-}
-let tmDist;addEventListener('resize',()=>{clearTimeout(tmDist);tmDist=setTimeout(()=>{const duas=innerWidth>=960;if(duas!==!$('#colB')?.classList.contains('hidden'))distribuir()},200)});
 function idxAgora(p){const h=p.current.time.slice(0,13);let i=p.hourly.time.findIndex(t=>t.slice(0,13)===h);return i<0?0:i}
 function tela(f,d){
   const p=d.p,H=p.hourly,D=p.daily,c=p.current,i0=idxAgora(p),hoje=HOJE(),iD=D.time.indexOf(hoje);
-  // os quadros vão pra duas colunas no PC, sempre pra coluna mais curta (sem buraco embaixo); no celular, uma coluna nessa ordem
-  return aviso(H,i0)+`<div class="cols"><div id="colA"></div><div id="colB"></div></div><div id="pool">`
-   +agora(c,D,iD)
-   +chuva48(H,i0)
-   +mapaCard(f)
-   +dias(D,iD)
-   +acumulado(d,iD)
-   +umidadeSolo(H,D,i0,iD)
-   +modelos(d)
-   +pulverizacao(H,i0)
-   +assistente(f,d,i0,iD)
-   +`</div>`;
+  // lugar fixo de cada quadro (pedido do dono): esquerda = chuva 48h, 10 dias, modelos · direita = mapa, umidade, acumulado · embaixo: pulverização | assistente
+  return agora(c,D,iD)+aviso(H,i0)
+   +`<div class="cols"><div>`+chuva48(H,i0)+dias(D,iD)+modelos(d)+`</div><div>`+mapaCard(f)+umidadeSolo(H,D,i0,iD)+acumulado(d,iD)+`</div></div>`
+   +`<div class="cols par"><div>`+pulverizacao(H,i0)+`</div><div>`+assistente(f,d,i0,iD)+`</div></div>`;
 }
 
 /* aviso principal: vai chover? */
@@ -332,7 +314,7 @@ function media(a,i,j){const v=(a||[]).slice(i,j).filter(x=>x!=null);return v.len
 
 /* agora */
 function agora(c,D,iD){
-  return `<div class="card"><h3>Agora</h3><div class="agora"><span class="ic">${icone(c.weather_code,c.is_day)}</span><div><div class="tl"><span class="t">${n0(c.temperature_2m)}°</span><span class="ds">${descr(c.weather_code)}</span></div><div class="d">Sensação ${n0(c.apparent_temperature)}° · mín ${n0(D.temperature_2m_min[iD])}° · máx ${n0(D.temperature_2m_max[iD])}°</div></div></div>
+  return `<div class="card agora-card"><h3>Agora</h3><div class="agora"><span class="ic">${icone(c.weather_code,c.is_day)}</span><div><div class="tl"><span class="t">${n0(c.temperature_2m)}°</span><span class="ds">${descr(c.weather_code)}</span></div><div class="d">Sensação ${n0(c.apparent_temperature)}° · mín ${n0(D.temperature_2m_min[iD])}° · máx ${n0(D.temperature_2m_max[iD])}°</div></div></div>
   <div class="grade"><div><span>💧 Umidade do ar</span><b>${n0(c.relative_humidity_2m)}%</b></div><div><span>Ponto de orvalho</span><b>${n0(c.dew_point_2m)}°</b></div><div><span>💨 Vento</span><b>${n0(c.wind_speed_10m)} km/h ${rumo(c.wind_direction_10m)}</b></div><div><span>Rajada</span><b>${n0(c.wind_gusts_10m)} km/h</b></div>
   <div><span>☁️ Nuvens</span><b>${n0(c.cloud_cover)}%</b></div><div><span>🌧 Chuva agora</span><b>${mmTxt(c.precipitation)}</b></div><div><span>Pressão</span><b>${n0(c.pressure_msl)} hPa</b></div><div><span>☀️ Índice UV</span><b>${n1(c.uv_index)}</b></div>
   <div><span>Visibilidade</span><b>${c.visibility==null?'—':n1(c.visibility/1000)+' km'}</b></div><div><span>🌅 Nascer</span><b>${(D.sunrise[iD]||'').slice(11,16)}</b></div><div><span>🌇 Pôr do sol</span><b>${(D.sunset[iD]||'').slice(11,16)}</b></div><div><span>Chuva hoje</span><b>${mmTxt(D.precipitation_sum[iD])}</b></div></div></div>`;
