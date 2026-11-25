@@ -317,7 +317,27 @@ firebase.auth().onAuthStateChanged(async u=>{
   $('#quem').textContent=meuNome;
   cfgRef.onSnapshot(d=>{pelagens=(d.exists&&d.data().pelagens)||[];marcasVd=(d.exists&&d.data().marcasVenda)||[];compradores=(d.exists&&d.data().compradores)||[];$('#dlComp').innerHTML=compradores.map(l=>`<option value="${esc(l)}">`).join('');estacoesPz=(d.exists&&d.data().estacoesPrenhez)||[];montarEstacoes();$('#dlPelagem').innerHTML=pelagens.map(l=>`<option value="${esc(l)}">`).join('')},()=>{});
   irAba(aba);
+  if(ehAdmin)ajustarGeralNov26();
 });
+/* 25/11/2026 (pedido do dono): passa os lançamentos gerais de novembro pro jeito novo (Animais + Qtd).
+   Roda UMA vez (marca "ajusteGeralNov26" em config/listas) e só mexe se o lançamento ainda não tiver animais/qtd. Sêmen (05/11) fica sem Qtd. */
+async function ajustarGeralNov26(){
+  try{
+    const c=await cfgRef.get();if(c.exists&&c.data().ajusteGeralNov26)return;
+    const an=['11317','11296','11174','11134','11323','11427','11420','11429','11378','11140','11138','11393','11102','*11262'];
+    const muda=[
+      ['uUWV9Hqfg3VBpzwaDjyP',x=>String(x.obs||'').includes('11317'),{animais:an,rgd:an.join(' '),qtd:14,obs:'Saída 14 fêmea pó c/25 p/itaquasu'}],
+      ['EQJLDqQrPDPOuP4jxaWr',x=>/63 f[êe]mea/i.test(x.obs||''),{qtd:63}],
+      ['ozwGGw2LdOoQcqH8Fkfk',x=>/nascimento/i.test(x.obs||''),{qtd:1}]];
+    let achou=0;
+    for(const [id,ok,up] of muda){
+      const d=await col.doc(id).get();if(!d.exists)continue;achou++;const x=d.data();
+      if(x.aba!=='geral'||Array.isArray(x.animais)||x.qtd||!ok(x))continue;
+      await col.doc(id).update(up);
+    }
+    if(achou===muda.length)await cfgRef.set({ajusteGeralNov26:true},{merge:true}); // só marca feito se achou os 3 (sem internet/cache vazio tenta de novo depois)
+  }catch(e){console.warn('ajuste geral nov/26',e)}
+}
 
 /* ---------- abas e filtro de mês ---------- */
 function irAba(a){
