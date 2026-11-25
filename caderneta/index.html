@@ -161,6 +161,8 @@ textarea.input{min-height:96px;resize:vertical}
 .vdc-top{display:flex;align-items:baseline;gap:8px}.vdc-tot{font-size:17px;font-weight:800;color:var(--verde-esc)}.vdc-dt{margin-left:auto;font-size:12.5px;color:var(--muito-suave);position:relative;top:7px}.vdc-x{align-self:center;border:0;background:none;color:#a7b1aa;font-size:11px;width:20px;height:20px;line-height:20px;padding:0;border-radius:5px}.vdc-x:hover{background:#fbeeec;color:#a33627}
 .vdc-sub{font-size:12.5px;color:var(--suave);margin:1px 0 6px}
 .vd-oculto{display:none!important}
+.g-chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px}.g-chips:empty{display:none}.g-x{cursor:pointer}.g-x:hover{background:#fde7e5;color:#9b3127}
+.g-cel{white-space:normal!important}.g-cel .vd-an{display:inline-block;margin:2px 4px 2px 0}.g-dica{font-size:12px;color:var(--suave);margin-top:4px}
 .vd-mais{display:block;border:0;background:none;color:var(--verde);font-weight:800;font-size:13px;padding:5px 0 0;cursor:pointer}
 .vd-rgd-in{flex:1;min-width:0;border:1px solid transparent;border-radius:8px;padding:5px 8px;font-weight:800;font-size:15px;background:none;outline:none}.vd-rgd-in:hover{border-color:#e3e8e4}.vd-rgd-in:focus{border-color:#72a386;background:#fff}
 .vdx-bts{display:flex;gap:8px;margin-bottom:10px}.vdx-bts .btn{padding:7px 12px;font-size:13px}
@@ -348,7 +350,7 @@ function montarMeses(){
 // [título, largura %, alinhamento, campo do filtro]
 const COLS={
   nasc:[['RGD Mãe',13,'','rgdMae'],['N° Receptora',11,'','receptora'],['Sexo',7,'c','sexo'],['Data Nasc.',12,'','data'],['Peso (kg)',9,'n','peso'],['Pelagem',13,'','pelagem'],['Observação',20,'','obs'],['Por',10,'','por'],['',5]],
-  geral:[['Data Lançamento',12,'','data'],['RGD',11,'','rgd'],['Situação',11,'','situacao'],['Observação',34,'','obs'],['Fotos',16],['Por',11,'','por'],['',5]],
+  geral:[['Data Lançamento',11,'','data'],['Situação',9,'','situacao'],['Animais (RGD)',17,'','anG'],['Qtd',6,'c','qtd'],['Observação',27,'','obs'],['Fotos',14],['Por',11,'','por'],['',5]],
   vendas:[['Data',10,'','data'],['Comprador',13,'','comprador'],['Animais (RGD · marca)',25,'','animaisTxt'],['Cab.',5,'c','cab'],['Valor/cab (R$)',10,'n','valorCab'],['Valor total (R$)',11,'n','total'],['Por marca',15,'','marcasTxt'],['Observação',11,'','obs'],['',4]]
 };
 const LARG_KEY=()=>'app-nelore-mra-caderneta-larguras-'+aba;
@@ -359,13 +361,14 @@ function montarTabela(){
       <td><select id="rSexo"><option value="">—</option><option>M</option><option>F</option></select></td><td><input type="date" id="rData"></td>
       <td><input id="rPeso" inputmode="decimal" placeholder="kg"></td><td><select id="rPel">${opcoesPel('')}</select></td>
       <td><input id="rObs" list="dlObs" placeholder="Natimorto, Morte, Gêmeos ou escreva"></td><td colspan="2"><button class="lancar" onclick="lancarRapido()">+ Lançar</button></td>`
-    :`<td><input type="date" id="rData"></td><td><input id="rRgd" placeholder="RGD" autocapitalize="characters"></td>
-      <td><select id="rSit"><option value="">—</option>${SITUACOES.map(x=>`<option>${x}</option>`).join('')}</select></td><td><input id="rObsG" placeholder="Observação (Enter lança)"></td>
+    :`<td><input type="date" id="rData"></td><td><select id="rSit"><option value="">—</option>${SITUACOES.map(x=>`<option>${x}</option>`).join('')}</select></td>
+      <td><input id="rRgd" placeholder="RGD + Enter" autocapitalize="characters" autocomplete="off" onkeydown="if(event.key==='Enter'){event.preventDefault();gAddRapido()}"><div id="rAnG" class="g-chips"></div></td>
+      <td><input id="rQtd" inputmode="numeric" placeholder="Qtd" style="text-align:center"></td><td><input id="rObsG" placeholder="Observação (Enter lança)"></td>
       <td><button class="bfoto" id="rFotoBtn" onclick="$('#rArq').click()">📷 Foto</button></td><td colspan="2"><button class="lancar" onclick="lancarRapido()">+ Lançar</button></td>`;
   $('#tabd').innerHTML=`<table><colgroup>${cols.map(c=>`<col style="width:${c[1]}%">`).join('')}</colgroup>
     <thead><tr class="cabcol">${cols.map(c=>`<th class="${c[2]||''}">${c[3]?`<div class="thf"><span>${c[0]}</span><button class="fbtn" data-k="${c[3]}" onclick="abrirFiltro(event,'${c[3]}')" title="Filtrar / ordenar">▾</button></div>`:c[0]}</th>`).join('')}</tr>${rapido?`<tr class="rapido">${rapido}</tr>`:''}</thead><tbody id="corpoD"></tbody></table>`;
-  if($('#rData'))$('#rData').value='';fotosR=[];
-  $('#tabd').querySelectorAll('.rapido input,.rapido select').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarRapido()}}));
+  if($('#rData'))$('#rData').value='';fotosR=[];rAn=[];
+  $('#tabd').querySelectorAll('.rapido input:not(#rRgd),.rapido select').forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lancarRapido()}}));
   prepararLarguras();
 }
 function aplicarLarguras(){
@@ -392,9 +395,9 @@ const FILTRO_KEY='app-nelore-mra-caderneta-filtros';
 const filtrosCol={nasc:{},geral:{},prenhez:{},vendas:{}},ordemCol={nasc:null,geral:null,prenhez:null,vendas:null};
 try{const f=JSON.parse(localStorage.getItem(FILTRO_KEY)||'{}');Object.assign(filtrosCol,f.filtros||{});Object.assign(ordemCol,f.ordem||{})}catch(e){}
 const guardarFiltros=()=>{try{localStorage.setItem(FILTRO_KEY,JSON.stringify({filtros:filtrosCol,ordem:ordemCol}))}catch(e){}};
-const valCampo=(i,k)=>k==='valorCab'?vdCab(i):k==='total'?vdTotal(i):k==='cab'?(i.animais||[]).length:k==='animaisTxt'?vdAnimaisTxt(i):k==='marcasTxt'?vdMarcasTxt(i):k==='data'?(i.data||''):k==='por'?(i.criadoPorNome||''):k==='peso'?(numBR(i.peso)??''):k==='obs'&&aba==='geral'?obsGeral(i):(i[k]||'');
+const valCampo=(i,k)=>k==='qtd'?(gQtd(i)||''):k==='anG'?gAn(i).join(' '):k==='valorCab'?vdCab(i):k==='total'?vdTotal(i):k==='cab'?(i.animais||[]).length:k==='animaisTxt'?vdAnimaisTxt(i):k==='marcasTxt'?vdMarcasTxt(i):k==='data'?(i.data||''):k==='por'?(i.criadoPorNome||''):k==='peso'?(numBR(i.peso)??''):k==='obs'&&aba==='geral'?obsGeral(i):(i[k]||'');
 const txtCampo=(i,k)=>{const v=valCampo(i,k);return v===''?'(vazio)':k==='valorCab'||k==='total'?brl(v):k==='data'?fmtData(v):k==='peso'?String(v).replace('.',','):String(v)};
-const valoresCol=(i,k)=>k==='animaisTxt'?(i.animais||[]).map(a=>a.rgd).filter(Boolean):k==='marcasTxt'?vdPorMarca(i).map(x=>x.marca):[txtCampo(i,k)];
+const valoresCol=(i,k)=>k==='anG'?(gAn(i).length?gAn(i):['(vazio)']):k==='animaisTxt'?(i.animais||[]).map(a=>a.rgd).filter(Boolean):k==='marcasTxt'?vdPorMarca(i).map(x=>x.marca):[txtCampo(i,k)];
 const temFiltroCol=()=>Object.values(filtrosCol[aba]).some(Boolean);
 function filtradas(exceto){const f=filtrosCol[aba],pzq=aba==='prenhez'?chaveRgd($('#pzRgd').value):'',q=aba==='prenhez'?'':$('#busca').value.trim().toLowerCase();
   return itens.filter(i=>(!pzq||i.k.includes(pzq))&&(!q||textoBusca(i).toLowerCase().includes(q))&&Object.entries(f).every(([k,vs])=>k===exceto||!vs||valoresCol(i,k).some(x=>vs.includes(x))))}
@@ -471,9 +474,9 @@ function desenhar(){
         <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${del(i)}</div></div>`}).join('');
   }else{
     $('#corpoD').innerHTML=v.map(i=>`<tr onclick="abrirForm('${i.id}')"><td>${fmtData(i.data)} <span class="por">${diaSem(i.data)}</span></td>
-      <td>${esc(i.rgd||'')}</td><td>${sitHtml(i.situacao)}</td><td class="quebra">${esc(obsGeral(i))}</td><td><div class="minis">${minisHtml(i)}</div></td><td class="por">${por(i)}</td><td class="c">${del(i)}</td></tr>`).join('');
+      <td>${sitHtml(i.situacao)}</td><td>${gChips(i)}</td><td class="c"><b>${gQtd(i)||''}</b></td><td class="quebra">${esc(obsGeral(i))}</td><td><div class="minis">${minisHtml(i)}</div></td><td class="por">${por(i)}</td><td class="c">${del(i)}</td></tr>`).join('');
     $('#lista').innerHTML=v.map(i=>{const f=(i.fotos||[])[0];
-      return `<div class="reg" onclick="abrirForm('${i.id}')"><div class="corpo"><div class="l1">${sitHtml(i.situacao)} ${i.rgd?`<b>${esc(i.rgd)}</b>`:''}</div>${obsGeral(i)?`<div class="l2" style="white-space:normal">${esc(obsGeral(i))}</div>`:''}<div class="l2">${fmtData(i.data).slice(0,5)} ${diaSem(i.data)} · ${esc(i.criadoPorNome||'')}${(i.fotos||[]).length>1?` · 📷 ${i.fotos.length}`:''}</div></div>
+      return `<div class="reg" onclick="abrirForm('${i.id}')"><div class="corpo"><div class="l1">${sitHtml(i.situacao)}${gAn(i).length?` <b>${gAn(i).length} ${gAn(i).length===1?'animal':'animais'}</b>`:gQtd(i)?` <b>Qtd ${gQtd(i)}</b>`:''}</div>${gAn(i).length?`<div class="l2 g-cel">${gChips(i)}</div>`:''}${obsGeral(i)?`<div class="l2" style="white-space:normal">${esc(obsGeral(i))}</div>`:''}<div class="l2">${fmtData(i.data).slice(0,5)} ${diaSem(i.data)} · ${esc(i.criadoPorNome||'')}${(i.fotos||[]).length>1?` · 📷 ${i.fotos.length}`:''}</div></div>
         <div class="dir">${i._pend?'<span class="pend">⏳</span>':''}${f?(miniFotos[f]?`<img class="mini-foto" src="${miniFotos[f]}" alt="">`:'📷'):''}${del(i)}</div></div>`}).join('');
     carregarMinis(v);
   }
@@ -513,9 +516,11 @@ function lancarRapido(){
     ['rMae','rRec','rData','rPeso','rObs'].forEach(id=>$('#'+id).value='');$('#rSexo').value='';$('#rPel').value='';$('#rMae').focus();
   }else{
     const sit=$('#rSit').value;if(!sit){toast('Escolha a situação.');$('#rSit').focus();return}
-    const ref=col.doc();dados={data,mes:data.slice(0,7),rgd:$('#rRgd').value.trim().toUpperCase(),situacao:sit,obs:$('#rObsG').value.trim()};dados.fotos=gravarFotos(fotosR,ref.id,dados.mes);
+    if($('#rRgd').value.trim())gAddRapido();
+    const qd=parseInt($('#rQtd').value,10)||0;
+    const ref=col.doc();dados={data,mes:data.slice(0,7),animais:[...rAn],rgd:rAn.join(' '),qtd:rAn.length||qd||'',situacao:sit,obs:$('#rObsG').value.trim()};dados.fotos=gravarFotos(fotosR,ref.id,dados.mes);
     ref.set(novoDoc(dados)).catch(e=>toast('Não salvou: '+e.message));
-    ['rData','rRgd','rObsG'].forEach(id=>$('#'+id).value='');$('#rSit').value='';fotosR=[];fotosRapido([]);$('#rData').focus();
+    ['rData','rRgd','rQtd','rObsG'].forEach(id=>$('#'+id).value='');$('#rSit').value='';rAn=[];gDesRapido();fotosR=[];fotosRapido([]);$('#rData').focus();
   }
   avisoSalvo();
   if(mes&&dados.mes!==mes){mes=dados.mes;desenhar()}
@@ -533,6 +538,21 @@ function vdPorMarca(i){const m={};(i.animais||[]).forEach(a=>{const k=a.marca||'
   return Object.entries(m).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'pt-BR')).map(([k,n])=>({marca:k,n,valor:pc*n}))}
 const vdAnimaisTxt=i=>(i.animais||[]).map(a=>a.rgd+(a.marca?' - '+a.marca:'')).join('; ');
 const vdMarcasTxt=i=>vdPorMarca(i).map(x=>`${x.marca} ${x.n} cab ${brl(x.valor)}`).join(' | ');
+/* Lançamento Geral: vários animais (RGD + Enter, igual Vendas) + Qtd (conta sozinha; sem RGD, digita) */
+// antigos: só tinham "rgd" (um animal) → vira a lista
+const gAn=i=>Array.isArray(i.animais)&&i.animais.length?i.animais:(i.rgd?[i.rgd]:[]);
+const gQtd=i=>gAn(i).length||Number(i.qtd)||0;
+const gChips=i=>{const a=gAn(i),ab=vdAbertas.has(i.id);return a.map((r,k)=>`<span class="vd-an${vdOculto(i,k)}">${esc(r)}</span>`).join('')+(a.length>VD_LIM?`<button type="button" class="vd-mais" onclick="event.stopPropagation();vdVerMais('${i.id}')">${ab?'− ver menos':`+ ver mais (${a.length-VD_LIM})`}</button>`:'')};
+const gLimpa=t=>String(t||'').trim().toUpperCase().replace(/\s+/g,' ');
+let rAn=[],gForm=[];
+function gAddRapido(){const el=$('#rRgd'),t=gLimpa(el.value);if(!t)return;if(rAn.includes(t)){toast('Esse RGD já está na lista.');el.select();return}rAn.push(t);el.value='';gDesRapido();el.focus()}
+function gDesRapido(){const b=$('#rAnG');if(!b)return;b.innerHTML=rAn.map((r,k)=>`<span class="vd-an g-x" title="Tirar" onclick="rAn.splice(${k},1);gDesRapido()">${esc(r)} ×</span>`).join('');const q=$('#rQtd');if(q){q.placeholder=rAn.length?String(rAn.length):'Qtd';q.disabled=!!rAn.length;if(rAn.length)q.value=''}}
+function gAddForm(){const el=$('#fAnimalG'),t=gLimpa(el.value);if(!t)return;if(gForm.includes(t)){toast('Esse RGD já está na lista.');el.select();return}gForm.push(t);el.value='';gDesForm();el.focus()}
+function gDesForm(){const l=$('#gLista');if(!l)return;const n=gForm.length;
+  l.innerHTML=n?gForm.map((r,k)=>`<div class="vd-it"><span class="vd-n">${k+1}</span><b style="flex:1">${esc(r)}</b>${somenteVer?'':`<button type="button" class="vd-x" onclick="gForm.splice(${k},1);gDesForm()" aria-label="Tirar">×</button>`}</div>`).join(''):'';
+  l.classList.toggle('hidden',!n);
+  const q=$('#fQtdG');if(q){if(n){q.value=n;q.readOnly=true}else{if(q.readOnly)q.value='';q.readOnly=!!somenteVer}}
+  const d=$('#gQtdDica');if(d)d.textContent=n?'Conta sozinho pelos RGDs.':'Sem RGD? Digite a quantidade.'}
 const VD_LIM=7,vdAbertas=new Set();
 function vdVerMais(id){vdAbertas.has(id)?vdAbertas.delete(id):vdAbertas.add(id);desenhar()}
 // esconde do 8º animal em diante até tocar em "+ ver mais" (na impressão sai tudo)
@@ -616,9 +636,13 @@ function abrirForm(id,base){
       <div class="field"><label>Pelagem</label><select id="fPel" ${ro} class="input">${opcoesPel(i?i.pelagem||'':'')}</select></div></div>
       <div class="field" style="margin-bottom:0"><label>Observação</label><input id="fObs" ${ro} class="input" list="dlObs" value="${v('obs')}" placeholder="Natimorto, Morte, Gêmeos ou escreva"></div>`;
   }else{
+    gForm=i?[...gAn(i)]:[];
     corpo=`<div class="duas"><div class="field"><label>Data Lançamento *</label><input id="fData" ${ro} class="input" type="date" value="${i?v('data'):''}"></div>
-      <div class="field"><label>RGD</label><input id="fRgd" ${ro} class="input" value="${v('rgd')}" autocapitalize="characters"></div></div>
-      <div class="field"><label>Situação *</label><select id="fSit" ${ro} class="input"><option value="">—</option>${SITUACOES.map(x=>`<option ${i&&i.situacao===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div class="field"><label>Situação *</label><select id="fSit" ${ro} class="input"><option value="">—</option>${SITUACOES.map(x=>`<option ${i&&i.situacao===x?'selected':''}>${x}</option>`).join('')}</select></div></div>
+      <div class="field"><label>Animais — digite o <b>RGD</b> e <b>Enter</b></label>
+        ${so?'':`<input id="fAnimalG" class="input" placeholder="Ex: MRA 11317" autocapitalize="characters" autocomplete="off" enterkeyhint="enter" onkeydown="if(event.key==='Enter'){event.preventDefault();gAddForm()}">`}
+        <div class="vd-lista hidden" id="gLista"></div></div>
+      <div class="field"><label>Qtd</label><input id="fQtdG" ${ro} class="input" inputmode="numeric" style="max-width:140px" value="${i&&!gAn(i).length&&i.qtd?esc(String(i.qtd)):''}"><div class="g-dica" id="gQtdDica"></div></div>
       <div class="field"><label>Observação</label><textarea id="fObsG" ${ro} class="input">${esc(i?obsGeral(i):'')}</textarea></div>
       <div class="field" style="margin-bottom:0"><label>Fotos</label><div class="fotos" id="fFotos"></div>
         <input id="fArq" type="file" accept="image/*" capture="environment" multiple class="hidden" onchange="addFotos(this.files);this.value=''"></div>`;
@@ -629,7 +653,7 @@ function abrirForm(id,base){
   document.body.appendChild(m);
   fotosForm=[];removidas=[];somenteVer=so;
   if(aba==='vendas'){vdSoVer=so;vdDesenharForm();const a=$('#fAnimal');if(a&&innerWidth>860)setTimeout(()=>a.focus(),50)}
-  if(aba==='geral'){desenharFotos();(i&&i.fotos||[]).forEach(fid=>colFotos.doc(fid).get().then(d=>{if(d.exists&&document.getElementById('form')){fotosForm.push({id:fid,dados:d.data().dados});desenharFotos()}}).catch(()=>{}))}
+  if(aba==='geral'){gDesForm();desenharFotos();(i&&i.fotos||[]).forEach(fid=>colFotos.doc(fid).get().then(d=>{if(d.exists&&document.getElementById('form')){fotosForm.push({id:fid,dados:d.data().dados});desenharFotos()}}).catch(()=>{}))}
 }
 function salvar(id,outro){
   const data=$('#fData').value;if(!data){toast(aba==='nasc'?'Informe a data de nascimento.':'Informe a data.');return}
@@ -646,7 +670,9 @@ function salvar(id,outro){
     dados={data,mes:data.slice(0,7),rgdMae:$('#fMae').value.trim().toUpperCase(),receptora:$('#fRec').value.trim().toUpperCase(),sexo:sexoForm,peso:$('#fPeso').value.trim(),pelagem:$('#fPel').value.trim(),obs:$('#fObs').value.trim()};
     if(dados.peso&&numBR(dados.peso)===null){toast('Peso: digite só número.');return}
   }else{
-    dados={data,mes:data.slice(0,7),rgd:$('#fRgd').value.trim().toUpperCase(),situacao:$('#fSit').value,obs:$('#fObsG').value.trim()};
+    if($('#fAnimalG')&&$('#fAnimalG').value.trim())gAddForm();
+    const qd=parseInt($('#fQtdG').value,10)||0;
+    dados={data,mes:data.slice(0,7),animais:[...gForm],rgd:gForm.join(' '),qtd:gForm.length||qd||'',situacao:$('#fSit').value,obs:$('#fObsG').value.trim()};
     if(!dados.situacao){toast('Escolha a situação.');return}
   }
   const ref=id?col.doc(id):col.doc();
@@ -850,7 +876,7 @@ function exportarMes(pdf){
     ws=XLSX.utils.json_to_sheet(v.map(i=>({RGD_MAE:i.rgdMae||'',N_RECEPTORA:i.receptora||'',SEXO:i.sexo||'',DATA_NASCIMENTO:fmtData(i.data),PESO_KG:numBR(i.peso)??'',PELAGEM:i.pelagem||'',OBSERVACAO:i.obs||'',LANCADO_POR:i.criadoPorNome||''})));
     ws['!cols']=[{wch:14},{wch:14},{wch:6},{wch:16},{wch:9},{wch:16},{wch:30},{wch:18}];
   }else{
-    ws=XLSX.utils.json_to_sheet(v.map(i=>({DATA_LANCAMENTO:fmtData(i.data),RGD:i.rgd||'',SITUACAO:i.situacao||'',OBSERVACAO:obsGeral(i),FOTOS:(i.fotos||[]).length||'',LANCADO_POR:i.criadoPorNome||''})));
+    ws=XLSX.utils.json_to_sheet(v.map(i=>({DATA_LANCAMENTO:fmtData(i.data),SITUACAO:i.situacao||'',ANIMAIS_RGD:gAn(i).join(' '),QTD:gQtd(i)||'',OBSERVACAO:obsGeral(i),FOTOS:(i.fotos||[]).length||'',LANCADO_POR:i.criadoPorNome||''})));
     ws['!cols']=[{wch:14},{wch:14},{wch:10},{wch:60},{wch:7},{wch:18}];
   }
   const nome=aba==='nasc'?'Nascimentos':'Lancamento Geral';
