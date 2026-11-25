@@ -194,7 +194,7 @@ setInterval(()=>{if(document.visibilityState==='visible'&&dados.paraiso&&Date.no
 const WMO={0:['☀️','Céu limpo','🌙'],1:['🌤','Quase limpo','🌙'],2:['⛅','Parcialmente nublado','☁️'],3:['☁️','Nublado'],45:['🌫','Neblina'],48:['🌫','Neblina com geada'],
   51:['🌦','Garoa fraca'],53:['🌦','Garoa'],55:['🌧','Garoa forte'],56:['🌧','Garoa congelante'],57:['🌧','Garoa congelante'],61:['🌦','Chuva fraca'],63:['🌧','Chuva moderada'],65:['🌧','Chuva forte'],
   66:['🌧','Chuva congelante'],67:['🌧','Chuva congelante'],71:['🌨','Neve fraca'],73:['🌨','Neve'],75:['🌨','Neve forte'],77:['🌨','Granizo fino'],80:['🌦','Pancadas fracas'],81:['🌧','Pancadas de chuva'],82:['⛈','Pancadas fortes'],
-  85:['🌨','Neve'],86:['🌨','Neve'],95:['⛈','Trovoada'],96:['⛈','Trovoada com granizo'],99:['⛈','Trovoada forte com granizo']};
+  85:['🌨','Neve'],86:['🌨','Neve'],95:['⛈','Chuva com trovoada'],96:['⛈','Chuva, trovoada e granizo'],99:['⛈','Chuva forte, trovoada e granizo']};
 /* ícones desenhados (no lugar dos emojis, que no Windows saem pequenos e borrados) */
 const IC={
   sol:'<circle cx="32" cy="32" r="11" fill="#f6b928"/><g stroke="#f6b928" stroke-width="4" stroke-linecap="round"><path d="M32 8v7M32 49v7M8 32h7M49 32h7M15 15l5 5M44 44l5 5M15 49l5-5M44 20l5-5"/></g>',
@@ -205,7 +205,8 @@ const IC={
   nuvE:'<path d="M20 42h26a11 11 0 0 0 1-22 15 15 0 0 0-29 3 10 10 0 0 0 2 19z" fill="#a9b5c2" stroke="#6f7d8b" stroke-width="3" stroke-linejoin="round"/>',
   gota1:'<g stroke="#2f7fd8" stroke-width="3.5" stroke-linecap="round"><path d="M26 48l-2 6M38 48l-2 6"/></g>',
   gota3:'<g stroke="#2f7fd8" stroke-width="3.5" stroke-linecap="round"><path d="M22 48l-3 8M32 48l-3 8M42 48l-3 8"/></g>',
-  raio:'<path d="M34 42l-8 11h7l-3 9 10-13h-7l4-7z" fill="#f6b928" stroke="#c98a00" stroke-width="1.5" stroke-linejoin="round"/>',
+  raio:'<path d="M35 41l-7 10h6l-3 10 10-13h-6l4-7z" fill="#f6b928" stroke="#c98a00" stroke-width="1.5" stroke-linejoin="round"/>',
+  gotaR:'<g stroke="#2f7fd8" stroke-width="3.5" stroke-linecap="round"><path d="M20 48l-3 8M46 48l-3 8"/></g>',
   neb:'<g stroke="#8b98a6" stroke-width="4" stroke-linecap="round"><path d="M12 26h40M8 36h44M14 46h36"/></g>'};
 function icone(c,dia=1){
   const sv=x=>`<svg class="wic" viewBox="0 0 64 64" aria-hidden="true">${x}</svg>`,ast=dia?IC.solP:IC.luaP;
@@ -215,7 +216,7 @@ function icone(c,dia=1){
   if(c===45||c===48)return sv(IC.neb);
   if([51,53,56,61,80].includes(c))return sv((c===80?ast:'')+IC.nuvE.replace(/42h/,'42h')+IC.gota1);
   if([55,57,63,65,66,67,81,82].includes(c))return sv(IC.nuvE+IC.gota3);
-  if(c>=95)return sv(IC.nuvE+IC.raio);
+  if(c>=95)return sv(IC.nuvE+IC.gotaR+IC.raio); // chuva + raio (não é só trovoada)
   return sv(IC.nuv)}
 const descr=c=>(WMO[c]||['','—'])[1];
 const n1=v=>v==null?'—':(Math.round(v*10)/10).toLocaleString('pt-BR');
