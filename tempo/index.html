@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#153e2c">
+<title>Tempo · App Nelore MRA</title>
+<link rel="icon" href="../logo.webp">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+/* Tempo: previsão e chuva das fazendas (Open-Meteo: ECMWF, GFS, ICON) + mapa do Windy. Não grava nada. */
+:root{--verde:#153e2c;--verde2:#1f6a49;--ouro:#e7b549;--fundo:#f3f5f3;--borda:#e1e7e3;--linha:#eef1ee;--texto:#17211c;--suave:#5d6a62;--muito-suave:#8a958d;
+  --c1:#8ec5f2;--c2:#2f7fd8;--c3:#8a4fd1;--c4:#f08a24;--ok:#2f9e5b;--at:#e9b234;--no:#dc6a5c}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--fundo);color:var(--texto);-webkit-text-size-adjust:100%}
+.hidden{display:none!important}
+.topo{background:var(--verde);color:#fff;position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top)}
+.topo-in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.topo-in .voltar-app{margin:0!important}
+.tit b{display:block;font-size:16.5px}.tit span{display:block;font-size:11.5px;opacity:.75}
+.atual{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11.5px;opacity:.9}
+.atual button{border:0;border-radius:10px;background:#ffffff22;color:#fff;font-weight:700;font-size:13px;padding:8px 11px;cursor:pointer}
+.wrap{max-width:1240px;margin:0 auto;padding:14px 14px calc(30px + env(safe-area-inset-bottom))}
+.fazs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.faz{background:#fff;border:2px solid var(--borda);border-radius:16px;padding:12px 14px;text-align:left;cursor:pointer;font-family:inherit;color:inherit}
+.faz.on{border-color:var(--verde2);box-shadow:0 0 0 3px #1f6a4922}
+.faz .n{font-weight:800;font-size:14.5px;display:flex;align-items:center;gap:6px}.faz .n i{font-style:normal;font-size:11px;font-weight:700;color:var(--verde2);background:#e6f2ea;border-radius:99px;padding:2px 8px}
+.faz:not(.on) .n i{display:none}
+.faz .l{display:flex;align-items:center;gap:8px;margin:4px 0 2px}.faz .ic{font-size:30px}.faz .t{font-size:30px;font-weight:800}
+.faz small{display:block;color:var(--suave);font-size:12.5px;line-height:1.55}.faz small b{color:var(--texto)}
+.card{background:#fff;border:1px solid var(--borda);border-radius:16px;padding:14px;margin-bottom:12px;min-width:0}
+.card>h3{margin:0 0 10px;font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--suave);display:flex;align-items:center;gap:6px}
+.card>h3 .dir{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:600;color:var(--muito-suave)}
+.nota{font-size:12px;color:var(--suave);margin:8px 0 0;line-height:1.45}
+.cols{display:grid;grid-template-columns:minmax(0,1fr);gap:0}.cols>div{min-width:0}
+@media(min-width:960px){.cols{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}.cols>div{min-width:0}}
+/* aviso */
+.aviso{border-radius:16px;padding:13px 15px;margin-bottom:12px;display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.45}
+.aviso .e{font-size:28px;line-height:1}.aviso b{display:block;font-size:16px}
+.aviso.chuva{background:#e8f0ff;border:1px solid #bcd0f5;color:#173e7a}.aviso.seco{background:#fff6e3;border:1px solid #f1d9a4;color:#6b4b0d}.aviso.forte{background:#f3eaff;border:1px solid #d6c2f4;color:#4a2384}
+/* assistente */
+.ia{display:grid;gap:8px}
+.ia .it{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;padding:10px;border-radius:12px;background:#f7f9f7;border-left:4px solid var(--muito-suave)}
+.ia .it.ok{border-left-color:var(--ok)}.ia .it.at{border-left-color:var(--at)}.ia .it.no{border-left-color:var(--no)}
+.ia .it .e{font-size:22px;line-height:1.2;text-align:center}.ia .it b{display:block;font-size:14.5px}.ia .it span{font-size:13px;color:var(--suave);line-height:1.45}
+.selo{display:inline-block;font-size:11px;font-weight:800;border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:1px}
+.selo.ok{background:#e1f3e8;color:#1d6b3d}.selo.at{background:#fdf1d4;color:#7a5408}.selo.no{background:#fbe3df;color:#8e2b20}
+/* agora */
+.agora{display:flex;align-items:center;gap:14px}.agora .ic{font-size:54px;line-height:1}.agora .t{font-size:48px;font-weight:800;line-height:1}.agora .d{color:var(--suave);font-size:13.5px;margin-top:3px}
+.grade{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.grade div{background:#f6f8f6;border-radius:11px;padding:8px 10px;min-width:0}.grade span{display:block;font-size:11px;color:var(--suave)}.grade b{font-size:15px;white-space:nowrap}
+@media(min-width:600px){.grade{grid-template-columns:repeat(4,1fr)}}
+/* gráfico de chuva */
+.gch{position:relative}
+.gch .barras{display:flex;align-items:flex-end;gap:2px;height:120px;border-bottom:1px solid var(--borda)}
+.gch .barras div{flex:1;border-radius:3px 3px 0 0;min-height:0}
+.gch .pct{display:flex;gap:2px;margin-top:3px}.gch .pct div{flex:1;font-size:9.5px;text-align:center;color:var(--suave);white-space:nowrap;overflow:visible}
+.gch .eixo{display:flex;gap:2px;margin-top:2px}.gch .eixo div{flex:1;font-size:10px;color:var(--muito-suave);white-space:nowrap;overflow:visible}
+.gch .agora-l{position:absolute;top:0;height:120px;border-left:2px dashed #17211c55}
+.leg{display:flex;gap:12px;font-size:11.5px;color:var(--suave);margin-top:9px;flex-wrap:wrap}.leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+/* mapa */
+.mapa-bts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.mapa-bts button{border:1px solid var(--borda);background:#fff;border-radius:99px;padding:7px 12px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;color:var(--texto)}
+.mapa-bts button.on{background:var(--verde);border-color:var(--verde);color:#fff}
+.mapa{position:relative;height:420px;border-radius:14px;overflow:hidden;background:#dfe6e1}
+.mapa iframe{border:0;width:100%;height:100%;display:block;position:absolute;inset:0;z-index:1}
+.mapa .car{position:absolute;inset:0;display:grid;place-items:center;color:var(--suave);font-size:13px}
+@media(max-width:600px){.mapa{height:380px}}
+.escala{display:flex;margin-top:8px;border-radius:7px;overflow:hidden;font-size:10.5px;font-weight:700;text-align:center}
+.escala div{flex:1;padding:4px 2px}
+.radar-lk{display:inline-block;margin-top:8px;font-size:13px;font-weight:700;color:var(--verde2);text-decoration:none}
+/* umidade e solo */
+.linha-svg{width:100%;height:96px;display:block}
+.solo .cam{display:grid;grid-template-columns:78px 1fr 92px;gap:8px;align-items:center;margin:5px 0;font-size:12.5px}
+.solo .bar{height:12px;border-radius:6px;background:#eef1ee;overflow:hidden}.solo .bar i{display:block;height:100%;border-radius:6px}
+.solo .st{font-weight:800;font-size:12px;text-align:right}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.mini div{background:#f6f8f6;border-radius:11px;padding:8px 10px}.mini span{display:block;font-size:11px;color:var(--suave)}.mini b{font-size:16px}
+/* dias */
+.dias .d{display:grid;grid-template-columns:54px 28px 1fr 58px 40px;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--linha);font-size:14px}
+.dias .d:last-child{border-bottom:0}.dias .d .ic{font-size:20px;text-align:center}
+.dias .mm{color:var(--c2);font-weight:800;text-align:right;white-space:nowrap}.dias .pc{color:var(--suave);font-size:12px;text-align:right}
+.dias .tb{position:relative;height:6px;background:#eef1ee;border-radius:3px}.dias .tb i{position:absolute;top:0;bottom:0;border-radius:3px;background:linear-gradient(90deg,#5aa0e6,#f0b94a,#e2643c)}
+.dias .tt{display:flex;justify-content:space-between;font-size:11.5px;color:var(--suave);margin-bottom:3px}.dias .tt b{color:var(--texto)}
+.dias .vt{font-size:11px;color:var(--muito-suave)}
+@media(max-width:600px){.dias .tt .vt{display:none}.dias .d{grid-template-columns:46px 26px 1fr 54px 36px;gap:6px}}
+/* acumulado */
+.acum{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.acum div{background:#f6f8f6;border-radius:12px;padding:10px 12px}.acum span{display:block;font-size:11.5px;color:var(--suave)}.acum b{font-size:22px;color:var(--c2)}
+.acum small{display:block;font-size:11.5px;color:var(--suave);margin-top:2px}.acum small.mais{color:#1d6b3d;font-weight:700}.acum small.menos{color:#8e2b20;font-weight:700}
+/* pulverização */
+.pulv .lin{display:grid;grid-template-columns:62px 1fr;gap:8px;align-items:center;margin-bottom:6px;font-size:12.5px;font-weight:700}
+.pulv .h{display:grid;grid-template-columns:repeat(24,1fr);gap:2px}.pulv .h div{height:26px;border-radius:3px}
+.pulv .hx{display:grid;grid-template-columns:62px 1fr;gap:8px;font-size:10px;color:var(--muito-suave)}.pulv .hx>div{display:flex;justify-content:space-between}
+.ok{background:var(--ok)}.at{background:var(--at)}.no{background:var(--no)}.pas{background:#e6eae7}
+.janela{background:#e9f6ee;border:1px solid #bfe3cc;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:14px}.janela.nao{background:#fdeeec;border-color:#f3c9c2}
+/* modelos */
+.mods{width:100%;border-collapse:collapse;font-size:13px}.mods th,.mods td{padding:6px 4px;text-align:center;border-bottom:1px solid var(--linha)}.mods th:first-child,.mods td:first-child{text-align:left}
+.mods th{font-size:11px;color:var(--suave);font-weight:700}.mods td.mm{color:var(--c2);font-weight:700}
+.conc{font-size:11px;font-weight:800;border-radius:99px;padding:2px 7px;white-space:nowrap}
+.vazio{padding:30px 10px;text-align:center;color:var(--suave)}
+.fonte{text-align:center;font-size:11.5px;color:var(--muito-suave);margin-top:6px;line-height:1.5}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#17211c;color:#fff;padding:11px 18px;border-radius:12px;font-size:14px;z-index:90;max-width:90vw;text-align:center}
+@media(max-width:600px){.tit span,.atual span{display:none}.topo-in{padding:8px 12px}.wrap{padding:12px 10px 30px}.faz{padding:10px 11px}.faz .t{font-size:26px}.faz .ic{font-size:26px}.card{padding:12px}}
+</style>
+</head>
+<body>
+<script src="../barra-app.js" data-alvo=".topo-in"></script>
+<header class="topo"><div class="topo-in">
+  <div class="tit"><b>🌦 Tempo</b><span>Chuva, nuvens, vento e umidade das fazendas</span></div>
+  <div class="atual"><span id="quando"></span><button id="btnAtu" onclick="carregar(true)">🔄 Atualizar</button></div>
+</div></header>
+<main class="wrap">
+  <div class="fazs" id="fazs"></div>
+  <div id="conteudo"><div class="vazio">Carregando a previsão...</div></div>
+  <div class="fonte">Previsão: Open-Meteo (modelos europeu ECMWF, americano GFS e alemão ICON) · Mapa: Windy · Fuso de Mato Grosso do Sul.<br>Previsão é estimativa da região; a chuva de verdade é a do pluviômetro.</div>
+</main>
+<script>
+const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDomain:'app-nelore-mra.firebaseapp.com',projectId:'app-nelore-mra',storageBucket:'app-nelore-mra.firebasestorage.app',messagingSenderId:'1043343802346',appId:'1:1043343802346:web:219f5d73748271a85dfc93'};
+const ADMIN_EMAIL='mandrade.gado@terra.com.br';
+firebase.initializeApp(FIREBASE_CONFIG);
+const fs=firebase.firestore();
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){document.querySelectorAll('.toast').forEach(x=>x.remove());const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2800)}
+
+/* ---------- fazendas (coordenadas da sede, mandadas pelo dono) ---------- */
+const FAZ=[
+  {id:'paraiso',nome:'Fazenda Paraíso',curto:'Paraíso',lat:-20.555250,lon:-54.840194},
+  {id:'itaguassu',nome:'Fazenda Itaguassu',curto:'Itaguassu',lat:-21.365623,lon:-55.621010},
+];
+const TZ='America/Campo_Grande';
+let fazAtual=(()=>{try{const f=localStorage.getItem('app-nelore-mra-tempo-faz');return FAZ.some(x=>x.id===f)?f:'paraiso'}catch(e){return 'paraiso'}})();
+let dados={},mapaCamada='rain';
+
+/* ---------- acesso: em manutenção, só o administrador entra ---------- */
+firebase.auth().onAuthStateChanged(async u=>{
+  if(!u){location.href='../index.html';return}
+  const ehAdmin=String(u.email||'').toLowerCase()===ADMIN_EMAIL;
+  if(!ehAdmin){alert('O Tempo está em manutenção. Logo fica pronto.');location.href='../index.html';return}
+  carregar(false);
+});
+
+/* ---------- busca dos dados (Open-Meteo, sem chave) ---------- */
+const HOJE=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const addDias=(iso,n)=>{const d=new Date(iso+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)};
+const CUR='temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,cloud_cover,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,dew_point_2m,uv_index,visibility';
+const HOR='temperature_2m,relative_humidity_2m,dew_point_2m,precipitation,precipitation_probability,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,vapour_pressure_deficit,et0_fao_evapotranspiration,soil_moisture_0_to_1cm,soil_moisture_1_to_3cm,soil_moisture_3_to_9cm,soil_moisture_9_to_27cm,soil_moisture_27_to_81cm,cape,is_day';
+const DIA='weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,precipitation_hours,wind_speed_10m_max,wind_gusts_10m_max,wind_direction_10m_dominant,et0_fao_evapotranspiration,relative_humidity_2m_max,relative_humidity_2m_min,uv_index_max,sunrise,sunset';
+async function pega(url){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}
+async function buscarFaz(f){
+  const base=`latitude=${f.lat}&longitude=${f.lon}&timezone=${encodeURIComponent(TZ)}&wind_speed_unit=kmh`;
+  const hoje=HOJE(),ini=safraIni(hoje),fimArq=addDias(hoje,-8);
+  const prev=pega(`https://api.open-meteo.com/v1/forecast?${base}&current=${CUR}&hourly=${HOR}&daily=${DIA}&past_days=31&forecast_days=16`);
+  const mods=pega(`https://api.open-meteo.com/v1/forecast?${base}&daily=precipitation_sum,precipitation_probability_max&models=ecmwf_ifs025,gfs_seamless,icon_seamless&forecast_days=8`).catch(()=>null);
+  // histórico (pra média do mês/safra e a chuva da safra): guarda 7 dias no aparelho
+  let hist=null;const kh='app-nelore-mra-tempo-hist-'+f.id;
+  try{const h=JSON.parse(localStorage.getItem(kh)||'null');if(h&&h.fim===fimArq)hist=h}catch(e){}
+  const histP=hist?Promise.resolve(hist):pega(`https://archive-api.open-meteo.com/v1/archive?${base}&start_date=2015-09-01&end_date=${fimArq}&daily=precipitation_sum`).then(j=>{const h={fim:fimArq,t:j.daily.time,p:j.daily.precipitation_sum};try{localStorage.setItem(kh,JSON.stringify(h))}catch(e){}return h}).catch(()=>null);
+  const [p,m,h]=await Promise.all([prev,mods,histP]);
+  return {p,m,h,em:Date.now()};
+}
+async function carregar(forcar){
+  const kc='app-nelore-mra-tempo-cache';
+  if(!forcar){try{const c=JSON.parse(localStorage.getItem(kc)||'null');if(c&&c.paraiso&&c.itaguassu){dados=c;desenhar();if(Date.now()-c.paraiso.em<15*60e3)return}}catch(e){}}
+  $('#btnAtu').disabled=true;$('#btnAtu').textContent='⏳ Atualizando';
+  try{
+    const r=await Promise.all(FAZ.map(buscarFaz));
+    dados={};FAZ.forEach((f,k)=>dados[f.id]=r[k]);
+    try{localStorage.setItem(kc,JSON.stringify(dados))}catch(e){}
+    desenhar();if(forcar)toast('Previsão atualizada.');
+  }catch(e){console.error(e);if(!dados.paraiso)$('#conteudo').innerHTML=`<div class="vazio">Não consegui buscar a previsão.<br><small>Confira a internet e toque em 🔄 Atualizar.</small></div>`;else toast('Sem internet: mostrando a última previsão.')}
+  $('#btnAtu').disabled=false;$('#btnAtu').textContent='🔄 Atualizar';
+}
+setInterval(()=>{if(document.visibilityState==='visible'&&dados.paraiso&&Date.now()-dados.paraiso.em>30*60e3)carregar(true)},60e3);
+
+/* ---------- ajudas ---------- */
+const WMO={0:['☀️','Céu limpo','🌙'],1:['🌤','Quase limpo','🌙'],2:['⛅','Parcialmente nublado','☁️'],3:['☁️','Nublado'],45:['🌫','Neblina'],48:['🌫','Neblina com geada'],
+  51:['🌦','Garoa fraca'],53:['🌦','Garoa'],55:['🌧','Garoa forte'],56:['🌧','Garoa congelante'],57:['🌧','Garoa congelante'],61:['🌦','Chuva fraca'],63:['🌧','Chuva moderada'],65:['🌧','Chuva forte'],
+  66:['🌧','Chuva congelante'],67:['🌧','Chuva congelante'],71:['🌨','Neve fraca'],73:['🌨','Neve'],75:['🌨','Neve forte'],77:['🌨','Granizo fino'],80:['🌦','Pancadas fracas'],81:['🌧','Pancadas de chuva'],82:['⛈','Pancadas fortes'],
+  85:['🌨','Neve'],86:['🌨','Neve'],95:['⛈','Trovoada'],96:['⛈','Trovoada com granizo'],99:['⛈','Trovoada forte com granizo']};
+const icone=(c,dia=1)=>{const w=WMO[c]||['🌡','—'];return !dia&&w[2]?w[2]:w[0]};
+const descr=c=>(WMO[c]||['','—'])[1];
+const n1=v=>v==null?'—':(Math.round(v*10)/10).toLocaleString('pt-BR');
+const n0=v=>v==null?'—':Math.round(v).toLocaleString('pt-BR');
+const mmTxt=v=>v==null?'—':v<0.1?'0 mm':v<10?n1(v)+' mm':n0(v)+' mm';
+const RUMO=['N','NNE','NE','ENE','L','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+const rumo=g=>g==null?'':RUMO[Math.round(((g%360)+360)%360/22.5)%16];
+const DSEM=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const diaSem=iso=>DSEM[new Date(iso+'T12:00:00Z').getUTCDay()];
+const ddmm=iso=>iso.slice(8,10)+'/'+iso.slice(5,7);
+const hora=t=>Number(t.slice(11,13));
+function safraIni(hoje){const a=Number(hoje.slice(0,4)),m=Number(hoje.slice(5,7));return (m>=9?a:a-1)+'-09-01'}
+// cor da chuva por intensidade (mm/h) — a MESMA escala do mapa
+const corChuva=v=>v<0.1?'transparent':v<1?'var(--c1)':v<4?'var(--c2)':v<10?'var(--c3)':'var(--c4)';
+const ESCALA=`<div class="escala"><div style="background:var(--c1);color:#123">Fraca</div><div style="background:var(--c2);color:#fff">Moderada</div><div style="background:var(--c3);color:#fff">Forte</div><div style="background:var(--c4);color:#fff">Muito forte</div></div>`;
+
+/* ---------- tela ---------- */
+function escolher(id){fazAtual=id;try{localStorage.setItem('app-nelore-mra-tempo-faz',id)}catch(e){}desenhar();window.scrollTo({top:0,behavior:'smooth'})}
+function desenhar(){
+  if(!dados.paraiso)return;
+  const atu=dados[fazAtual].em,min=Math.round((Date.now()-atu)/60e3);
+  $('#quando').textContent=min<1?'atualizado agora':min<60?`atualizado há ${min} min`:`atualizado ${new Date(atu).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
+  $('#fazs').innerHTML=FAZ.map(f=>{const d=dados[f.id];if(!d||!d.p)return '';const c=d.p.current,dl=d.p.daily,i=dl.time.indexOf(HOJE());
+    return `<button class="faz ${f.id===fazAtual?'on':''}" onclick="escolher('${f.id}')"><div class="n">${esc(f.nome)} <i>vendo</i></div>
+      <div class="l"><span class="ic">${icone(c.weather_code,c.is_day)}</span><span class="t">${n0(c.temperature_2m)}°</span></div>
+      <small>🌧 Hoje: <b>${mmTxt(dl.precipitation_sum[i])}</b> · ${n0(dl.precipitation_probability_max[i])}%<br>💧 Umidade ${n0(c.relative_humidity_2m)}% · 💨 ${n0(c.wind_speed_10m)} km/h ${rumo(c.wind_direction_10m)}</small></button>`}).join('');
+  const f=FAZ.find(x=>x.id===fazAtual),d=dados[fazAtual];
+  try{$('#conteudo').innerHTML=tela(f,d);}catch(e){console.error(e);$('#conteudo').innerHTML=`<div class="vazio">Erro ao montar a tela.<br><small>${esc(e.message)}</small></div>`}
+  mostrarMapa();
+}
+function idxAgora(p){const h=p.current.time.slice(0,13);let i=p.hourly.time.findIndex(t=>t.slice(0,13)===h);return i<0?0:i}
+function tela(f,d){
+  const p=d.p,H=p.hourly,D=p.daily,c=p.current,i0=idxAgora(p),hoje=HOJE(),iD=D.time.indexOf(hoje);
+  return aviso(H,i0)+`<div class="cols"><div>`
+   +assistente(f,d,i0,iD)
+   +agora(c,D,iD)
+   +chuva48(H,i0)
+   +mapaCard(f)
+   +`</div><div>`
+   +dias(D,iD)
+   +umidadeSolo(H,D,i0,iD)
+   +acumulado(d,iD)
+   +pulverizacao(H,i0)
+   +modelos(d)
+   +`</div></div>`;
+}
+
+/* aviso principal: vai chover? */
+function aviso(H,i0){
+  const fim=Math.min(H.time.length,i0+48);let ini=-1,ult=-1,tot=0,pmax=0,cape=0,int=0;
+  for(let k=i0;k<fim;k++){const v=H.precipitation[k]||0,pr=H.precipitation_probability[k]||0;
+    if(v>=0.2||pr>=60){if(ini<0)ini=k;ult=k;}
+    if(ini>=0&&k<=ini+12){tot+=v;pmax=Math.max(pmax,pr);cape=Math.max(cape,H.cape?H.cape[k]||0:0);int=Math.max(int,v)}}
+  if(ini<0){let sem=0;for(let k=i0;k<H.time.length&&(H.precipitation[k]||0)<0.2;k++)sem++;
+    return `<div class="aviso seco"><span class="e">☀️</span><div><b>Sem chuva nas próximas 48 horas</b>${sem>=72?`Pela previsão, sem chuva por uns ${Math.floor(sem/24)} dias.`:'Pode chover depois disso. Veja os próximos dias.'}</div></div>`}
+  const qdo=k=>{const t=H.time[k],dd=t.slice(0,10),hh=hora(t),dia=dd===HOJE()?'hoje':dd===addDias(HOJE(),1)?'amanhã':diaSem(dd)+' '+ddmm(dd);
+    const per=hh<6?'de madrugada':hh<12?'de manhã':hh<18?'à tarde':'à noite';return {dia,per,hh}};
+  const a=qdo(ini),b=qdo(Math.min(ult,ini+12)),forte=int>=10||cape>=2000;
+  const troca=cape>=1500&&pmax>=50?' Risco de <b style="display:inline;font-size:inherit">trovoada e vento forte</b>.':'';
+  return `<div class="aviso ${forte?'forte':'chuva'}"><span class="e">${forte?'⛈':'🌧'}</span><div><b>${ini===i0?'Chovendo ou chuva chegando agora':`Vai chover ${a.dia} ${a.per}`}</b>Entre ${a.hh}h e ${b.hh+1}h${b.dia!==a.dia?' ('+b.dia+')':''} · cerca de <b style="display:inline;font-size:inherit">${mmTxt(tot)}</b> · chance de ${n0(pmax)}%.${troca}</div></div>`;
+}
+
+/* assistente da lavoura: regras de agronomia sobre a previsão */
+function assistente(f,d,i0,iD){
+  const H=d.p.hourly,D=d.p.daily,it=[];
+  const soma=(arr,a,b)=>arr.slice(a,b).reduce((s,v)=>s+(v||0),0);
+  const chuvaProx=(n)=>soma(D.precipitation_sum,iD,iD+n);
+  const chuvaPass=(n)=>soma(D.precipitation_sum,Math.max(0,iD-n),iD);
+  const solo=media(H.soil_moisture_3_to_9cm,i0,i0+1);
+  // 1) pulverização
+  const j=melhorJanela(H,i0);
+  it.push(j?{c:'ok',e:'🧪',t:'Pulverização',s:`Melhor horário: <b>${j.txt}</b> (vento ${j.v}, sem chuva logo depois).`}:{c:'no',e:'🧪',t:'Pulverização',s:'Sem bom horário nos próximos 3 dias (vento, calor ou chuva). Veja a faixa de horários abaixo.'});
+  // 2) plantio (umidade do solo + chuva)
+  const c7=chuvaProx(7);
+  if(solo!=null){
+    if(solo>=0.38&&chuvaPass(5)>=40)it.push({c:'at',e:'🚜',t:'Máquinas / plantio',s:`Solo encharcado (${n0(solo*100)}% de água) depois de ${n0(chuvaPass(5))} mm em 5 dias. Evite entrar com máquina pesado; risco de compactação e atolar.`});
+    else if(solo>=0.20&&c7>=15)it.push({c:'ok',e:'🌱',t:'Plantio',s:`Solo com boa umidade (${n0(solo*100)}%) e ${mmTxt(c7)} previstos em 7 dias. Bom momento pra plantar.`});
+    else if(solo<0.15&&c7<10)it.push({c:'no',e:'🌱',t:'Plantio',s:`Solo seco (${n0(solo*100)}%) e pouca chuva prevista (${mmTxt(c7)} em 7 dias). Melhor esperar a chuva firmar.`});
+    else it.push({c:'at',e:'🌱',t:'Plantio',s:`Umidade do solo ${n0(solo*100)}% e ${mmTxt(c7)} previstos em 7 dias. Dá pra plantar com atenção à continuidade da chuva.`});
+  }
+  // 3) colheita / dias secos
+  let secos=0;for(let k=iD;k<D.time.length&&(D.precipitation_sum[k]||0)<1;k++)secos++;
+  it.push(secos>=4?{c:'ok',e:'🌾',t:'Colheita / feno',s:`Uns <b>${secos} dias secos</b> pela frente. Bom pra colher, secar e transportar.`}:secos>=2?{c:'at',e:'🌾',t:'Colheita / feno',s:`Só ${secos} dias secos antes da próxima chuva. Programe o serviço curto.`}:{c:'no',e:'🌾',t:'Colheita / feno',s:'Chuva nos próximos dias. Evite deixar produto exposto.'});
+  // 4) adubação de cobertura (ureia)
+  const c2=chuvaProx(2);
+  it.push(c2>=5&&c2<=25?{c:'ok',e:'🧂',t:'Adubo de cobertura (ureia)',s:`Chuva leve prevista (${mmTxt(c2)} em 2 dias): boa hora, a chuva incorpora o adubo.`}:c2>40?{c:'no',e:'🧂',t:'Adubo de cobertura (ureia)',s:`Chuva forte prevista (${mmTxt(c2)} em 2 dias): risco de lavar o adubo. Melhor esperar.`}:c7<3?{c:'at',e:'🧂',t:'Adubo de cobertura (ureia)',s:'Sem chuva na semana: ureia no seco perde nitrogênio pro ar. Prefira aplicar perto de uma chuva.'}:{c:'at',e:'🧂',t:'Adubo de cobertura (ureia)',s:`${mmTxt(c2)} em 2 dias. Acompanhe a previsão pra aplicar antes de uma chuva leve.`});
+  // 5) doença (ferrugem): horas de molhamento nos últimos 7 dias com temperatura boa pro fungo
+  let mol=0;for(let k=Math.max(0,i0-168);k<i0;k++){const t=H.temperature_2m[k],u=H.relative_humidity_2m[k];if(((u||0)>=90||(H.precipitation[k]||0)>0.1)&&t>=18&&t<=28)mol++}
+  it.push(mol>=60?{c:'no',e:'🍂',t:'Doenças (ferrugem da soja)',s:`Muito molhamento na semana (${mol} horas úmidas com temperatura boa pro fungo). Risco alto: monitore e programe o fungicida.`}:mol>=30?{c:'at',e:'🍂',t:'Doenças (ferrugem da soja)',s:`${mol} horas úmidas na semana. Risco médio de ferrugem: fique de olho.`}:{c:'ok',e:'🍂',t:'Doenças (ferrugem da soja)',s:`Pouco molhamento na semana (${mol} horas). Risco baixo.`});
+  // 6) gado: estresse por calor (ITU) e frio
+  let itu=0,tmin=99;for(let k=i0;k<Math.min(H.time.length,i0+72);k++){const t=H.temperature_2m[k],u=H.relative_humidity_2m[k];itu=Math.max(itu,0.8*t+(u/100)*(t-14.4)+46.4);tmin=Math.min(tmin,t)}
+  if(tmin<=3)it.push({c:'no',e:'❄️',t:'Geada / frio',s:`Mínima de ${n0(tmin)}°C prevista: risco de geada. Proteja bezerros e lavoura sensível.`});
+  else it.push(itu>=79?{c:'no',e:'🐄',t:'Gado (calor)',s:`Índice de calor alto (ITU ${n0(itu)}). Garanta sombra e água; evite manejo nas horas quentes.`}:itu>=72?{c:'at',e:'🐄',t:'Gado (calor)',s:`Calor moderado (ITU ${n0(itu)}). Manejo de manhã cedo ou fim de tarde.`}:{c:'ok',e:'🐄',t:'Gado (calor)',s:`Conforto bom pro gado (ITU ${n0(itu)}).`});
+  // 7) tempestade
+  let cmax=0,rj=0;for(let k=i0;k<Math.min(H.time.length,i0+48);k++){cmax=Math.max(cmax,H.cape?H.cape[k]||0:0);rj=Math.max(rj,H.wind_gusts_10m[k]||0)}
+  if(cmax>=2000||rj>=60)it.push({c:'no',e:'⛈',t:'Tempestade',s:`Atmosfera instável${rj>=60?` e rajadas de até ${n0(rj)} km/h`:''} nas próximas 48 h. Risco de raios, vendaval e granizo.`});
+  const ord={no:0,at:1,ok:2};it.sort((a,b)=>ord[a.c]-ord[b.c]);
+  return `<div class="card"><h3>🤖 Assistente da lavoura <span class="dir">${esc(f.curto)}</span></h3><div class="ia">${it.map(x=>`<div class="it ${x.c}"><span class="e">${x.e}</span><div><b>${x.t}<span class="selo ${x.c}">${x.c==='ok'?'Bom':x.c==='at'?'Atenção':'Cuidado'}</span></b><span>${x.s}</span></div></div>`).join('')}</div>
+    <div class="nota">Calculado sozinho em cima da previsão (chuva, vento, umidade do ar e do solo, temperatura). É ajuda pra decidir, não substitui o olho no campo.</div></div>`;
+}
+function media(a,i,j){const v=(a||[]).slice(i,j).filter(x=>x!=null);return v.length?v.reduce((s,x)=>s+x,0)/v.length:null}
+
+/* agora */
+function agora(c,D,iD){
+  return `<div class="card"><h3>Agora</h3><div class="agora"><span class="ic">${icone(c.weather_code,c.is_day)}</span><div><div class="t">${n0(c.temperature_2m)}°</div><div class="d">Sensação ${n0(c.apparent_temperature)}° · ${descr(c.weather_code)} · mín ${n0(D.temperature_2m_min[iD])}° máx ${n0(D.temperature_2m_max[iD])}°</div></div></div>
+  <div class="grade"><div><span>💧 Umidade do ar</span><b>${n0(c.relative_humidity_2m)}%</b></div><div><span>Ponto de orvalho</span><b>${n0(c.dew_point_2m)}°</b></div><div><span>💨 Vento</span><b>${n0(c.wind_speed_10m)} km/h ${rumo(c.wind_direction_10m)}</b></div><div><span>Rajada</span><b>${n0(c.wind_gusts_10m)} km/h</b></div>
+  <div><span>☁️ Nuvens</span><b>${n0(c.cloud_cover)}%</b></div><div><span>🌧 Chuva agora</span><b>${mmTxt(c.precipitation)}</b></div><div><span>Pressão</span><b>${n0(c.pressure_msl)} hPa</b></div><div><span>☀️ Índice UV</span><b>${n1(c.uv_index)}</b></div>
+  <div><span>Visibilidade</span><b>${c.visibility==null?'—':n1(c.visibility/1000)+' km'}</b></div><div><span>🌅 Nascer</span><b>${(D.sunrise[iD]||'').slice(11,16)}</b></div><div><span>🌇 Pôr do sol</span><b>${(D.sunset[iD]||'').slice(11,16)}</b></div><div><span>Chuva hoje</span><b>${mmTxt(D.precipitation_sum[iD])}</b></div></div></div>`;
+}
+
+/* chuva das próximas 48 h: barras pela intensidade + chance */
+function chuva48(H,i0){
+  const ks=[];for(let k=i0;k<Math.min(H.time.length,i0+48);k++)ks.push(k);
+  const mx=Math.max(4,...ks.map(k=>H.precipitation[k]||0));
+  const tot=ks.reduce((s,k)=>s+(H.precipitation[k]||0),0);
+  return `<div class="card"><h3>🌧 Chuva nas próximas 48 horas <span class="dir">total ${mmTxt(tot)}</span></h3><div class="gch">
+   <div class="barras">${ks.map(k=>{const v=H.precipitation[k]||0;return `<div title="${H.time[k].slice(11,16)} · ${mmTxt(v)} · ${n0(H.precipitation_probability[k])}%" style="height:${v/mx*100}%;background:${corChuva(v)}"></div>`}).join('')}</div>
+   <div class="pct">${ks.map((k,j)=>`<div>${j%3===0?n0(H.precipitation_probability[k])+'%':''}</div>`).join('')}</div>
+   <div class="eixo">${ks.map((k,j)=>{const hh=hora(H.time[k]);return `<div>${j===0?'agora':hh===0?'<b>'+diaSem(H.time[k].slice(0,10))+'</b>':j%6===0?hh+'h':''}</div>`}).join('')}</div></div>
+   ${ESCALA}<div class="nota">Barra = quanto chove em cada hora (mm). Número embaixo = chance de chover naquela hora.</div></div>`;
+}
+
+/* mapa: Windy (o mesmo tipo do iPhone: chuva prevista em cores, nuvens, raios, vento e umidade) */
+const CAMADAS=[['rain','🌧 Chuva'],['clouds','☁️ Nuvens'],['thunder','⚡ Raios'],['wind','💨 Vento'],['rh','💧 Umidade'],['temp','🌡 Temperatura']];
+function mapaCard(f){
+  return `<div class="card"><h3>🗺 Mapa de chuva e nuvens</h3>
+   <div class="mapa-bts">${CAMADAS.map(([k,l])=>`<button class="${k===mapaCamada?'on':''}" onclick="trocaCamada('${k}')">${l}</button>`).join('')}</div>
+   <div class="mapa" id="mapa"><div class="car">Carregando o mapa...</div></div>
+   ${mapaCamada==='rain'?ESCALA:''}
+   <div class="nota">Arraste e dê zoom. Embaixo do mapa tem o ▶ pra ver as próximas horas passando. Cores fortes (roxo e laranja) = nuvem pesada.</div>
+   <a class="radar-lk" href="https://www.windy.com/-Weather-radar-radar?radar,${f.lat},${f.lon},8" target="_blank" rel="noopener">📡 Abrir radar de chuva ao vivo (tela cheia) →</a></div>`;
+}
+function trocaCamada(k){mapaCamada=k;document.querySelectorAll('.mapa-bts button').forEach(b=>b.classList.toggle('on',b.getAttribute('onclick').includes(`'${k}'`)));mostrarMapa(true);
+  const esc_=document.querySelector('.mapa+.escala');if(esc_)esc_.classList.toggle('hidden',k!=='rain')}
+function mostrarMapa(){
+  const el=$('#mapa');if(!el)return;const f=FAZ.find(x=>x.id===fazAtual);
+  const u=`https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=%C2%B0C&metricWind=km%2Fh&zoom=8&overlay=${mapaCamada}&product=ecmwf&level=surface&lat=${f.lat}&lon=${f.lon}&detailLat=${f.lat}&detailLon=${f.lon}&marker=true&message=true&pressure=false`;
+  const fr=el.querySelector('iframe');if(fr&&fr.src===u)return;
+  el.innerHTML=`<div class="car">Carregando o mapa...</div><iframe src="${u}" title="Mapa do tempo" allowfullscreen></iframe>`;
+}
+
+/* próximos 16 dias */
+function dias(D,iD){
+  const ks=[];for(let k=iD;k<D.time.length;k++)ks.push(k);
+  const tmin=Math.min(...ks.map(k=>D.temperature_2m_min[k])),tmax=Math.max(...ks.map(k=>D.temperature_2m_max[k])),r=Math.max(1,tmax-tmin);
+  return `<div class="card dias"><h3>📅 Próximos ${ks.length} dias</h3>${ks.map(k=>{const t=D.time[k],mm=D.precipitation_sum[k]||0;
+    return `<div class="d"><div><b>${k===iD?'Hoje':diaSem(t)}</b><div class="vt">${ddmm(t)}</div></div><span class="ic">${icone(D.weather_code[k])}</span>
+    <div><div class="tt"><span>${n0(D.temperature_2m_min[k])}°</span><span class="vt">💨 ${n0(D.wind_speed_10m_max[k])} km/h · 💧 ${n0(D.relative_humidity_2m_min[k])}–${n0(D.relative_humidity_2m_max[k])}%</span><b>${n0(D.temperature_2m_max[k])}°</b></div>
+      <div class="tb"><i style="left:${(D.temperature_2m_min[k]-tmin)/r*100}%;right:${100-(D.temperature_2m_max[k]-tmin)/r*100}%"></i></div></div>
+    <span class="mm" style="${mm<1?'color:var(--muito-suave);font-weight:600':''}">${mm<0.1?'—':mmTxt(mm)}</span><span class="pc">${n0(D.precipitation_probability_max[k])}%</span></div>`}).join('')}
+    <div class="nota">mm = chuva prevista no dia · % = chance de chover · 💧 umidade do ar mínima–máxima.</div></div>`;
+}
+
+/* umidade do ar e do solo, evaporação */
+function umidadeSolo(H,D,i0,iD){
+  const ks=[];for(let k=i0;k<Math.min(H.time.length,i0+48);k++)ks.push(k);
+  const W=300,Hh=90,pts=ks.map((k,j)=>`${(j/(ks.length-1)*W).toFixed(1)},${(Hh-(H.relative_humidity_2m[k]||0)/100*Hh).toFixed(1)}`).join(' ');
+  const cams=[['0–1 cm','soil_moisture_0_to_1cm'],['1–3 cm','soil_moisture_1_to_3cm'],['3–9 cm','soil_moisture_3_to_9cm'],['9–27 cm','soil_moisture_9_to_27cm'],['27–81 cm','soil_moisture_27_to_81cm']];
+  const st=v=>v==null?['—','#8a958d']:v<0.15?['Seco','#c0392b']:v<0.25?['Bom','#2f9e5b']:v<0.36?['Úmido','#2f7fd8']:['Encharcado','#8a4fd1'];
+  const et7=(D.et0_fao_evapotranspiration||[]).slice(iD,iD+7).reduce((s,v)=>s+(v||0),0),ch7=(D.precipitation_sum||[]).slice(iD,iD+7).reduce((s,v)=>s+(v||0),0),bal=ch7-et7;
+  const vpd=H.vapour_pressure_deficit?H.vapour_pressure_deficit[i0]:null;
+  return `<div class="card"><h3>💧 Umidade do ar e do solo</h3>
+   <svg class="linha-svg" viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="${Hh*.5}" y2="${Hh*.5}" stroke="#e1e7e3" stroke-dasharray="3 3"/><polyline points="${pts}" fill="none" stroke="#2f7fd8" stroke-width="2.2" vector-effect="non-scaling-stroke"/></svg>
+   <div class="leg" style="margin-top:2px"><span>Umidade do ar nas próximas 48 h (linha tracejada = 50%)</span></div>
+   <div class="solo" style="margin-top:12px"><div style="font-size:12.5px;font-weight:800;margin-bottom:4px">Água no solo (estimativa por camada)</div>
+   ${cams.map(([l,k])=>{const v=H[k]?H[k][i0]:null,[s,cor]=st(v);return `<div class="cam"><span>${l}</span><div class="bar"><i style="width:${v==null?0:Math.min(100,v/0.5*100)}%;background:${cor}"></i></div><span class="st" style="color:${cor}">${s} ${v==null?'':n0(v*100)+'%'}</span></div>`}).join('')}</div>
+   <div class="mini"><div><span>Evaporação hoje</span><b>${n1(D.et0_fao_evapotranspiration[iD])} mm</b></div><div><span>Balanço 7 dias</span><b style="color:${bal>=0?'#1d6b3d':'#8e2b20'}">${bal>=0?'+':''}${n0(bal)} mm</b></div><div><span>Secura do ar (VPD)</span><b>${vpd==null?'—':n1(vpd)+' kPa'}</b></div></div>
+   <div class="nota">Balanço = chuva prevista − água que evapora da lavoura (7 dias). Negativo = o solo vai secando. VPD acima de 1,5 kPa = ar seco, planta sofre e o veneno evapora mais.</div></div>`;
+}
+
+/* chuva acumulada e média dos últimos 10 anos */
+function acumulado(d,iD){
+  const D=d.p.daily,hoje=HOJE(),sm=(a,b)=>{let s=0;for(let k=a;k<b;k++)s+=D.precipitation_sum[k]||0;return s};
+  const ult7=sm(Math.max(0,iD-6),iD+1),ult30=sm(Math.max(0,iD-29),iD+1);
+  const ini=hoje.slice(0,8)+'01';let mes=0,maior=0,maiorD='';for(let k=0;k<=iD;k++)if(D.time[k]>=ini){const v=D.precipitation_sum[k]||0;mes+=v;if(v>maior){maior=v;maiorD=D.time[k]}}
+  let semChuva=0;for(let k=iD;k>=0&&(D.precipitation_sum[k]||0)<1;k--)semChuva++;
+  // safra (desde 1º de setembro) e médias
+  const h=d.h,si=safraIni(hoje);let safra=null,medMes=null,medSafra=null,medMesTot=null;
+  if(h){const mapa={};h.t.forEach((t,k)=>mapa[t]=h.p[k]);D.time.forEach((t,k)=>{if(t<=hoje&&D.precipitation_sum[k]!=null)mapa[t]=D.precipitation_sum[k]});
+    let s=0,ok=true;for(let t=si;t<=hoje;t=addDias(t,1)){if(mapa[t]==null){ok=false;continue}s+=mapa[t]}safra=s;
+    const anos=[];const a0=Number(hoje.slice(0,4));for(let a=a0-10;a<a0;a++)anos.push(a);
+    const mm=hoje.slice(5,7),dia=hoje.slice(8,10);
+    const vm=[],vmt=[],vs=[];anos.forEach(a=>{let x=0,xt=0,ok1=true;for(let t=`${a}-${mm}-01`;t.slice(5,7)===mm;t=addDias(t,1)){const v=mapa[t];if(v==null){ok1=false;break}xt+=v;if(t.slice(8,10)<=dia)x+=v}if(ok1){vm.push(x);vmt.push(xt)}
+      const sa=safraIni(`${a}-${mm}-${dia}`);let y=0,ok2=true;for(let t=sa;t<=`${a}-${mm}-${dia}`;t=addDias(t,1)){const v=mapa[t];if(v==null){ok2=false;break}y+=v}if(ok2)vs.push(y)});
+    const md=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;medMes=md(vm);medMesTot=md(vmt);medSafra=md(vs)}
+  const cmp=(v,m)=>m==null||v==null?'':v>=m?`<small class="mais">▲ ${n0(v-m)} mm acima da média</small>`:`<small class="menos">▼ ${n0(m-v)} mm abaixo da média</small>`;
+  return `<div class="card"><h3>📊 Chuva acumulada</h3><div class="acum">
+   <div><span>Últimos 7 dias</span><b>${n0(ult7)} mm</b></div><div><span>Últimos 30 dias</span><b>${n0(ult30)} mm</b></div>
+   <div><span>${MES[Number(hoje.slice(5,7))-1][0].toUpperCase()+MES[Number(hoje.slice(5,7))-1].slice(1)} até hoje</span><b>${n0(mes)} mm</b>${medMes!=null?`<small>Média até hoje: ${n0(medMes)} mm · mês inteiro: ${n0(medMesTot)} mm</small>`:''}${cmp(mes,medMes)}</div>
+   <div><span>Safra (desde 1º/set)</span><b>${safra==null?'—':n0(safra)+' mm'}</b>${medSafra!=null?`<small>Média até hoje: ${n0(medSafra)} mm</small>`:''}${cmp(safra,medSafra)}</div></div>
+   <div class="nota">Dias seguidos sem chuva: <b>${semChuva}</b>${maior>=1?` · Maior chuva do mês: <b>${n0(maior)} mm</b> (${ddmm(maiorD)})`:''}. Média = últimos 10 anos neste ponto (dados de satélite/reanálise).</div></div>`;
+}
+
+/* pulverização hora a hora (3 dias) */
+function classePulv(H,k){
+  const v=H.wind_speed_10m[k],g=H.wind_gusts_10m[k],t=H.temperature_2m[k],u=H.relative_humidity_2m[k],pr=H.precipitation_probability[k]||0;
+  let chuvaDepois=0;for(let j=k;j<Math.min(H.time.length,k+4);j++)chuvaDepois+=H.precipitation[j]||0;
+  if(chuvaDepois>=0.5||pr>=60||v>15||g>28||t>33||u<40)return 'no';
+  if(v>=3&&v<=10&&g<20&&t<=30&&u>=55&&pr<30&&chuvaDepois<0.2)return 'ok';
+  return 'at';
+}
+function melhorJanela(H,i0){
+  let best=null,cur=null;
+  for(let k=i0;k<Math.min(H.time.length,i0+72);k++){const hh=hora(H.time[k]);const c=hh>=5&&hh<=19?classePulv(H,k):'no';
+    if(c==='ok'){if(!cur)cur={a:k,b:k};else cur.b=k}else{if(cur&&(!best||cur.b-cur.a>best.b-best.a))best=cur;cur=null}}
+  if(cur&&(!best||cur.b-cur.a>best.b-best.a))best=cur;
+  if(!best||best.b-best.a<1)return null;
+  const t=H.time[best.a],dd=t.slice(0,10),dia=dd===HOJE()?'hoje':dd===addDias(HOJE(),1)?'amanhã':diaSem(dd)+' '+ddmm(dd);
+  const vs=[];for(let k=best.a;k<=best.b;k++)vs.push(H.wind_speed_10m[k]);
+  return {txt:`${dia}, das ${hora(t)}h às ${hora(H.time[best.b])+1}h`,v:`${n0(Math.min(...vs))}–${n0(Math.max(...vs))} km/h`,a:best.a,b:best.b};
+}
+function pulverizacao(H,i0){
+  const d0=H.time[i0].slice(0,10),ini=H.time.findIndex(t=>t.slice(0,10)===d0);
+  let lin='';for(let dd=0;dd<3;dd++){const a=ini+dd*24;if(a+24>H.time.length)break;const dia=H.time[a].slice(0,10);
+    lin+=`<div class="lin"><span>${dd===0?'Hoje':dd===1?'Amanhã':diaSem(dia)+' '+ddmm(dia)}</span><div class="h">${[...Array(24)].map((_,h)=>{const k=a+h;return `<div class="${k<i0?'pas':classePulv(H,k)}" title="${h}h · vento ${n0(H.wind_speed_10m[k])} km/h · umid. ${n0(H.relative_humidity_2m[k])}% · ${n0(H.temperature_2m[k])}°"></div>`}).join('')}</div></div>`}
+  const j=melhorJanela(H,i0);
+  let det='';if(j){const ks=[];for(let k=j.a;k<=j.b;k++)ks.push(k);det=`Vento ${j.v} · umidade ${n0(Math.min(...ks.map(k=>H.relative_humidity_2m[k])))}–${n0(Math.max(...ks.map(k=>H.relative_humidity_2m[k])))}% · ${n0(Math.min(...ks.map(k=>H.temperature_2m[k])))}–${n0(Math.max(...ks.map(k=>H.temperature_2m[k])))}°C · sem chuva logo depois`}
+  return `<div class="card pulv"><h3>🧪 Pulverização — melhores horários</h3>${lin}
+   <div class="hx"><span></span><div><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div></div>
+   <div class="leg"><span><i class="ok"></i>Bom</span><span><i class="at"></i>Atenção</span><span><i class="no"></i>Não aplicar</span><span><i class="pas"></i>Já passou</span></div>
+   ${j?`<div class="janela">✅ <b>Melhor janela: ${j.txt}</b><br><span style="color:var(--suave);font-size:13px">${det}</span></div>`:`<div class="janela nao">❌ <b>Sem janela boa nos próximos 3 dias</b><br><span style="color:var(--suave);font-size:13px">Vento, calor, ar seco ou chuva atrapalham.</span></div>`}
+   <div class="nota">Bom = vento entre 3 e 10 km/h, rajada abaixo de 20, umidade acima de 55%, até 30°C e sem chuva nas 4 horas seguintes. Vento parado (abaixo de 3) também é ruim: a gota fica no ar e deriva.</div></div>`;
+}
+
+/* modelos: europeu x americano x alemão */
+function modelos(d){
+  const m=d.m;if(!m||!m.daily)return '';
+  const D=m.daily,hoje=HOJE(),ks=[];D.time.forEach((t,k)=>{if(t>=hoje&&ks.length<7)ks.push(k)});
+  const MS=[['ecmwf_ifs025','🇪🇺 Europeu'],['gfs_seamless','🇺🇸 Americano'],['icon_seamless','🇩🇪 Alemão']];
+  const val=(id,k)=>{const a=D['precipitation_sum_'+id];return a?a[k]:null};
+  return `<div class="card"><h3>🔎 Os modelos concordam?</h3><table class="mods"><thead><tr><th>Dia</th>${MS.map(([,l])=>`<th>${l}</th>`).join('')}<th></th></tr></thead><tbody>
+   ${ks.map(k=>{const vs=MS.map(([id])=>val(id,k)).filter(v=>v!=null),ch=vs.filter(v=>v>=1).length;
+     const tag=vs.length<2?'':ch===vs.length?`<span class="conc" style="background:#e8f0ff;color:#173e7a">🌧 chove</span>`:ch===0?`<span class="conc" style="background:#fff6e3;color:#6b4b0d">☀️ seco</span>`:`<span class="conc" style="background:#f1f4f2;color:#5d6a62">dividido</span>`;
+     return `<tr><td><b>${k===ks[0]&&D.time[k]===hoje?'Hoje':diaSem(D.time[k])}</b> <span style="color:var(--muito-suave);font-size:11px">${ddmm(D.time[k])}</span></td>${MS.map(([id])=>{const v=val(id,k);return `<td class="mm">${v==null?'—':v<0.1?'<span style="color:var(--muito-suave);font-weight:500">0</span>':n1(v)}</td>`}).join('')}<td>${tag}</td></tr>`}).join('')}
+   </tbody></table><div class="nota">Chuva prevista (mm) por cada modelo. Quando os três concordam, a previsão é mais confiável.</div></div>`;
+}
+</script>
+</body>
+</html>
