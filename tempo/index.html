@@ -21,7 +21,7 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
 .topo{background:var(--verde);color:#fff;position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top)}
 .topo-in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
 .topo-in .voltar-app{margin:0!important}
-.tit b{display:block;font-size:16.5px}.tit span{display:block;font-size:11.5px;opacity:.75}
+.tit b{display:block;font-size:16.5px}.tit span{display:block;font-size:13.5px;font-weight:400;opacity:.9}
 .atual{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11.5px;opacity:.9}
 .atual button{border:0;border-radius:10px;background:#ffffff22;color:#fff;font-weight:700;font-size:13px;padding:8px 11px;cursor:pointer}
 .wrap{max-width:1240px;margin:0 auto;padding:14px 14px calc(30px + env(safe-area-inset-bottom))}
@@ -56,6 +56,17 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
 @media(min-width:600px){.grade{grid-template-columns:repeat(4,1fr)}}
 /* gráfico de chuva */
 .gch{position:relative}
+.gch2{display:grid;grid-template-columns:30px minmax(0,1fr);gap:6px}
+.gch2 .yax{position:relative;height:130px;font-size:10.5px;color:var(--suave);text-align:right}.gch2.sub .yax{height:auto;font-weight:700}
+.gch2 .yax span{position:absolute;right:0;transform:translateY(-50%)}.gch2 .yax span:nth-child(1){top:0}.gch2 .yax span:nth-child(2){top:50%}.gch2 .yax span:nth-child(3){top:100%}
+.gch2 .area{position:relative;height:130px;border-bottom:1px solid #c9d2cc}
+.gch2 .gl{position:absolute;left:0;right:0;border-top:1px dashed #e1e7e3}
+.gch2 .barras{position:absolute;inset:0;display:flex;align-items:flex-end;gap:2px}
+.gch2 .barras div{flex:1;border-radius:3px 3px 0 0;position:relative;min-width:0}
+.gch2 .barras b{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:10.5px;color:var(--texto);margin-bottom:1px}
+.gch2 .eixo,.gch2 .pct{display:flex;gap:2px;margin-top:3px}.gch2 .eixo div,.gch2 .pct div{flex:1;font-size:10.5px;color:var(--suave);white-space:nowrap;overflow:visible;min-width:0}
+.gch2 .pct div{color:#2f6fd0;font-weight:700}
+.leg2{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--suave);margin:10px 0 6px}
 .gch .barras{display:flex;align-items:flex-end;gap:2px;height:120px;border-bottom:1px solid var(--borda)}
 .gch .barras div{flex:1;border-radius:3px 3px 0 0;min-height:0}
 .gch .pct{display:flex;gap:2px;margin-top:3px}.gch .pct div{flex:1;font-size:9.5px;text-align:center;color:var(--suave);white-space:nowrap;overflow:visible}
@@ -104,19 +115,19 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,s
 .vazio{padding:30px 10px;text-align:center;color:var(--suave)}
 .fonte{text-align:center;font-size:11.5px;color:var(--muito-suave);margin-top:6px;line-height:1.5}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#17211c;color:#fff;padding:11px 18px;border-radius:12px;font-size:14px;z-index:90;max-width:90vw;text-align:center}
-@media(max-width:600px){.tit span,.atual span{display:none}.topo-in{padding:8px 12px}.wrap{padding:12px 10px 30px}.faz{padding:10px 11px}.faz .t{font-size:26px}.faz .ic{font-size:26px}.card{padding:12px}}
+@media(max-width:600px){.atual span{display:none}.tit span{font-size:12.5px}.topo-in{padding:8px 12px}.wrap{padding:12px 10px 30px}.faz{padding:10px 11px}.faz .t{font-size:26px}.faz .ic{font-size:26px}.card{padding:12px}}
 </style>
 </head>
 <body>
 <script src="../barra-app.js" data-alvo=".topo-in"></script>
 <header class="topo"><div class="topo-in">
-  <div class="tit"><b>🌦 Tempo</b><span>Chuva, nuvens, vento e umidade das fazendas</span></div>
+  <div class="tit"><b>🌦 Tempo</b><span id="titFaz"></span></div>
   <div class="atual"><span id="quando"></span><button id="btnAtu" onclick="carregar(true)">🔄 Atualizar</button></div>
 </div></header>
 <main class="wrap">
   <div class="fazs" id="fazs"></div>
   <div id="conteudo"><div class="vazio">Carregando a previsão...</div></div>
-  <div class="fonte">Previsão: Open-Meteo (modelos europeu ECMWF, americano GFS e alemão ICON) · Mapa: Windy · Fuso de Mato Grosso do Sul.<br>Previsão é estimativa da região; a chuva de verdade é a do pluviômetro.</div>
+  <div class="fonte">Fonte: Open-Meteo (modelos europeu, americano e alemão) e Windy.</div>
 </main>
 <script>
 const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDomain:'app-nelore-mra.firebaseapp.com',projectId:'app-nelore-mra',storageBucket:'app-nelore-mra.firebasestorage.app',messagingSenderId:'1043343802346',appId:'1:1043343802346:web:219f5d73748271a85dfc93'};
@@ -208,7 +219,7 @@ function desenhar(){
     return `<button class="faz ${f.id===fazAtual?'on':''}" onclick="escolher('${f.id}')"><div class="n">${esc(f.nome)} <i>vendo</i></div>
       <div class="l"><span class="ic">${icone(c.weather_code,c.is_day)}</span><span class="t">${n0(c.temperature_2m)}°</span></div>
       <small>🌧 Hoje: <b>${mmTxt(dl.precipitation_sum[i])}</b> · ${n0(dl.precipitation_probability_max[i])}%<br>💧 Umidade ${n0(c.relative_humidity_2m)}% · 💨 ${n0(c.wind_speed_10m)} km/h ${rumo(c.wind_direction_10m)}</small></button>`}).join('');
-  const f=FAZ.find(x=>x.id===fazAtual),d=dados[fazAtual];
+  const f=FAZ.find(x=>x.id===fazAtual),d=dados[fazAtual];$('#titFaz').textContent=f.nome;
   try{$('#conteudo').innerHTML=tela(f,d);}catch(e){console.error(e);$('#conteudo').innerHTML=`<div class="vazio">Erro ao montar a tela.<br><small>${esc(e.message)}</small></div>`}
   mostrarMapa();
 }
@@ -216,7 +227,6 @@ function idxAgora(p){const h=p.current.time.slice(0,13);let i=p.hourly.time.find
 function tela(f,d){
   const p=d.p,H=p.hourly,D=p.daily,c=p.current,i0=idxAgora(p),hoje=HOJE(),iD=D.time.indexOf(hoje);
   return aviso(H,i0)+`<div class="cols"><div>`
-   +assistente(f,d,i0,iD)
    +agora(c,D,iD)
    +chuva48(H,i0)
    +mapaCard(f)
@@ -226,6 +236,7 @@ function tela(f,d){
    +acumulado(d,iD)
    +pulverizacao(H,i0)
    +modelos(d)
+   +assistente(f,d,i0,iD)
    +`</div></div>`;
 }
 
@@ -279,8 +290,7 @@ function assistente(f,d,i0,iD){
   let cmax=0,rj=0;for(let k=i0;k<Math.min(H.time.length,i0+48);k++){cmax=Math.max(cmax,H.cape?H.cape[k]||0:0);rj=Math.max(rj,H.wind_gusts_10m[k]||0)}
   if(cmax>=2000||rj>=60)it.push({c:'no',e:'⛈',t:'Tempestade',s:`Atmosfera instável${rj>=60?` e rajadas de até ${n0(rj)} km/h`:''} nas próximas 48 h. Risco de raios, vendaval e granizo.`});
   const ord={no:0,at:1,ok:2};it.sort((a,b)=>ord[a.c]-ord[b.c]);
-  return `<div class="card"><h3>🤖 Assistente da lavoura <span class="dir">${esc(f.curto)}</span></h3><div class="ia">${it.map(x=>`<div class="it ${x.c}"><span class="e">${x.e}</span><div><b>${x.t}<span class="selo ${x.c}">${x.c==='ok'?'Bom':x.c==='at'?'Atenção':'Cuidado'}</span></b><span>${x.s}</span></div></div>`).join('')}</div>
-    <div class="nota">Calculado sozinho em cima da previsão (chuva, vento, umidade do ar e do solo, temperatura). É ajuda pra decidir, não substitui o olho no campo.</div></div>`;
+  return `<div class="card"><h3>🤖 Assistente da lavoura <span class="dir">${esc(f.curto)}</span></h3><div class="ia">${it.map(x=>`<div class="it ${x.c}"><span class="e">${x.e}</span><div><b>${x.t}<span class="selo ${x.c}">${x.c==='ok'?'Bom':x.c==='at'?'Atenção':'Cuidado'}</span></b><span>${x.s}</span></div></div>`).join('')}</div></div>`;
 }
 function media(a,i,j){const v=(a||[]).slice(i,j).filter(x=>x!=null);return v.length?v.reduce((s,x)=>s+x,0)/v.length:null}
 
@@ -292,16 +302,20 @@ function agora(c,D,iD){
   <div><span>Visibilidade</span><b>${c.visibility==null?'—':n1(c.visibility/1000)+' km'}</b></div><div><span>🌅 Nascer</span><b>${(D.sunrise[iD]||'').slice(11,16)}</b></div><div><span>🌇 Pôr do sol</span><b>${(D.sunset[iD]||'').slice(11,16)}</b></div><div><span>Chuva hoje</span><b>${mmTxt(D.precipitation_sum[iD])}</b></div></div></div>`;
 }
 
-/* chuva das próximas 48 h: barras pela intensidade + chance */
+/* chuva das próximas 48 h: barra = mm de chuva em cada hora (escala na esquerda), número em cima; chance embaixo */
 function chuva48(H,i0){
   const ks=[];for(let k=i0;k<Math.min(H.time.length,i0+48);k++)ks.push(k);
-  const mx=Math.max(4,...ks.map(k=>H.precipitation[k]||0));
+  const vmax=Math.max(...ks.map(k=>H.precipitation[k]||0)),top=vmax<=2?2:vmax<=5?5:vmax<=10?10:vmax<=20?20:Math.ceil(vmax/10)*10;
   const tot=ks.reduce((s,k)=>s+(H.precipitation[k]||0),0);
-  return `<div class="card"><h3>🌧 Chuva nas próximas 48 horas <span class="dir">total ${mmTxt(tot)}</span></h3><div class="gch">
-   <div class="barras">${ks.map(k=>{const v=H.precipitation[k]||0;return `<div title="${H.time[k].slice(11,16)} · ${mmTxt(v)} · ${n0(H.precipitation_probability[k])}%" style="height:${v/mx*100}%;background:${corChuva(v)}"></div>`}).join('')}</div>
-   <div class="pct">${ks.map((k,j)=>`<div>${j%3===0?n0(H.precipitation_probability[k])+'%':''}</div>`).join('')}</div>
-   <div class="eixo">${ks.map((k,j)=>{const hh=hora(H.time[k]);return `<div>${j===0?'agora':hh===0?'<b>'+diaSem(H.time[k].slice(0,10))+'</b>':j%6===0?hh+'h':''}</div>`}).join('')}</div></div>
-   ${ESCALA}<div class="nota">Barra = quanto chove em cada hora (mm). Número embaixo = chance de chover naquela hora.</div></div>`;
+  const lin=[top,top/2,0];
+  return `<div class="card"><h3>🌧 Chuva nas próximas 48 horas <span class="dir">total ${mmTxt(tot)}</span></h3>
+   <div class="gch2"><div class="yax">${lin.map(v=>`<span>${n1(v)}</span>`).join('')}</div>
+    <div class="area">${lin.map((v,q)=>`<i class="gl" style="top:${q*50}%"></i>`).join('')}
+     <div class="barras">${ks.map(k=>{const v=H.precipitation[k]||0;return `<div title="${H.time[k].slice(11,16)} · ${mmTxt(v)} · chance ${n0(H.precipitation_probability[k])}%" style="height:${Math.min(100,v/top*100)}%;background:${corChuva(v)}">${v>=1&&v===Math.max(...ks.slice(Math.max(0,ks.indexOf(k)-2),ks.indexOf(k)+3).map(x=>H.precipitation[x]||0))?`<b>${n0(v)}</b>`:''}</div>`}).join('')}</div></div></div>
+   <div class="gch2 sub"><div class="yax"></div><div class="eixo">${ks.map((k,j)=>{const hh=hora(H.time[k]);return `<div>${j===0?'agora':j<5?'':hh===0?'<b>'+diaSem(H.time[k].slice(0,10))+'</b>':hh%6===0?hh+'h':''}</div>`}).join('')}</div></div>
+   <div class="gch2 sub"><div class="yax"><span style="position:static">%</span></div><div class="pct">${ks.map((k,j)=>{const hh=hora(H.time[k]);return `<div>${j===0||(j>=5&&hh%6===0)?n0(H.precipitation_probability[k])+'%':''}</div>`}).join('')}</div></div>
+   <div class="leg2"><span>Altura = <b>mm de chuva por hora</b></span><span><b>%</b> = chance de chover</span></div>
+   ${ESCALA}</div>`;
 }
 
 /* mapa: Windy (o mesmo tipo do iPhone: chuva prevista em cores, nuvens, raios, vento e umidade) */
@@ -311,7 +325,6 @@ function mapaCard(f){
    <div class="mapa-bts">${CAMADAS.map(([k,l])=>`<button class="${k===mapaCamada?'on':''}" onclick="trocaCamada('${k}')">${l}</button>`).join('')}</div>
    <div class="mapa" id="mapa"><div class="car">Carregando o mapa...</div></div>
    ${mapaCamada==='rain'?ESCALA:''}
-   <div class="nota">Arraste e dê zoom. Embaixo do mapa tem o ▶ pra ver as próximas horas passando. Cores fortes (roxo e laranja) = nuvem pesada.</div>
    <a class="radar-lk" href="https://www.windy.com/-Weather-radar-radar?radar,${f.lat},${f.lon},8" target="_blank" rel="noopener">📡 Abrir radar de chuva ao vivo (tela cheia) →</a></div>`;
 }
 function trocaCamada(k){mapaCamada=k;document.querySelectorAll('.mapa-bts button').forEach(b=>b.classList.toggle('on',b.getAttribute('onclick').includes(`'${k}'`)));mostrarMapa(true);
@@ -325,14 +338,13 @@ function mostrarMapa(){
 
 /* próximos 16 dias */
 function dias(D,iD){
-  const ks=[];for(let k=iD;k<D.time.length;k++)ks.push(k);
+  const ks=[];for(let k=iD;k<Math.min(D.time.length,iD+10);k++)ks.push(k); // 10 dias (16 é longe demais, pedido do dono)
   const tmin=Math.min(...ks.map(k=>D.temperature_2m_min[k])),tmax=Math.max(...ks.map(k=>D.temperature_2m_max[k])),r=Math.max(1,tmax-tmin);
   return `<div class="card dias"><h3>📅 Próximos ${ks.length} dias</h3>${ks.map(k=>{const t=D.time[k],mm=D.precipitation_sum[k]||0;
     return `<div class="d"><div><b>${k===iD?'Hoje':diaSem(t)}</b><div class="vt">${ddmm(t)}</div></div><span class="ic">${icone(D.weather_code[k])}</span>
-    <div><div class="tt"><span>${n0(D.temperature_2m_min[k])}°</span><span class="vt">💨 ${n0(D.wind_speed_10m_max[k])} km/h · 💧 ${n0(D.relative_humidity_2m_min[k])}–${n0(D.relative_humidity_2m_max[k])}%</span><b>${n0(D.temperature_2m_max[k])}°</b></div>
+    <div><div class="tt"><span>${n0(D.temperature_2m_min[k])}°</span><b>${n0(D.temperature_2m_max[k])}°</b></div>
       <div class="tb"><i style="left:${(D.temperature_2m_min[k]-tmin)/r*100}%;right:${100-(D.temperature_2m_max[k]-tmin)/r*100}%"></i></div></div>
-    <span class="mm" style="${mm<1?'color:var(--muito-suave);font-weight:600':''}">${mm<0.1?'—':mmTxt(mm)}</span><span class="pc">${n0(D.precipitation_probability_max[k])}%</span></div>`}).join('')}
-    <div class="nota">mm = chuva prevista no dia · % = chance de chover · 💧 umidade do ar mínima–máxima.</div></div>`;
+    <span class="mm" style="${mm<1?'color:var(--muito-suave);font-weight:600':''}">${mm<0.1?'—':mmTxt(mm)}</span><span class="pc">${n0(D.precipitation_probability_max[k])}%</span></div>`}).join('')}</div>`;
 }
 
 /* umidade do ar e do solo, evaporação */
@@ -345,11 +357,10 @@ function umidadeSolo(H,D,i0,iD){
   const vpd=H.vapour_pressure_deficit?H.vapour_pressure_deficit[i0]:null;
   return `<div class="card"><h3>💧 Umidade do ar e do solo</h3>
    <svg class="linha-svg" viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none"><line x1="0" x2="${W}" y1="${Hh*.5}" y2="${Hh*.5}" stroke="#e1e7e3" stroke-dasharray="3 3"/><polyline points="${pts}" fill="none" stroke="#2f7fd8" stroke-width="2.2" vector-effect="non-scaling-stroke"/></svg>
-   <div class="leg" style="margin-top:2px"><span>Umidade do ar nas próximas 48 h (linha tracejada = 50%)</span></div>
+   <div class="leg" style="margin-top:2px"><span>Umidade do ar nas próximas 48 h</span></div>
    <div class="solo" style="margin-top:12px"><div style="font-size:12.5px;font-weight:800;margin-bottom:4px">Água no solo (estimativa por camada)</div>
    ${cams.map(([l,k])=>{const v=H[k]?H[k][i0]:null,[s,cor]=st(v);return `<div class="cam"><span>${l}</span><div class="bar"><i style="width:${v==null?0:Math.min(100,v/0.5*100)}%;background:${cor}"></i></div><span class="st" style="color:${cor}">${s} ${v==null?'':n0(v*100)+'%'}</span></div>`}).join('')}</div>
-   <div class="mini"><div><span>Evaporação hoje</span><b>${n1(D.et0_fao_evapotranspiration[iD])} mm</b></div><div><span>Balanço 7 dias</span><b style="color:${bal>=0?'#1d6b3d':'#8e2b20'}">${bal>=0?'+':''}${n0(bal)} mm</b></div><div><span>Secura do ar (VPD)</span><b>${vpd==null?'—':n1(vpd)+' kPa'}</b></div></div>
-   <div class="nota">Balanço = chuva prevista − água que evapora da lavoura (7 dias). Negativo = o solo vai secando. VPD acima de 1,5 kPa = ar seco, planta sofre e o veneno evapora mais.</div></div>`;
+   <div class="mini"><div><span>Evaporação hoje</span><b>${n1(D.et0_fao_evapotranspiration[iD])} mm</b></div><div><span>Balanço 7 dias</span><b style="color:${bal>=0?'#1d6b3d':'#8e2b20'}">${bal>=0?'+':''}${n0(bal)} mm</b></div><div><span>Secura do ar (VPD)</span><b>${vpd==null?'—':n1(vpd)+' kPa'}</b></div></div></div>`;
 }
 
 /* chuva acumulada e média dos últimos 10 anos */
@@ -372,7 +383,7 @@ function acumulado(d,iD){
    <div><span>Últimos 7 dias</span><b>${n0(ult7)} mm</b></div><div><span>Últimos 30 dias</span><b>${n0(ult30)} mm</b></div>
    <div><span>${MES[Number(hoje.slice(5,7))-1][0].toUpperCase()+MES[Number(hoje.slice(5,7))-1].slice(1)} até hoje</span><b>${n0(mes)} mm</b>${medMes!=null?`<small>Média até hoje: ${n0(medMes)} mm · mês inteiro: ${n0(medMesTot)} mm</small>`:''}${cmp(mes,medMes)}</div>
    <div><span>Safra (desde 1º/set)</span><b>${safra==null?'—':n0(safra)+' mm'}</b>${medSafra!=null?`<small>Média até hoje: ${n0(medSafra)} mm</small>`:''}${cmp(safra,medSafra)}</div></div>
-   <div class="nota">Dias seguidos sem chuva: <b>${semChuva}</b>${maior>=1?` · Maior chuva do mês: <b>${n0(maior)} mm</b> (${ddmm(maiorD)})`:''}. Média = últimos 10 anos neste ponto (dados de satélite/reanálise).</div></div>`;
+   <div class="nota">Dias seguidos sem chuva: <b>${semChuva}</b>${maior>=1?` · Maior chuva do mês: <b>${n0(maior)} mm</b> (${ddmm(maiorD)})`:''}.</div></div>`;
 }
 
 /* pulverização hora a hora (3 dias) */
@@ -403,7 +414,7 @@ function pulverizacao(H,i0){
    <div class="hx"><span></span><div><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>23h</span></div></div>
    <div class="leg"><span><i class="ok"></i>Bom</span><span><i class="at"></i>Atenção</span><span><i class="no"></i>Não aplicar</span><span><i class="pas"></i>Já passou</span></div>
    ${j?`<div class="janela">✅ <b>Melhor janela: ${j.txt}</b><br><span style="color:var(--suave);font-size:13px">${det}</span></div>`:`<div class="janela nao">❌ <b>Sem janela boa nos próximos 3 dias</b><br><span style="color:var(--suave);font-size:13px">Vento, calor, ar seco ou chuva atrapalham.</span></div>`}
-   <div class="nota">Bom = vento entre 3 e 10 km/h, rajada abaixo de 20, umidade acima de 55%, até 30°C e sem chuva nas 4 horas seguintes. Vento parado (abaixo de 3) também é ruim: a gota fica no ar e deriva.</div></div>`;
+</div>`;
 }
 
 /* modelos: europeu x americano x alemão */
@@ -416,7 +427,7 @@ function modelos(d){
    ${ks.map(k=>{const vs=MS.map(([id])=>val(id,k)).filter(v=>v!=null),ch=vs.filter(v=>v>=1).length;
      const tag=vs.length<2?'':ch===vs.length?`<span class="conc" style="background:#e8f0ff;color:#173e7a">🌧 chove</span>`:ch===0?`<span class="conc" style="background:#fff6e3;color:#6b4b0d">☀️ seco</span>`:`<span class="conc" style="background:#f1f4f2;color:#5d6a62">dividido</span>`;
      return `<tr><td><b>${k===ks[0]&&D.time[k]===hoje?'Hoje':diaSem(D.time[k])}</b> <span style="color:var(--muito-suave);font-size:11px">${ddmm(D.time[k])}</span></td>${MS.map(([id])=>{const v=val(id,k);return `<td class="mm">${v==null?'—':v<0.1?'<span style="color:var(--muito-suave);font-weight:500">0</span>':n1(v)}</td>`}).join('')}<td>${tag}</td></tr>`}).join('')}
-   </tbody></table><div class="nota">Chuva prevista (mm) por cada modelo. Quando os três concordam, a previsão é mais confiável.</div></div>`;
+   </tbody></table></div>`;
 }
 </script>
 </body>
