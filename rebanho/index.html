@@ -410,6 +410,7 @@ function telaMat(){
 let fichaAba='nat';const fichaFechados=new Set(['pes','tempo']);let tempoTudo=false;
 function abrirFicha(reg){fichaNas=null;fichaReg=reg;tempoTudo=false;fichaAba='nat';desenhar();scrollTo(0,0)}
 function telaFicha(reg){
+  const temFiv=(IX.cobMat[norm(reg)]||[]).some(c=>c.tipo==='FIV')||(IX.nasMae[norm(reg)]||[]).some(ehFIV);if(!temFiv)fichaAba='nat';
   const k=norm(reg),i=indMatriz(reg,fichaAba),m=IX.mat[k]||{reg},rk=ranking().pos[k],prop=(db.cad.proprietarios||[]).find(p=>p.marca===m.marca);
   const idade=m.nasc?meses(m.nasc,HOJE()):null,cat=i.nat.length===0?'Nulípara':i.nat.length===1?'Primípara':'Multípara';
   const tot=i.pr+i.vz+i.ab,arco=(v,c,off)=>{const L=2*Math.PI*52;return `<circle r="52" cx="70" cy="70" fill="none" stroke="${c}" stroke-width="22" stroke-dasharray="${tot?v/tot*L:0} ${L}" stroke-dashoffset="${-off/(tot||1)*L}" transform="rotate(-90 70 70)"/>`};
@@ -431,7 +432,7 @@ function telaFicha(reg){
    +`<div class="card fic-cab"><div class="fc-id"><b>${esc(m.reg)}</b><span>${esc(m.nome||'')} ${tagS(m.sit)}</span></div>
      <div class="fc-n" style="--k:#2f9e5b"><span>Taxa de prenhez</span><b>${i.taxa==null?'—':n1(i.taxa*100)+'%'}</b></div><div class="fc-n" style="--k:#e7b549"><span>Último parto</span><b>${up?fd(up.nasc):'—'}</b></div><div class="fc-n" style="--k:#a0673a"><span>Peso na desmama</span><b>${i.peso?n0(i.peso)+' kg':'—'}</b></div>
      ${f?`<div class="fc-f f-${f.c}"><i class="farol f-${f.c}"></i>${esc(f.t.charAt(0).toUpperCase()+f.t.slice(1))}</div>`:'<div></div>'}</div>`
-   +`<div class="abas"><button class="${fichaAba==='nat'?'on':''}" onclick="fichaAba='nat';desenhar()">Natural / Artificial</button><button class="${fichaAba==='fiv'?'on':''}" onclick="fichaAba='fiv';desenhar()">FIV</button></div>`
+   +`<div class="abas"><button class="${fichaAba==='nat'?'on':''}" onclick="fichaAba='nat';desenhar()">Natural / Artificial</button>${temFiv?`<button class="${fichaAba==='fiv'?'on':''}" onclick="fichaAba='fiv';desenhar()">FIV</button>`:''}</div>`
    +`<div class="cols">`+sec('dados','📋 Dados e genealogia','',`<div class="dados dados2"><div><span>Nascimento</span><b>${fd(m.nasc)||'—'}</b></div><div><span>Idade</span><b>${idade?n1(idade/12)+' anos':'—'}</b></div><div><span>Categoria</span><b>${cat}</b></div><div><span>Origem</span><b>${esc(m.origem||'—')}</b></div>
       <div><span>Pai</span><b>${esc(m.pai||'—')}</b></div><div><span>Registro do pai</span><b>${esc(m.paiReg||'—')}</b></div><div><span>Avô materno</span><b>${esc(m.avo||'—')}</b></div><div><span>Registro da mãe</span><b>${m.maeReg?`<a href="#" onclick="abrirFicha('${esc(m.maeReg)}');return false">${esc(m.maeReg)}</a>`:'—'}</b></div>
       <div><span>Marca</span><b>${esc(m.marca||'—')}</b></div><div><span>Proprietário</span><b>${esc(prop?prop.nome:'—')}</b></div></div>${m.obs?`<div style="margin-top:8px;font-size:14px">📝 ${esc(m.obs)}</div>`:''}`)
