@@ -344,7 +344,7 @@ function telaDash(){
 /* ---------- MATRIZES ---------- */
 function telaMat(){
   const q=norm(fv('q')),s=fv('sit','ATIVA');
-  let ms=db.mat.filter(m=>!m.x&&(!s||m.sit===s)&&(!q||norm([m.reg,m.nome,m.pai,m.avo,m.marca].join(' ')).includes(q)));
+  let ms=db.mat.filter(m=>!m.x&&(q||!s||m.sit===s)&&(!q||norm([m.reg,m.nome,m.pai,m.avo,m.marca].join(' ')).includes(q)));
   ms.sort((a,b)=>String(a.reg).localeCompare(String(b.reg),'pt-BR',{numeric:true}));
   const sits=[...new Set(db.mat.map(m=>m.sit).filter(Boolean))].sort();
   const rows=ms.slice(0,lim).map(m=>{const i=indMatriz(m.reg),u=i.cs[i.cs.length-1];
@@ -431,13 +431,13 @@ function estDoNasc(n){const cs=(IX.cobMat[norm(n.mae)]||[]).filter(c=>c.ins&&c.i
 /* ---------- COBERTURAS ---------- */
 function telaCob(){
   const q=norm(fv('q')),t=fv('tipo'),r=fv('res','*');
-  let cs=db.cob.filter(c=>!c.x&&(!est||c.est===est)&&(!t||c.tipo===t)&&(r==='*'||(r===''?!c.res:c.res===r))&&(!q||norm([c.mat,c.rep,c.cls,c.rec].join(' ')).includes(q)));
+  let cs=db.cob.filter(c=>!c.x&&(q||((!est||c.est===est)&&(!t||c.tipo===t)&&(r==='*'||(r===''?!c.res:c.res===r))))&&(!q||norm([c.mat,c.rep,c.cls,c.rec].join(' ')).includes(q)));
   cs.sort((a,b)=>String(b.ins).localeCompare(String(a.ins))||String(a.mat).localeCompare(String(b.mat)));
   const rows=cs.slice(0,lim).map(c=>`<tr><td onclick="abrirFicha('${esc(c.mat)}')"><b>${esc(c.mat)}</b></td><td>${esc(c.est)}</td><td>${esc(c.cls||'')}</td><td>${esc(c.rep||'')}</td><td>${fd(c.cio)}</td><td>${fd(c.ins)}</td><td>${esc(c.tipo||'')}</td>
     <td><input type="date" value="${esc(c.toque||'')}" onchange="setCob('${c.id}','toque',this.value)"></td>
     <td><select onchange="setCob('${c.id}','res',this.value)" class="tag r-${esc(c.res||'')}">${['','PRENHE','VAZIA','ABORTO','PRT'].map(o=>`<option value="${o}" ${o===(c.res||'')?'selected':''}>${o||'—'}</option>`).join('')}</select></td>
     <td>${fd(c.ppi)}</td><td>${fd(c.ppf)}</td><td>${fd(c.parto)}</td><td>${esc(c.rec||'')}</td><td class="c"><button class="btn pq" onclick="formCob('${c.id}')">✏️</button></td></tr>`).join('');
-  return cab('Coberturas e toques',`${est?'Estação '+esc(est)+' · ':''}${cs.length} cobertura(s)`,`<button class="btn" onclick="exportar('cob')">⬇ Excel</button><button class="btn" onclick="toqueLote()">🩺 Toque em lote</button><button class="btn pri" onclick="formCob()">+ Cobertura</button>`)
+  return cab('Coberturas e toques',`${q?'Todas as estações · ':est?'Estação '+esc(est)+' · ':''}${cs.length} cobertura(s)`,`<button class="btn" onclick="exportar('cob')">⬇ Excel</button><button class="btn" onclick="toqueLote()">🩺 Toque em lote</button><button class="btn pri" onclick="formCob()">+ Cobertura</button>`)
    +`<div class="filtros"><input type="search" id="f_q" placeholder="Buscar matriz, reprodutor..." value="${esc(fv('q'))}" oninput="setF('q',this.value)">
      <select onchange="setF('tipo',this.value)"><option value="">Todos os métodos</option>${['ARTIFICIAL','FIV','NATURAL'].map(x=>`<option ${x===t?'selected':''}>${x}</option>`).join('')}</select>
      <select onchange="setF('res',this.value)">${[['*','Todos os resultados'],['','Sem toque'],['PRENHE','Prenhe'],['VAZIA','Vazia'],['ABORTO','Aborto'],['PRT','PRT']].map(([v,l])=>`<option value="${v}" ${v===r?'selected':''}>${l}</option>`).join('')}</select></div>`
@@ -461,7 +461,7 @@ function tlSalvar(){const dt=$('#tlData').value;let n=0;$$('.tl-res').forEach(s=
 function telaNas(){
   const q=norm(fv('q')),ano=fv('ano',String(new Date().getFullYear())),sx=fv('sx'),dm=fv('dm');
   const anos=[...new Set(db.nas.filter(n=>!n.x).map(n=>String(n.nasc||'').slice(0,4)).filter(Boolean))].sort().reverse();
-  let ns=db.nas.filter(n=>!n.x&&(!ano||String(n.nasc).startsWith(ano))&&(!sx||n.sexo===sx)&&(!dm||(dm==='s'?n.desm:!n.desm))&&(!q||norm([n.mae,n.prod,n.rgn,n.pai,n.rec].join(' ')).includes(q)));
+  let ns=db.nas.filter(n=>!n.x&&(q||((!ano||String(n.nasc).startsWith(ano))&&(!sx||n.sexo===sx)&&(!dm||(dm==='s'?n.desm:!n.desm))))&&(!q||norm([n.mae,n.prod,n.rgn,n.pai,n.rec].join(' ')).includes(q)));
   ns.sort((a,b)=>String(b.nasc).localeCompare(String(a.nasc)));
   const rows=ns.slice(0,lim).map(n=>`<tr><td onclick="abrirFicha('${esc(n.mae)}')"><b>${esc(n.mae)}</b></td><td onclick="abrirBezerro('${n.id}')" style="color:var(--verde2);font-weight:700">${esc(n.prod||'')}</td><td>${esc(n.rgn||'')}</td><td class="c"><span class="sx-${esc(n.sexo)}">${esc(n.sexo||'')}</span></td><td>${fd(n.nasc)}</td><td class="num">${n.pesoN?n1(n.pesoN):''}</td><td>${esc(n.cor||'')}</td><td>${esc(n.pai||'')}</td><td>${esc(n.sit||'')}</td><td>${esc(n.rec||'')}</td>
     <td><input type="date" value="${esc(n.desm||'')}" onchange="setNas('${n.id}','desm',this.value)"></td><td><input inputmode="decimal" style="width:64px;text-align:right" value="${n.pesoD??''}" onchange="setNas('${n.id}','pesoD',this.value)"></td><td><input inputmode="decimal" style="width:48px;text-align:right" value="${n.notaD??''}" onchange="setNas('${n.id}','notaD',this.value)"></td><td class="c"><button class="btn pq" onclick="formNas('${n.id}')">✏️</button></td></tr>`).join('');
@@ -499,7 +499,7 @@ function telaPes(){
 }
 function telaPesDet(id){
   const e=IX.pep[id],q=norm(fv('pq')),sx=fv('psx'),fl=fv('pfl');
-  let it=itensPes(id).map(r=>({r,n:IX.nas[r.nas]})).filter(({r,n})=>(!sx||n.sexo===sx)&&(!fl||(fl==='s'?r.peso==null:r.peso!=null))&&(!q||norm([n.prod,n.rgn,n.mae,n.pai].join(' ')).includes(q)));
+  let it=itensPes(id).map(r=>({r,n:IX.nas[r.nas]})).filter(({r,n})=>(q||((!sx||n.sexo===sx)&&(!fl||(fl==='s'?r.peso==null:r.peso!=null))))&&(!q||norm([n.prod,n.rgn,n.mae,n.pai].join(' ')).includes(q)));
   it.sort((a,b)=>String(a.n.nasc).localeCompare(String(b.n.nasc))||String(a.n.rgn).localeCompare(String(b.n.rgn),'pt-BR',{numeric:true}));
   const tot=itensPes(id),falta=tot.filter(r=>r.peso==null).length,pesos=tot.map(r=>r.peso).filter(v=>v!=null);
   const inp=(r,k,w)=>`<input inputmode="decimal" style="width:${w}px;text-align:right" value="${r[k]!=null?String(r[k]).replace('.',','):''}" onchange="setPes('${r.id}','${k}',this.value)">`;
