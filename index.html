@@ -123,6 +123,7 @@ const APPS=[
   {id:'contabil',nome:'Contábil MRA',desc:'Balancete e contas da fazenda.',ico:'📊',cor:'#2a78d6',fundo:'#e7f0ff',interno:'contabil/index.html',manut:true,
    telas:[['upload','Upload de arquivo'],['cadastro','Cadastro de grupos'],['dre','Movimentações (DRE)'],['busca','Busca'],['sem-centro','Sem centro']]},
   {id:'tempo',nome:'Tempo',desc:'Chuva, nuvens, vento e umidade das fazendas.',ico:'🌦',cor:'#f2d46b',fundo:'#fff7d9',interno:'tempo/index.html',manut:true},
+  {id:'rebanho',nome:'Rebanho',desc:'Matrizes, coberturas, nascimentos e desmama.',ico:'🐮',cor:'#a0673a',fundo:'#f6ece3',interno:'rebanho/index.html',manut:true},
 ];
 
 firebase.initializeApp(FIREBASE_CONFIG);
@@ -300,7 +301,7 @@ async function salvarTelas(uid){
 // (Os dados não são apagados: eles ficam no Firebase.)
 // No iPhone (app na tela inicial) o aparelho também guarda os arquivos por até 10 min: por isso
 // aqui baixa de novo cada tela direto do servidor (cache:'reload') antes de recarregar.
-const ARQUIVOS_APP=['./','index.html','sw.js','barra-app.js','teclado.js','iatf/index.html','caderneta/index.html','estoque/index.html','custos/index.html','contabil/index.html','tempo/index.html'];
+const ARQUIVOS_APP=['./','index.html','sw.js','barra-app.js','teclado.js','iatf/index.html','caderneta/index.html','estoque/index.html','custos/index.html','contabil/index.html','tempo/index.html','rebanho/index.html'];
 async function atualizarApp(b){
   if(b){b.disabled=true;b.textContent='Atualizando...'}
   try{

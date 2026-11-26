@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#153e2c">
+<title>Rebanho · App Nelore MRA</title>
+<link rel="icon" href="../logo.webp">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="apple-touch-icon" href="../icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<style>
+/* Rebanho: app NOVO que vai substituir o S-Gado (gestão reprodutiva das matrizes).
+   Fase de testes: separado de tudo, dados próprios (coleções rebanho_*), não mexe em nada dos outros apps. */
+:root{--verde:#153e2c;--fundo:#f3f5f3;--borda:#e1e7e3;--texto:#17211c;--suave:#5d6a62}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--fundo);color:var(--texto)}
+.topo{background:var(--verde);color:#fff;padding-top:env(safe-area-inset-top)}
+.topo-in{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.topo-in .voltar-app{margin:0!important}.tit b{display:block;font-size:16.5px}.tit span{display:block;font-size:13px;opacity:.85}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 16px 40px}
+.card{background:#fff;border:1px solid var(--borda);border-radius:16px;padding:22px;text-align:center}
+.card h2{margin:6px 0 6px;font-size:20px}.card p{color:var(--suave);margin:0}
+</style>
+</head>
+<body>
+<script src="../barra-app.js" data-alvo=".topo-in"></script>
+<header class="topo"><div class="topo-in"><div class="tit"><b>🐮 Rebanho</b><span>Matrizes, coberturas, nascimentos e desmama</span></div></div></header>
+<main class="wrap"><div class="card"><div style="font-size:40px">🔧</div><h2>Em construção</h2><p>Aqui vai ficar tudo o que hoje está no S-Gado.</p></div></main>
+<script>
+const FIREBASE_CONFIG={apiKey:'AIzaSyD9yib_iQYHcOG2B2C70cWXJ9SkTiIDt94',authDomain:'app-nelore-mra.firebaseapp.com',projectId:'app-nelore-mra',storageBucket:'app-nelore-mra.firebasestorage.app',messagingSenderId:'1043343802346',appId:'1:1043343802346:web:219f5d73748271a85dfc93'};
+const ADMIN_EMAIL='mandrade.gado@terra.com.br';
+firebase.initializeApp(FIREBASE_CONFIG);
+// em manutenção: só o administrador entra
+firebase.auth().onAuthStateChanged(u=>{
+  if(!u){location.href='../index.html';return}
+  if(String(u.email||'').toLowerCase()!==ADMIN_EMAIL){alert('O Rebanho está em manutenção. Logo fica pronto.');location.href='../index.html'}
+});
+</script>
+</body>
+</html>
