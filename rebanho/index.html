@@ -31,6 +31,15 @@ button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit
 .side-est select,.top-est{width:100%;background:#24583f;color:#fff;border:1px solid #ffffff2a;border-radius:9px;padding:8px}
 .side-foot{margin-top:auto;font-size:11.5px;opacity:.8;padding:10px 4px 0;display:flex;align-items:center;gap:6px}.dot{width:8px;height:8px;border-radius:50%;background:#7bd39e;display:inline-block}
 .topo-cel{display:none}
+.busca-btn{border:0;background:#ffffff1a;color:#fff;border-radius:10px;padding:10px 12px;text-align:left;font-weight:700;cursor:pointer;margin-bottom:10px;font-size:14px}.busca-btn:hover{background:#ffffff2a}
+.bq{width:100%;border:2px solid var(--verde2);border-radius:12px;padding:12px 14px;font-size:17px;outline:none}
+.bres{margin-top:10px;display:flex;flex-direction:column;gap:6px}.bres button{display:flex;gap:10px;align-items:center;text-align:left;border:1px solid var(--borda);background:#fff;border-radius:12px;padding:11px 12px;cursor:pointer;font-size:15px}.bres button:hover{background:#f3f8f5}.bres small{margin-left:auto;color:var(--suave);font-size:12.5px}
+.farol{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:0}.f-verde{background:#2f9e5b}.f-amarelo{background:#e2b23a}.f-vermelho{background:#d4483b}
+.afazer{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}.afazer button{background:#fff;border:1px solid var(--borda);border-left:5px solid var(--k);border-radius:14px;padding:14px 16px;text-align:left;cursor:pointer}.afazer button:hover{background:#f7faf8}
+.afazer .v{font-size:30px;font-weight:800;line-height:1.1}.afazer .l{font-size:14px;font-weight:700;color:var(--suave);margin-top:2px}
+.top4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}.top4 div{background:#f6f8f6;border-radius:12px;padding:10px 12px}.top4 span{display:block;font-size:12.5px;color:var(--suave);font-weight:600}.top4 b{font-size:20px}
+details.sec{background:#fff;border:1px solid var(--borda);border-radius:14px;margin-bottom:10px}details.sec>summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:800;font-size:15px;display:flex;gap:8px;align-items:center}details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary:after{content:"▾";margin-left:auto;color:var(--muito);transition:transform .15s}details.sec[open]>summary:after{transform:rotate(180deg)}details.sec>summary .q{color:var(--muito);font-weight:700}details.sec>.in{padding:0 14px 14px}
 main{padding:18px 22px 40px;min-width:0}
 header.pg{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 header.pg h1{margin:0;font-size:22px}header.pg p{margin:2px 0 0;color:var(--suave);font-size:12.5px}
@@ -91,16 +100,16 @@ td input:hover,td select:hover{border-color:var(--borda)}td input:focus,td selec
 .rfs{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}.rf span{display:block;font-size:11px;color:var(--suave);font-weight:600;margin-bottom:3px}.rf select,.rf input{width:100%;border:1px solid var(--borda);border-radius:9px;padding:7px 8px;background:#fff}
 .est-box{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.est-box table{flex:1;min-width:200px}.qd{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .imp{max-width:560px;margin:40px auto;text-align:center}.imp .card{padding:24px}
-@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.cols,.fic-top{grid-template-columns:minmax(0,1fr)}.dados,.ind{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1100px){.afazer,.top4{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.cols,.fic-top{grid-template-columns:minmax(0,1fr)}.dados,.ind{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){
   .app{display:block}.side{display:none}
   .topo-cel{display:flex;position:sticky;top:0;z-index:30;align-items:center;gap:10px;background:var(--verde);color:#fff;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
   .topo-cel .mn{border:0;border-radius:11px;background:#ffffff1c;color:#fff;width:42px;height:42px;font-size:20px;flex:none}
-  .topo-cel b{font-size:15.5px;flex:1}.topo-cel .top-est{width:auto;max-width:130px;background:var(--ouro);color:var(--verde);font-weight:800;border:0;border-radius:20px}
+  .topo-cel b{font-size:15.5px;flex:1}.afazer .v{font-size:26px}.topo-cel .top-est{width:auto;max-width:130px;background:var(--ouro);color:var(--verde);font-weight:800;border:0;border-radius:20px}
   .menu-cel{position:fixed;left:0;right:0;top:58px;bottom:0;z-index:29;background:#f5f7f5;overflow:auto;padding:14px 12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start}
   .menu-cel button{background:#fff;border:1px solid #e3e8e4;border-top:3px solid var(--verde2);border-radius:14px;padding:16px 14px;text-align:left;font-weight:700;font-size:15px}
   .menu-cel button.on{background:#eaf3ee}.menu-cel a{grid-column:1/-1;background:#fff;border:1px solid #e3e8e4;border-radius:14px;padding:14px;font-weight:700;color:var(--texto);text-decoration:none}
-  main{padding:12px 10px 40px}.filtros input[type=search]{min-width:0;max-width:none;width:100%}
+  main{padding:12px 10px 40px}.filtros input[type=search]{min-width:0;max-width:none;width:100%}.filtros>*{flex:1 1 100%}
   .hero{flex-wrap:wrap;padding:14px}.hero .n{margin-left:0;text-align:left}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .form{grid-template-columns:1fr}.modal{align-items:flex-end;padding:0}.folha{border-radius:16px 16px 0 0;max-height:96vh}
   header.pg .acoes{margin-left:0}
@@ -110,11 +119,12 @@ td input:hover,td select:hover{border-color:var(--borda)}td input:focus,td selec
 </head>
 <body>
 <script src="../barra-app.js" data-alvo=".side"></script>
-<div class="topo-cel"><button class="mn" onclick="menuCel()" aria-label="Menu">☰</button><b>🐮 Rebanho</b><select class="top-est" id="estCel" onchange="trocaEst(this.value)"></select></div>
+<div class="topo-cel"><button class="mn" onclick="menuCel()" aria-label="Menu">☰</button><b>🐮 Rebanho</b><button class="mn" onclick="abrirBusca()" aria-label="Buscar">🔎</button><select class="top-est" id="estCel" onchange="trocaEst(this.value)"></select></div>
 <div class="menu-cel hidden" id="menuCel"></div>
 <div class="app">
   <aside class="side">
-    <div class="brand"><div class="lg">🐮</div><div><b>Rebanho</b><span>Gestão reprodutiva</span></div></div>
+    <div class="brand"><div class="lg">🐮</div><div><b>Rebanho</b></div></div>
+    <button class="busca-btn" onclick="abrirBusca()">🔎 Buscar animal</button>
     <nav id="nav"></nav>
     <div class="side-est"><label>Estação</label><select id="estSel" onchange="trocaEst(this.value)"></select></div>
     <div class="side-foot"><span class="dot" id="dot"></span><span id="status">Conectando...</span></div>
@@ -318,27 +328,62 @@ const filtro={};
 const fv=(k,d='')=>filtro[pag+'.'+k]??d;
 function setF(k,v){filtro[pag+'.'+k]=v;lim=200;desenhar();const el=document.getElementById('f_'+k);if(el&&el.type==='search'){el.focus();el.setSelectionRange(el.value.length,el.value.length)}}
 
+/* ---------- BUSCA ÚNICA (qualquer animal, de qualquer tela) ---------- */
+function abrirBusca(){$('#menuCel').classList.add('hidden');abrirModal('🔎 Buscar animal',`<input class="bq" id="bq" placeholder="Número, nome ou RGN..." autocomplete="off" oninput="buscaRes()" onkeydown="if(event.key==='Enter'){const b=document.querySelector('.bres button');if(b)b.click()}"><div class="bres" id="bres"></div>`,'');$('.folha-pe').remove();setTimeout(()=>$('#bq').focus(),50)}
+function buscaRes(){
+  const q=norm($('#bq').value);if(q.length<2){$('#bres').innerHTML='';return}
+  const ms=Object.values(IX.mat).filter(m=>norm(m.reg+' '+(m.nome||'')).includes(q)).slice(0,8),ns=Object.values(IX.nas).filter(n=>norm((n.prod||'')+' '+(n.rgn||'')).includes(q)).slice(0,8);
+  $('#bres').innerHTML=ms.map(m=>`<button onclick="fecharModal();abrirFicha('${esc(m.reg)}')">🐄 <b>${esc(m.reg)}</b> ${esc(m.nome||'')}<small>Matriz · ${esc(m.sit||'')}</small></button>`).join('')
+    +ns.map(n=>`<button onclick="fecharModal();abrirBezerro('${n.id}')">🐂 <b>${esc(n.prod||n.rgn)}</b><small>${n.sexo==='F'?'Fêmea':'Macho'} · ${fd(n.nasc)} · mãe ${esc(n.mae)}</small></button>`).join('')||'<div class="vazio" style="padding:14px">Nada encontrado.</div>';
+}
+
+/* ---------- FAROL da matriz (só matriz ATIVA): verde boa, amarelo atenção, vermelho ruim — com o motivo ---------- */
+function farol(reg){
+  const m=IX.mat[norm(reg)];if(!m||m.sit!=='ATIVA')return null;
+  const i=indMatriz(reg),res=i.ca.filter(c=>['PRENHE','VAZIA','ABORTO'].includes(c.res));if(!res.length)return null;
+  const ult=res.slice(-2),ver=[],ama=[];
+  if(ult.length===2&&ult.every(c=>c.res!=='PRENHE'))ver.push('2 vazias seguidas');
+  else if(ult[ult.length-1].res!=='PRENHE')ama.push('última cobertura vazia');
+  const tx=IX.taxa||0.4;if(i.tent>=4&&i.taxa<tx*0.55)ver.push('prenhez baixa ('+Math.round(i.taxa*100)+'%)');else if(i.tent>=3&&i.taxa<tx*0.8)ama.push('prenhez abaixo da média ('+Math.round(i.taxa*100)+'%)');
+  if(i.peso&&IX.medPeso&&i.vinc.filter(n=>n.pesoD).length>=2){if(i.peso<IX.medPeso*0.88)ver.push('bezerros leves na desmama ('+n0(i.peso)+' kg)');else if(i.peso<IX.medPeso*0.95)ama.push('bezerros abaixo da média ('+n0(i.peso)+' kg)')}
+  if(i.iep&&i.iep>16)ama.push('intervalo entre partos de '+n1(i.iep)+' meses');
+  return ver.length?{c:'vermelho',t:ver.join(' · ')}:ama.length?{c:'amarelo',t:ama.join(' · ')}:{c:'verde',t:'boa: emprenha e desmama bem'};
+}
+const bolinha=reg=>{const f=farol(reg);return f?`<i class="farol f-${f.c}" title="${esc(f.t)}"></i>`:''};
+
 /* ---------- DASHBOARD ---------- */
+// cartões "o que fazer agora": tocou, abre a lista
+const paraDesmamar=n=>!n.x&&n.sit==='ATIVO'&&!n.desm&&n.nasc&&n.nasc<=addD(HOJE(),-213);
+function afazer(){
+  const h=HOJE(),toq=db.cob.filter(c=>!c.x&&(!c.res||c.res==='PRT')&&(!est||c.est===est)).length;
+  const par=db.cob.filter(c=>!c.x&&c.res==='PRENHE'&&!c.parto&&c.ins&&(c.ppf||prevFim(c))>=h&&(c.ppi||addD(c.ins,275))<=addD(h,30)).length;
+  const des=db.nas.filter(paraDesmamar).length;
+  const pe=Object.values(IX.pep).sort((a,b)=>String(b.data).localeCompare(String(a.data)))[0],fp=pe?itensPes(pe.id).filter(r=>r.peso==null).length:0;
+  const c=(v,l,k,fn)=>`<button style="--k:${k}" onclick="${fn}"><div class="v">${v}</div><div class="l">${l}</div></button>`;
+  return `<div class="afazer">${c(toq,'vacas para tocar','#2f7fd8',"irRel('toque')")}${c(par,'partos em 30 dias','#e7b549',"irRel('prev')")}${c(des,'bezerros para desmamar','#a0673a',"irDesmamar()")}${pe?c(fp,'sem peso na pesagem '+esc(pe.epoca||''),'#5b8c6e',`abrirPesagem('${pe.id}')`):''}</div>`;
+}
+function irRel(id){relId=id;LS('rel',id);if(id==='prev')filtro['rel.prev.est']='';ir('rel')}
+function irDesmamar(){filtro['nas.dm']='p';filtro['nas.ano']='';filtro['nas.q']='';filtro['nas.sx']='';ir('nas')}
 function telaDash(){
   const cs=db.cob.filter(c=>!c.x&&(!est||c.est===est)),r=k=>cs.filter(c=>c.res===k).length;
   const P=r('PRENHE'),V=r('VAZIA'),A=r('ABORTO'),T=r('PRT'),sem=cs.filter(c=>!c.res).length,dg=P+V+A;
   const mats=new Set(cs.map(c=>norm(c.mat)));
   const EM=estatMetodos(cs),fP=Object.values(EM).reduce((s,x)=>s+x.fim.P,0),fT=Object.values(EM).reduce((s,x)=>s+x.animais,0);
-  const lnM=(t,x)=>`<tr><td><b>${t==='ARTIFICIAL'?'Artificial / IATF':t==='NATURAL'?'Natural':'FIV'}</b></td><td class="num">${x.proc}</td><td class="num">${x.animais}${t==='FIV'?' <small>receptoras</small>':''}</td><td class="num">${t==='FIV'?'—':x.ordem.join(' / ')}</td><td class="num">${x.porProc.P} / ${x.porProc.V} / ${x.porProc.A}</td><td class="num"><b>${x.fim.P}</b> / ${x.fim.V} / ${x.fim.A}</td><td class="num"><b>${pct(x.fim.P,x.animais)}</b></td></tr>`;
-  const quadroM=`<div class="card"><h3>Resultado por método <span class="dir">o final conta cada animal uma vez, na última inseminação</span></h3><div class="tw" style="max-height:none"><table><thead><tr><th>Método</th><th class="num">Procedimentos</th><th class="num">Animais</th><th class="num">Ordem 1ª / 2ª / 3ª+</th><th class="num">Por procedimento P / V / A</th><th class="num">Final P / V / A</th><th class="num">% final</th></tr></thead><tbody>${Object.entries(EM).filter(([,x])=>x.proc).map(([t,x])=>lnM(t,x)).join('')||'<tr><td colspan="7" class="vazio" style="padding:14px">Sem coberturas.</td></tr>'}</tbody></table></div></div>`;
+  const lnM=(t,x)=>`<tr><td><b>${t==='ARTIFICIAL'?'Artificial / IATF':t==='NATURAL'?'Natural':'FIV'}</b></td><td class="num">${x.proc}</td><td class="num">${x.animais}</td><td class="num">${t==='FIV'?'—':x.ordem.join(' / ')}</td><td class="num">${x.porProc.P} / ${x.porProc.V} / ${x.porProc.A}</td><td class="num"><b>${x.fim.P}</b> / ${x.fim.V} / ${x.fim.A}</td><td class="num"><b>${pct(x.fim.P,x.animais)}</b></td></tr>`;
+  const quadroM=`<div class="card"><h3>Resultado por método</h3><div class="tw" style="max-height:none"><table><thead><tr><th>Método</th><th class="num">Procedimentos</th><th class="num">Animais</th><th class="num">Ordem 1ª / 2ª / 3ª+</th><th class="num">Por procedimento P / V / A</th><th class="num">Final P / V / A</th><th class="num">% final</th></tr></thead><tbody>${Object.entries(EM).filter(([,x])=>x.proc).map(([t,x])=>lnM(t,x)).join('')||'<tr><td colspan="7" class="vazio" style="padding:14px">Sem coberturas.</td></tr>'}</tbody></table></div></div>`;
   const grupo=(fn)=>{const g={};cs.forEach(c=>{const k=fn(c)||'—';g[k]=g[k]||{n:0,p:0,d:0};g[k].n++;if(['PRENHE','VAZIA','ABORTO'].includes(c.res)){g[k].d++;if(c.res==='PRENHE')g[k].p++}});return g};
   const ord={};cs.slice().sort((a,b)=>String(a.ins).localeCompare(String(b.ins))).forEach(c=>{const k=norm(c.mat)+'|'+c.est;ord[k]=(ord[k]||0)+1;c._o=ord[k]});
   const barras=(g,limite=99)=>Object.entries(g).sort((a,b)=>b[1].n-a[1].n).slice(0,limite).map(([k,x])=>`<div class="barra"><span title="${esc(k)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</span><div class="tr"><i style="width:${x.d?x.p/x.d*100:0}%"></i></div><span class="vl">${pct(x.p,x.d)} <small>${x.p}/${x.d}</small></span></div>`).join('')||'<div class="vazio" style="padding:14px">Sem dados</div>';
   const hoje=HOJE(),ate=addD(hoje,90);
   const partos=db.cob.filter(c=>!c.x&&c.res==='PRENHE'&&!c.parto&&(c.ppi||c.ins)).map(c=>({c,pi:c.ppi||addD(c.ins,275),pf:c.ppf||prevFim(c)})).filter(x=>x.pf>=hoje&&x.pi<=ate).sort((a,b)=>a.pi.localeCompare(b.pi));
   return cab('Dashboard',est?'Estação '+esc(est):'Todas as estações')
-   +`<div class="hero"><div style="font-size:40px">🐮</div><div class="t"><b>Nelore MRA</b><span>Fazenda Paraíso · ${esc(est||'todas as estações')}</span></div><div class="n"><small>${P} prenhes de ${dg} toques</small><div class="v">${pct(P,dg)}</div><small>Resultado final por animal: ${pct(fP,fT)} (${fP} de ${fT})</small></div></div>`
-   +`<div class="kpis"><div class="kpi" style="--k:#5d6a62"><div class="l">Matrizes cobertas</div><div class="v">${mats.size}</div></div><div class="kpi" style="--k:#1f6a49"><div class="l">Coberturas</div><div class="v">${cs.length}</div></div><div class="kpi" style="--k:#216440"><div class="l">Prenhes</div><div class="v">${P}</div></div><div class="kpi" style="--k:#b8483a"><div class="l">Vazias</div><div class="v">${V}</div></div><div class="kpi" style="--k:#7a3fb0"><div class="l">Aborto · PRT</div><div class="v">${A} · ${T}</div></div><div class="kpi" style="--k:#9aa49d"><div class="l">Sem toque</div><div class="v">${sem}</div></div></div>`
+   +`<div class="hero"><div style="font-size:40px">🐮</div><div class="t"><b>Nelore MRA</b><span>${esc(est||'todas as estações')}</span></div><div class="n"><div class="v">${pct(P,dg)}</div><small>${P} prenhes de ${dg} toques</small></div></div>`
+   +afazer()
    +quadroM+`<div class="cols"><div><div class="card"><h3>% de prenhez por método</h3>${barras(grupo(c=>c.tipo))}</div>
       <div class="card"><h3>% de prenhez pela ordem da inseminação</h3>${barras(grupo(c=>c._o===1?'1ª':c._o===2?'2ª':'3ª ou mais'))}</div>
       <div class="card"><h3>% de prenhez por classificação</h3>${barras(grupo(c=>c.cls))}</div></div>
-     <div><div class="card"><h3>% de prenhez por reprodutor <span class="dir">mais usados</span></h3>${barras(grupo(c=>c.rep),15)}</div>
-      <div class="card"><h3>Partos previstos <span class="dir">próximos 90 dias · ${partos.length}</span></h3>${partos.length?`<div class="tw" style="max-height:340px"><table><thead><tr><th>Matriz</th><th>Reprodutor</th><th>Inseminação</th><th>Previsão</th></tr></thead><tbody>${partos.slice(0,200).map(x=>`<tr onclick="abrirFicha('${esc(x.c.mat)}')"><td><b>${esc(x.c.mat)}</b></td><td>${esc(x.c.rep||'')}</td><td>${fd(x.c.ins)}</td><td>${fd(x.pi)} a ${fd(x.pf)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="vazio" style="padding:14px">Nenhum parto previsto.</div>'}</div></div></div>`;
+     <div><div class="card"><h3>% de prenhez por reprodutor</h3>${barras(grupo(c=>c.rep),15)}</div>
+      <div class="card"><h3>Partos nos próximos 90 dias <span class="dir">${partos.length}</span></h3>${partos.length?`<div class="tw" style="max-height:340px"><table><thead><tr><th>Matriz</th><th>Reprodutor</th><th>Inseminação</th><th>Previsão</th></tr></thead><tbody>${partos.slice(0,200).map(x=>`<tr onclick="abrirFicha('${esc(x.c.mat)}')"><td><b>${esc(x.c.mat)}</b></td><td>${esc(x.c.rep||'')}</td><td>${fd(x.c.ins)}</td><td>${fd(x.pi)} a ${fd(x.pf)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="vazio" style="padding:14px">Nenhum parto previsto.</div>'}</div></div></div>`;
 }
 
 /* ---------- MATRIZES ---------- */
@@ -348,14 +393,14 @@ function telaMat(){
   ms.sort((a,b)=>String(a.reg).localeCompare(String(b.reg),'pt-BR',{numeric:true}));
   const sits=[...new Set(db.mat.map(m=>m.sit).filter(Boolean))].sort();
   const rows=ms.slice(0,lim).map(m=>{const i=indMatriz(m.reg),u=i.cs[i.cs.length-1];
-    return `<tr onclick="abrirFicha('${esc(m.reg)}')"><td><b>${esc(m.reg)}</b></td><td>${esc(m.nome||'')}</td><td>${fd(m.nasc)}</td><td class="num">${m.nasc?n1(meses(m.nasc,HOJE())/12)+' a':''}</td><td>${esc(m.marca||'')}</td><td>${tagS(m.sit)}</td><td>${esc(m.pai||'')}</td><td>${esc(m.avo||'')}</td><td class="num">${i.nat.length}</td><td class="num">${i.iep?n1(i.iep):'—'}</td><td>${u?esc(u.est)+' '+tagR(u.res):''}</td></tr>`}).join('');
+    return `<tr onclick="abrirFicha('${esc(m.reg)}')"><td>${bolinha(m.reg)}<b>${esc(m.reg)}</b></td><td>${esc(m.nome||'')}</td><td>${fd(m.nasc)}</td><td class="num">${m.nasc?n1(meses(m.nasc,HOJE())/12)+' a':''}</td><td>${esc(m.marca||'')}</td><td>${tagS(m.sit)}</td><td>${esc(m.pai||'')}</td><td>${esc(m.avo||'')}</td><td class="num">${i.nat.length}</td><td class="num">${i.iep?n1(i.iep):'—'}</td><td>${u?esc(u.est)+' '+tagR(u.res):''}</td></tr>`}).join('');
   return cab('Matrizes',`${ms.length} matriz(es)`,`<button class="btn" onclick="exportar('mat')">⬇ Excel</button><button class="btn pri" onclick="formMat()">+ Matriz</button>`)
    +`<div class="filtros"><input type="search" id="f_q" placeholder="Buscar registro, nome, pai, avô..." value="${esc(fv('q'))}" oninput="setF('q',this.value)"><select onchange="setF('sit',this.value)"><option value="">Todas as situações</option>${sits.map(x=>`<option ${x===s?'selected':''}>${esc(x)}</option>`).join('')}</select></div>`
    +`<div class="tw"><table><thead><tr><th>Registro</th><th>Nome</th><th>Nascimento</th><th class="num">Idade</th><th>Marca</th><th>Situação</th><th>Pai</th><th>Avô materno</th><th class="num">Partos</th><th class="num">IEP (meses)</th><th>Última cobertura</th></tr></thead><tbody>${rows||'<tr><td colspan="11" class="vazio">Nenhuma matriz.</td></tr>'}</tbody></table></div>${maisBtn(ms.length)}`;
 }
 
 /* ---------- FICHA REPRODUTIVA ---------- */
-let fichaAba='nat';
+let fichaAba='nat';const fichaAbertos=new Set();
 function abrirFicha(reg){fichaNas=null;fichaReg=reg;fichaAba='nat';desenhar();scrollTo(0,0)}
 function telaFicha(reg){
   const k=norm(reg),i=indMatriz(reg,fichaAba),m=IX.mat[k]||{reg},rk=ranking().pos[k],prop=(db.cad.proprietarios||[]).find(p=>p.marca===m.marca);
@@ -372,33 +417,37 @@ function telaFicha(reg){
   i.nat.concat(i.fiv).forEach(n=>{ev.push([n.nasc,'#e7b549',`🍼 Pariu ${n.sexo==='M'?'macho':n.sexo==='F'?'fêmea':''} <b>${esc(n.prod||'')}</b> (pai ${esc(n.pai||'?')})${ehFIV(n)?' · FIV, receptora '+esc(n.rec):''}`]);if(n.desm)ev.push([n.desm,'#a0673a',`⚖️ Desmama de ${esc(n.prod||'')}: ${n.pesoD?n1(n.pesoD)+' kg':''}${n.notaD?' · nota '+n1(n.notaD):''}`])});
   i.nat.concat(i.fiv).forEach(n=>(IX.pesNas[n.id]||[]).filter(r=>r.peso).forEach(r=>ev.push([dataPes(r),'#5b8c6e',`⚖️ Pesagem ${esc(IX.pep[r.pes].epoca||'')} de ${esc(n.prod||n.rgn||'')}: <b>${n1(r.peso)} kg</b>`])));
   ev.sort((a,b)=>String(b[0]).localeCompare(String(a[0])));
-  return cab('Ficha reprodutiva',`<a href="#" onclick="fichaReg=null;desenhar();return false" style="color:var(--verde2);font-weight:700">← Voltar</a>`,`<button class="btn" onclick="formMat('${esc(m.id||'')}')">✏️ Editar matriz</button><button class="btn" onclick="formCob(null,'${esc(m.reg)}')">+ Cobertura</button><button class="btn pri" onclick="formNas(null,'${esc(m.reg)}')">+ Parto</button><button class="btn" onclick="window.print()">🖨 Imprimir</button>`)
-   +`<div class="fic-top"><div class="card"><h3>🐄 ${esc(m.reg)} ${m.nome?'· '+esc(m.nome):''} ${tagS(m.sit)}</h3>
-      <div class="dados"><div><span>Registro</span><b>${esc(m.reg)}</b></div><div><span>Nome</span><b>${esc(m.nome||'—')}</b></div><div><span>Nascimento</span><b>${fd(m.nasc)||'—'}</b></div><div><span>Idade</span><b>${idade?n1(idade/12)+' anos':'—'}</b></div>
-      <div><span>Nome do pai</span><b>${esc(m.pai||'—')}</b></div><div><span>Registro do pai</span><b>${esc(m.paiReg||'—')}</b></div><div><span>Avô materno</span><b>${esc(m.avo||'—')}</b></div><div><span>Registro da mãe</span><b>${m.maeReg?`<a href="#" onclick="abrirFicha('${esc(m.maeReg)}');return false">${esc(m.maeReg)}</a>`:'—'}</b></div>
-      <div><span>Marca</span><b>${esc(m.marca||'—')}</b></div><div><span>Proprietário</span><b>${esc(prop?prop.nome:'—')}</b></div><div><span>Categoria</span><b>${cat}</b></div><div><span>Origem</span><b>${esc(m.origem||'—')}</b></div></div>
-      ${m.obs?`<div style="margin-top:8px;font-size:13px;color:var(--suave)">📝 ${esc(m.obs)}</div>`:''}
-      <div class="ind"><div style="--k:#e7b549"><span>1º parto</span><b>${i.p1?n1(i.p1)+' meses':'—'}</b></div><div style="--k:#2f7fd8"><span>Média entre partos (IEP)</span><b>${i.iep?n1(i.iep)+' meses':'—'}</b>${cmp(i.iep,IX.medIEP,' m',false)}</div>
-      <div style="--k:#2f9e5b"><span>Taxa de prenhez</span><b>${i.taxa==null?'—':n2(i.taxa*100)+'%'}</b><small>${i.pr} prenhe(s) de ${i.tent} tentativa(s)</small>${fichaAba==='nat'?cmp(i.taxa==null?null:i.taxa*100,IX.taxa==null?null:IX.taxa*100,'%'):''}</div><div style="--k:#a0673a"><span>Ranking</span><b>${rk?rk.p+'º de '+ranking().tot:'—'}</b><small>${rk?'score '+n2(rk.s):''}</small></div>
-      <div style="--k:#216440"><span>Nascimentos vinculados</span><b>${i.vinc.length}</b><small>Taxa de nascimento: ${i.taxaNasc==null?'—':n2(i.taxaNasc*100)+'%'}</small></div><div style="--k:#a0673a"><span>Peso médio à desmama</span><b>${i.peso?n2(i.peso)+' kg':'—'}</b>${cmp(i.peso,IX.medPeso,' kg')}</div>
-      <div style="--k:#7a52c7"><span>Nota média à desmama</span><b>${i.nota?n2(i.nota):'—'}</b>${cmp(i.nota,IX.medNota,'')}</div><div style="--k:#5d6a62"><span>Tentativas</span><b>${i.tent}</b><small>${i.pr} prenhe(s) · ${i.vz} vazia(s) · ${i.ab} aborto(s)</small></div></div></div>
-     <div class="card rosca"><h3 style="align-self:stretch">Eventos</h3>${rosca}<div class="lg"><span><i style="background:#2f9e5b"></i>Prenhe ${i.pr}</span><span><i style="background:#dc6a5c"></i>Vazia ${i.vz}</span><span><i style="background:#8a4fd1"></i>Aborto ${i.ab}</span></div></div></div>`
+  const f=farol(m.reg),up=i.nat.concat(i.fiv).filter(n=>n.nasc).sort((x,y)=>String(y.nasc).localeCompare(String(x.nasc)))[0];
+  const sec=(id,tit,q,corpo)=>`<details class="sec" ${fichaAbertos.has(id)?'open':''} ontoggle="this.open?fichaAbertos.add('${id}'):fichaAbertos.delete('${id}')"><summary>${tit} <span class="q">${q}</span></summary><div class="in">${corpo}</div></details>`;
+  const tab=(th,tb)=>`<div class="tw" style="max-height:none"><table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>`;
+  return cab('Ficha da matriz',`<a href="#" onclick="fichaReg=null;desenhar();return false" style="color:var(--verde2);font-weight:700">← Voltar</a>`,`<button class="btn" onclick="formMat('${esc(m.id||'')}')">✏️ Editar</button><button class="btn" onclick="formCob(null,'${esc(m.reg)}')">+ Cobertura</button><button class="btn pri" onclick="formNas(null,'${esc(m.reg)}')">+ Parto</button><button class="btn" onclick="window.print()">🖨 Imprimir</button>`)
+   +`<div class="card"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="font-size:22px;font-weight:800">${esc(m.reg)}</span><span style="font-size:17px;color:var(--suave);font-weight:600">${esc(m.nome||'')}</span>${tagS(m.sit)}</div>
+     ${f?`<div style="margin-top:8px;font-size:15px;font-weight:600"><i class="farol f-${f.c}"></i>${esc(f.t.charAt(0).toUpperCase()+f.t.slice(1))}</div>`:''}
+     <div class="top4"><div><span>Taxa de prenhez</span><b>${i.taxa==null?'—':n1(i.taxa*100)+'%'}</b></div><div><span>Ranking</span><b>${rk?rk.p+'º de '+ranking().tot:'—'}</b></div><div><span>Último parto</span><b>${up?fd(up.nasc):'—'}</b></div><div><span>Peso na desmama</span><b>${i.peso?n0(i.peso)+' kg':'—'}</b></div></div></div>`
    +`<div class="abas"><button class="${fichaAba==='nat'?'on':''}" onclick="fichaAba='nat';desenhar()">Natural / Artificial</button><button class="${fichaAba==='fiv'?'on':''}" onclick="fichaAba='fiv';desenhar()">FIV</button></div>`
-   +`<div class="card"><h3>💉 Reproduções ${fichaAba==='fiv'?'FIV':'natural / artificial'} <span class="dir">${cobs.length}</span></h3><div class="tw" style="max-height:none"><table><thead><tr><th>Estação</th><th>Classificação</th><th>Reprodutor</th><th>Cio</th><th>Inseminação</th><th>Método</th><th>Toque</th><th>Situação</th><th>Prev. inicial</th><th>Prev. final</th><th>Parição</th><th>Receptora</th><th>Obs.</th></tr></thead><tbody>${cobs.slice().reverse().map(linhaC).join('')||'<tr><td colspan="13" class="vazio" style="padding:14px">Nenhuma.</td></tr>'}</tbody></table></div></div>`
-   +`<div class="card"><h3>🍼 Produtos da matriz ${fichaAba==='fiv'?'(FIV)':''} <span class="dir">${prods.length}</span></h3><div class="tw" style="max-height:none"><table><thead><tr><th>Nº controle</th><th>Estação</th><th>Nome</th><th>Marca</th><th>Nascimento</th><th class="c">Sexo</th><th>Cor</th><th class="num">Peso nasc.</th><th>Pai</th><th>Desmame</th><th class="num">Peso desm.</th><th class="num">Nota desm.</th>${fichaAba==='fiv'?'<th>Receptora</th>':''}</tr></thead><tbody>${prods.slice().reverse().map(linhaN).join('')||'<tr><td colspan="13" class="vazio" style="padding:14px">Nenhum.</td></tr>'}</tbody></table></div>
-     <div class="rodape"><span>Total de nascimentos: <b>${i.vinc.length}</b>${prods.length>i.vinc.length?` <small>(+ ${prods.length-i.vinc.length} sem cobertura lançada)</small>`:''}</span><span>Média peso ao desmame: <b>${i.peso?n2(i.peso)+' kg':'—'}</b></span><span>Média de nota: <b>${i.nota?n2(i.nota):'—'}</b></span></div></div>`
-   +cardPesagens(prods)
-   +`<div class="cols"><div class="card"><h3>🕒 Linha do tempo <span class="dir">${ev.length} eventos</span></h3><div class="tempo">${ev.slice(0,80).map(([d,c,t])=>`<div class="ev" style="--c:${c}"><span class="d">${fd(d)}</span>${t}</div>`).join('')||'<div class="vazio" style="padding:14px">Sem eventos.</div>'}</div></div>
-     <div class="card"><h3>👧 Filhas no plantel <span class="dir">${filhas.length}</span></h3>${filhas.length?`<div class="tw" style="max-height:none"><table><thead><tr><th>Registro</th><th>Nome</th><th>Nascimento</th><th>Situação</th><th class="num">Partos</th></tr></thead><tbody>${filhas.map(f=>`<tr onclick="abrirFicha('${esc(f.reg)}')"><td><b>${esc(f.reg)}</b></td><td>${esc(f.nome||'')}</td><td>${fd(f.nasc)}</td><td>${tagS(f.sit)}</td><td class="num">${indMatriz(f.reg).nat.length}</td></tr>`).join('')}</tbody></table></div>`:'<div class="vazio" style="padding:14px">Nenhuma filha cadastrada como matriz.</div>'}</div></div>`;
+   +sec('dados','📋 Dados e genealogia','',`<div class="dados"><div><span>Nascimento</span><b>${fd(m.nasc)||'—'}</b></div><div><span>Idade</span><b>${idade?n1(idade/12)+' anos':'—'}</b></div><div><span>Categoria</span><b>${cat}</b></div><div><span>Origem</span><b>${esc(m.origem||'—')}</b></div>
+      <div><span>Pai</span><b>${esc(m.pai||'—')}</b></div><div><span>Registro do pai</span><b>${esc(m.paiReg||'—')}</b></div><div><span>Avô materno</span><b>${esc(m.avo||'—')}</b></div><div><span>Registro da mãe</span><b>${m.maeReg?`<a href="#" onclick="abrirFicha('${esc(m.maeReg)}');return false">${esc(m.maeReg)}</a>`:'—'}</b></div>
+      <div><span>Marca</span><b>${esc(m.marca||'—')}</b></div><div><span>Proprietário</span><b>${esc(prop?prop.nome:'—')}</b></div></div>${m.obs?`<div style="margin-top:8px;font-size:14px">📝 ${esc(m.obs)}</div>`:''}`)
+   +sec('ind','📊 Indicadores','',`<div class="fic-top"><div class="ind" style="margin-top:0"><div style="--k:#e7b549"><span>1º parto</span><b>${i.p1?n1(i.p1)+' meses':'—'}</b></div><div style="--k:#2f7fd8"><span>Média entre partos</span><b>${i.iep?n1(i.iep)+' meses':'—'}</b></div>
+      <div style="--k:#2f9e5b"><span>Tentativas</span><b>${i.tent}</b></div><div style="--k:#216440"><span>Prenhes</span><b>${i.pr}</b></div>
+      <div style="--k:#216440"><span>Nascimentos vinculados</span><b>${i.vinc.length}</b></div><div style="--k:#216440"><span>Taxa de nascimento</span><b>${i.taxaNasc==null?'—':n1(i.taxaNasc*100)+'%'}</b></div>
+      <div style="--k:#a0673a"><span>Peso médio na desmama</span><b>${i.peso?n2(i.peso)+' kg':'—'}</b></div><div style="--k:#7a52c7"><span>Nota média na desmama</span><b>${i.nota?n2(i.nota):'—'}</b></div></div>
+      <div class="rosca">${rosca}<div class="lg"><span><i style="background:#2f9e5b"></i>Prenhe ${i.pr}</span><span><i style="background:#dc6a5c"></i>Vazia ${i.vz}</span><span><i style="background:#8a4fd1"></i>Aborto ${i.ab}</span></div></div></div>${rk?`<div style="margin-top:8px;color:var(--suave)">Nota no ranking: <b>${n2(rk.s)}</b></div>`:''}`)
+   +sec('cob','💉 Reproduções',cobs.length,tab(`<th>Estação</th><th>Classificação</th><th>Reprodutor</th><th>Cio</th><th>Inseminação</th><th>Método</th><th>Toque</th><th>Situação</th><th>Prev. inicial</th><th>Prev. final</th><th>Parição</th><th>Receptora</th><th>Obs.</th>`,cobs.slice().reverse().map(linhaC).join('')||'<tr><td colspan="13" class="vazio" style="padding:14px">Nenhuma.</td></tr>'))
+   +sec('prod','🍼 Produtos',prods.length,tab(`<th>Nº controle</th><th>Estação</th><th>Nome</th><th>Marca</th><th>Nascimento</th><th class="c">Sexo</th><th>Cor</th><th class="num">Peso nasc.</th><th>Pai</th><th>Desmame</th><th class="num">Peso desm.</th><th class="num">Nota desm.</th>${fichaAba==='fiv'?'<th>Receptora</th>':''}`,prods.slice().reverse().map(linhaN).join('')||'<tr><td colspan="13" class="vazio" style="padding:14px">Nenhum.</td></tr>')
+      +`<div class="rodape"><span>Total de nascimentos: <b>${i.vinc.length}</b>${prods.length>i.vinc.length?` (+ ${prods.length-i.vinc.length} sem cobertura)`:''}</span><span>Média peso ao desmame: <b>${i.peso?n2(i.peso)+' kg':'—'}</b></span><span>Média de nota: <b>${i.nota?n2(i.nota):'—'}</b></span></div>`)
+   +cardPesagens(prods,sec)
+   +sec('tempo','🕒 Linha do tempo',ev.length,`<div class="tempo">${ev.slice(0,80).map(([d,c,t])=>`<div class="ev" style="--c:${c}"><span class="d">${fd(d)}</span>${t}</div>`).join('')||'<div class="vazio" style="padding:14px">Sem eventos.</div>'}</div>`)
+   +sec('filhas','👧 Filhas no plantel',filhas.length,filhas.length?tab(`<th>Registro</th><th>Nome</th><th>Nascimento</th><th>Situação</th><th class="num">Partos</th>`,filhas.map(x=>`<tr onclick="abrirFicha('${esc(x.reg)}')"><td>${bolinha(x.reg)}<b>${esc(x.reg)}</b></td><td>${esc(x.nome||'')}</td><td>${fd(x.nasc)}</td><td>${tagS(x.sit)}</td><td class="num">${indMatriz(x.reg).nat.length}</td></tr>`).join('')):'<div class="vazio" style="padding:14px">Nenhuma filha cadastrada como matriz.</div>');
 }
 /* ---------- PESAGENS na ficha ---------- */
 const dataPes=r=>r.data||(IX.pep[r.pes]||{}).data||'';
 const idadeTxt=(a,b)=>{if(!a||!b||b<a)return '';const x=new Date(a+'T12:00:00Z'),y=new Date(b+'T12:00:00Z');let m=(y.getUTCFullYear()-x.getUTCFullYear())*12+y.getUTCMonth()-x.getUTCMonth(),d=y.getUTCDate()-x.getUTCDate();if(d<0){m--;d+=new Date(Date.UTC(y.getUTCFullYear(),y.getUTCMonth(),0)).getUTCDate()}return m+'m '+d+'d'};
 const ind=v=>v==null?'':n2(v).replace(/,00$/,'');
-function cardPesagens(prods){
+function cardPesagens(prods,sec){
   const ls=[];prods.forEach(n=>(IX.pesNas[n.id]||[]).forEach(r=>ls.push([n,r])));
   ls.sort((a,b)=>String(b[0].nasc).localeCompare(String(a[0].nasc))||dataPes(a[1]).localeCompare(dataPes(b[1])));
-  return `<div class="card"><h3>⚖️ Pesagens dos produtos <span class="dir">${ls.length}</span></h3>${ls.length?`<div class="tw" style="max-height:420px"><table><thead><tr><th>Produto</th><th class="c">Sexo</th><th>Época</th><th>Data</th><th>Idade</th><th class="num">Peso (kg)</th><th class="num">CC</th><th class="num">CE</th><th class="num">GM</th><th class="num">SP</th></tr></thead><tbody>${ls.map(([n,r])=>`<tr onclick="abrirBezerro('${n.id}')"><td><b>${esc(n.prod||n.rgn||'')}</b></td><td class="c"><span class="sx-${esc(n.sexo)}">${esc(n.sexo||'')}</span></td><td>${esc(IX.pep[r.pes].epoca||'')}</td><td>${fd(dataPes(r))}</td><td>${idadeTxt(n.nasc,dataPes(r))}</td><td class="num"><b>${r.peso!=null?n1(r.peso):'—'}</b></td><td class="num">${ind(r.cc)}</td><td class="num">${ind(r.ce)}</td><td class="num">${ind(r.gm)}</td><td class="num">${ind(r.sp)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="vazio" style="padding:14px">Nenhuma pesagem dos produtos.</div>'}</div>`;
+  return sec('pes','⚖️ Pesagens dos produtos',ls.length,`${ls.length?`<div class="tw" style="max-height:420px"><table><thead><tr><th>Produto</th><th class="c">Sexo</th><th>Época</th><th>Data</th><th>Idade</th><th class="num">Peso (kg)</th><th class="num">CC</th><th class="num">CE</th><th class="num">GM</th><th class="num">SP</th></tr></thead><tbody>${ls.map(([n,r])=>`<tr onclick="abrirBezerro('${n.id}')"><td><b>${esc(n.prod||n.rgn||'')}</b></td><td class="c"><span class="sx-${esc(n.sexo)}">${esc(n.sexo||'')}</span></td><td>${esc(IX.pep[r.pes].epoca||'')}</td><td>${fd(dataPes(r))}</td><td>${idadeTxt(n.nasc,dataPes(r))}</td><td class="num"><b>${r.peso!=null?n1(r.peso):'—'}</b></td><td class="num">${ind(r.cc)}</td><td class="num">${ind(r.ce)}</td><td class="num">${ind(r.gm)}</td><td class="num">${ind(r.sp)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="vazio" style="padding:14px">Nenhuma pesagem dos produtos.</div>'}`);
 }
 /* ---------- FICHA DO BEZERRO ---------- */
 let fichaNas=null,voltaNas=null;
@@ -461,7 +510,7 @@ function tlSalvar(){const dt=$('#tlData').value;let n=0;$$('.tl-res').forEach(s=
 function telaNas(){
   const q=norm(fv('q')),ano=fv('ano',String(new Date().getFullYear())),sx=fv('sx'),dm=fv('dm');
   const anos=[...new Set(db.nas.filter(n=>!n.x).map(n=>String(n.nasc||'').slice(0,4)).filter(Boolean))].sort().reverse();
-  let ns=db.nas.filter(n=>!n.x&&(q||((!ano||String(n.nasc).startsWith(ano))&&(!sx||n.sexo===sx)&&(!dm||(dm==='s'?n.desm:!n.desm))))&&(!q||norm([n.mae,n.prod,n.rgn,n.pai,n.rec].join(' ')).includes(q)));
+  let ns=db.nas.filter(n=>!n.x&&(q||((!ano||String(n.nasc).startsWith(ano))&&(!sx||n.sexo===sx)&&(!dm||(dm==='p'?paraDesmamar(n):dm==='s'?n.desm:!n.desm))))&&(!q||norm([n.mae,n.prod,n.rgn,n.pai,n.rec].join(' ')).includes(q)));
   ns.sort((a,b)=>String(b.nasc).localeCompare(String(a.nasc)));
   const rows=ns.slice(0,lim).map(n=>`<tr><td onclick="abrirFicha('${esc(n.mae)}')"><b>${esc(n.mae)}</b></td><td onclick="abrirBezerro('${n.id}')" style="color:var(--verde2);font-weight:700">${esc(n.prod||'')}</td><td>${esc(n.rgn||'')}</td><td class="c"><span class="sx-${esc(n.sexo)}">${esc(n.sexo||'')}</span></td><td>${fd(n.nasc)}</td><td class="num">${n.pesoN?n1(n.pesoN):''}</td><td>${esc(n.cor||'')}</td><td>${esc(n.pai||'')}</td><td>${esc(n.sit||'')}</td><td>${esc(n.rec||'')}</td>
     <td><input type="date" value="${esc(n.desm||'')}" onchange="setNas('${n.id}','desm',this.value)"></td><td><input inputmode="decimal" style="width:64px;text-align:right" value="${n.pesoD??''}" onchange="setNas('${n.id}','pesoD',this.value)"></td><td><input inputmode="decimal" style="width:48px;text-align:right" value="${n.notaD??''}" onchange="setNas('${n.id}','notaD',this.value)"></td><td class="c"><button class="btn pq" onclick="formNas('${n.id}')">✏️</button></td></tr>`).join('');
@@ -470,7 +519,7 @@ function telaNas(){
    +`<div class="filtros"><input type="search" id="f_q" placeholder="Buscar mãe, produto, RGN, pai..." value="${esc(fv('q'))}" oninput="setF('q',this.value)">
      <select onchange="setF('ano',this.value)"><option value="">Todos os anos</option>${anos.map(a=>`<option ${a===ano?'selected':''}>${a}</option>`).join('')}</select>
      <select onchange="setF('sx',this.value)"><option value="">Machos e fêmeas</option><option value="M" ${sx==='M'?'selected':''}>Machos</option><option value="F" ${sx==='F'?'selected':''}>Fêmeas</option></select>
-     <select onchange="setF('dm',this.value)"><option value="">Com e sem desmama</option><option value="s" ${dm==='s'?'selected':''}>Desmamados</option><option value="n" ${dm==='n'?'selected':''}>Sem desmama</option></select></div>`
+     <select onchange="setF('dm',this.value)"><option value="">Com e sem desmama</option><option value="s" ${dm==='s'?'selected':''}>Desmamados</option><option value="n" ${dm==='n'?'selected':''}>Sem desmama</option><option value="p" ${dm==='p'?'selected':''}>Para desmamar (7+ meses)</option></select></div>`
    +`<div class="tw"><table><thead><tr><th>Mãe</th><th>Produto</th><th>RGN</th><th class="c">Sexo</th><th>Nascimento</th><th class="num">Peso nasc.</th><th>Cor</th><th>Pai</th><th>Situação</th><th>Receptora</th><th>Desmama</th><th>Peso desm.</th><th>Nota</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="14" class="vazio">Nenhum nascimento.</td></tr>'}</tbody></table></div>${maisBtn(ns.length)}`;
 }
 function setNas(id,k,v){const n=db.nas.find(x=>x.id===id);if(!n)return;if(k==='pesoD'||k==='notaD'){const x=numBR(v);if(v&&x===null)return toast('Digite só número.');if(x===null)delete n[k];else n[k]=x}else{if(v)n[k]=v;else delete n[k]}salvarRec('nas',n)}
@@ -494,7 +543,7 @@ function telaPes(){
   const es=Object.values(IX.pep).sort((a,b)=>String(b.data).localeCompare(String(a.data)));
   const rows=es.map(e=>{const it=itensPes(e.id),M=it.filter(r=>IX.nas[r.nas].sexo==='M').length,F=it.filter(r=>IX.nas[r.nas].sexo==='F').length,falta=it.filter(r=>r.peso==null).length;
     return `<tr onclick="abrirPesagem('${e.id}')"><td>${esc(e.id.length<8?e.id:'')}</td><td>${fd(e.data)}</td><td><b>${esc(e.epoca||'')}</b></td><td class="num">${M}</td><td class="num">${F}</td><td class="num"><b>${it.length}</b></td><td>${falta?`<span class="tag r-VAZIA">Faltam ${falta} sem peso</span>`:'<span class="tag r-PRENHE">Todos com peso</span>'}</td></tr>`}).join('');
-  return cab('Pesagem',`${es.length} pesagem(ns) · peso e índices CC, CE, GM e SP por animal`,`<button class="btn pri" onclick="novaPesagem()">+ Nova pesagem</button>`)
+  return cab('Pesagem',`${es.length} pesagem(ns)`,`<button class="btn pri" onclick="novaPesagem()">+ Nova pesagem</button>`)
    +`<div class="tw"><table><thead><tr><th>Nº controle</th><th>Data</th><th>Época</th><th class="num">Machos</th><th class="num">Fêmeas</th><th class="num">Qtde</th><th>Situação</th></tr></thead><tbody>${rows||'<tr><td colspan="7" class="vazio">Nenhuma pesagem. Importe em Cadastros ou crie uma nova.</td></tr>'}</tbody></table></div>`;
 }
 function telaPesDet(id){
@@ -664,13 +713,14 @@ function imprimirPes(id){const e=IX.pep[id],it=itensPes(id).map(r=>({r,n:IX.nas[
 
 /* ---------- REPRODUTORES ---------- */
 function telaRep(){
-  const q=norm(fv('q')),g={};db.cob.filter(c=>!c.x&&(!est||c.est===est)).forEach(c=>{const k=c.rep||'—';g[k]=g[k]||{n:0,p:0,d:0,ult:''};g[k].n++;if(['PRENHE','VAZIA','ABORTO'].includes(c.res)){g[k].d++;if(c.res==='PRENHE')g[k].p++}if(c.ins>g[k].ult)g[k].ult=c.ins});
-  const filhos={};db.nas.filter(n=>!n.x).forEach(n=>{filhos[n.pai]=(filhos[n.pai]||0)+1});
-  let rs=db.rep.filter(r=>!r.x&&(!q||norm(r.nome).includes(q))).map(r=>({r,s:g[r.nome]||{n:0,p:0,d:0,ult:''}}));
-  rs.sort((a,b)=>b.s.n-a.s.n||String(a.r.nome).localeCompare(String(b.r.nome)));
-  return cab('Reprodutores',`${rs.length} reprodutor(es) · coberturas ${est?'da estação '+esc(est):'de todas as estações'}`,`<button class="btn" onclick="exportar('rep')">⬇ Excel</button><button class="btn pri" onclick="formRep()">+ Reprodutor</button>`)
-   +`<div class="filtros"><input type="search" id="f_q" placeholder="Buscar reprodutor..." value="${esc(fv('q'))}" oninput="setF('q',this.value)"></div>`
-   +`<div class="tw"><table><thead><tr><th>Nome</th><th>Registro</th><th class="num">Coberturas</th><th class="num">Prenhes</th><th class="num">% prenhez</th><th class="num">Filhos nascidos</th><th>Última cobertura</th><th>Comentário</th></tr></thead><tbody>${rs.slice(0,lim).map(({r,s})=>`<tr onclick="formRep('${r.id}')"><td><b>${esc(r.nome)}</b></td><td>${esc(r.reg||'')}</td><td class="num">${s.n}</td><td class="num">${s.p}</td><td class="num">${pct(s.p,s.d)}</td><td class="num">${filhos[r.nome]||0}</td><td>${fd(s.ult)}</td><td>${esc(r.obs||'')}</td></tr>`).join('')}</tbody></table></div>${maisBtn(rs.length)}`;
+  const q=norm(fv('q')),ord=fv('ord','uso'),g={};db.cob.filter(c=>!c.x&&(!est||c.est===est)).forEach(c=>{const k=norm(c.rep)||'—';g[k]=g[k]||{n:0,p:0,d:0};g[k].n++;if(['PRENHE','VAZIA','ABORTO'].includes(c.res)){g[k].d++;if(c.res==='PRENHE')g[k].p++}});
+  const fi={};db.nas.filter(n=>!n.x).forEach(n=>{const k=norm(n.pai);const x=fi[k]=fi[k]||{n:0,pd:[],p12:[]};x.n++;if(n.pesoD)x.pd.push(n.pesoD);(IX.pesNas[n.id]||[]).forEach(r=>{const mm=meses(n.nasc,dataPes(r));if(r.peso&&mm>=11&&mm<13)x.p12.push(r.peso)})});
+  let rs=db.rep.filter(r=>!r.x&&(!q||norm(r.nome).includes(q))).map(r=>{const k=norm(r.nome),s=g[k]||{n:0,p:0,d:0},f=fi[k]||{n:0,pd:[],p12:[]};return {r,s,f,tx:s.d>=5?s.p/s.d:null,pd:f.pd.length>=3?media(f.pd):null,p12:f.p12.length>=3?media(f.p12):null}});
+  const kf={uso:x=>x.s.n,tx:x=>x.tx??-1,pd:x=>x.pd??-1,p12:x=>x.p12??-1}[ord]||(x=>x.s.n);
+  rs.sort((a,b)=>kf(b)-kf(a)||b.s.n-a.s.n||String(a.r.nome).localeCompare(String(b.r.nome)));
+  return cab('Reprodutores',`${rs.length} reprodutor(es)`,`<button class="btn" onclick="exportar('rep')">⬇ Excel</button><button class="btn pri" onclick="formRep()">+ Reprodutor</button>`)
+   +`<div class="filtros"><input type="search" id="f_q" placeholder="Buscar reprodutor..." value="${esc(fv('q'))}" oninput="setF('q',this.value)"><select onchange="setF('ord',this.value)">${[['uso','Mais usados'],['tx','Melhor % de prenhez'],['pd','Filhos mais pesados na desmama'],['p12','Filhos mais pesados aos 12 meses']].map(([v,l])=>`<option value="${v}" ${v===ord?'selected':''}>${l}</option>`).join('')}</select></div>`
+   +`<div class="tw"><table><thead><tr><th class="num">#</th><th>Nome</th><th class="num">Coberturas</th><th class="num">% prenhez</th><th class="num">Filhos</th><th class="num">Desmama (kg)</th><th class="num">12 meses (kg)</th><th>Comentário</th></tr></thead><tbody>${rs.slice(0,lim).map((x,i)=>`<tr onclick="formRep('${x.r.id}')"><td class="num">${i+1}</td><td><b>${esc(x.r.nome)}</b></td><td class="num">${x.s.n}</td><td class="num">${x.tx==null?'—':n1(x.tx*100)+'%'}</td><td class="num">${x.f.n}</td><td class="num">${x.pd==null?'—':n0(x.pd)}</td><td class="num">${x.p12==null?'—':n0(x.p12)}</td><td>${esc(x.r.obs||'')}</td></tr>`).join('')}</tbody></table></div>${maisBtn(rs.length)}`;
 }
 
 /* ---------- CADASTROS ---------- */
